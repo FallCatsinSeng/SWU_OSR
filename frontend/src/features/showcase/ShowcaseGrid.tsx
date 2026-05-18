@@ -13,7 +13,7 @@ export function ShowcaseGrid() {
     queryKey: ["showcaseRepos"],
     queryFn: async () => {
       const { data } = await api.get<{ ok: boolean; data: ShowcaseRepo[] }>(
-        "/showcase/my-repos"
+        "/showcase"
       );
       return data.data;
     },

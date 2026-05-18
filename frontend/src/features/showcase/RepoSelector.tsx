@@ -28,7 +28,7 @@ export function RepoSelector() {
     queryKey: ["availableRepos"],
     queryFn: async () => {
       const { data } = await api.get<{ ok: boolean; data: Repository[] }>(
-        "/showcase/available-repos"
+        "/repos/available"
       );
       return data.data;
     },
@@ -36,7 +36,7 @@ export function RepoSelector() {
 
   const saveShowcase = useMutation({
     mutationFn: async (items: ShowcaseSelection[]) => {
-      const { data } = await api.post("/showcase/select", { repos: items });
+      const { data } = await api.post("/showcase", { selections: items });
       return data;
     },
     onSuccess: () => {

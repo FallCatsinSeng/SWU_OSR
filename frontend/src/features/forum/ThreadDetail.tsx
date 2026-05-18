@@ -13,27 +13,20 @@ interface ThreadDetailProps {
 }
 
 export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
-  const { data: thread, isLoading: threadLoading } = useQuery<Thread>({
+  const { data, isLoading } = useQuery<{ thread: Thread; comments: Comment[] }>({
     queryKey: ["thread", threadId],
     queryFn: async () => {
-      const { data } = await api.get<{ ok: boolean; data: Thread }>(
-        `/repos/${repoId}/threads/${threadId}`
+      const { data } = await api.get<{ ok: boolean; data: { thread: Thread; comments: Comment[] } }>(
+        `/threads/${threadId}`
       );
       return data.data;
     },
   });
 
-  const { data: comments, isLoading: commentsLoading } = useQuery<Comment[]>({
-    queryKey: ["comments", threadId],
-    queryFn: async () => {
-      const { data } = await api.get<{ ok: boolean; data: Comment[] }>(
-        `/repos/${repoId}/threads/${threadId}/comments`
-      );
-      return data.data;
-    },
-  });
+  const thread = data?.thread;
+  const comments = data?.comments;
 
-  if (threadLoading) {
+  if (isLoading) {
     return <Skeleton className="h-64 w-full" />;
   }
 
@@ -59,13 +52,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Comments ({thread.comment_count})
         </h3>
-        {commentsLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        ) : comments && comments.length > 0 ? (
+        {comments && comments.length > 0 ? (
           <div className="space-y-3">
             {comments.map((comment) => (
               <Card key={comment.id}>
