@@ -18,6 +18,9 @@ import (
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/siakad"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
@@ -50,6 +53,16 @@ func main() {
 		logger.Fatal("failed to ping PostgreSQL", zap.Error(err))
 	}
 	logger.Info("connected to PostgreSQL")
+
+	// Run database migrations
+	m, err := migrate.New("file:///migrations", cfg.DatabaseURL)
+	if err != nil {
+		logger.Fatal("failed to create migrator", zap.Error(err))
+	}
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		logger.Fatal("failed to run migrations", zap.Error(err))
+	}
+	logger.Info("database migrations applied")
 
 	// Connect to Redis
 	redisOpts, err := redis.ParseURL(cfg.RedisURL)
