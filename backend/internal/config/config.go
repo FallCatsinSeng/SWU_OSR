@@ -23,6 +23,7 @@ type Config struct {
 	EncryptionKey      []byte        // decoded from ENCRYPTION_KEY hex string
 	SIAKADBaseURL      string        `mapstructure:"SIAKAD_BASE_URL"`
 	CORSOrigin         string        `mapstructure:"CORS_ORIGIN"`
+	CookieSecure       bool          `mapstructure:"COOKIE_SECURE"`
 	RateLimitIP        int           `mapstructure:"RATE_LIMIT_IP"`
 	RateLimitUser      int           `mapstructure:"RATE_LIMIT_USER"`
 }
@@ -35,6 +36,7 @@ func Load() (*Config, error) {
 	viper.SetDefault("JWT_EXPIRY", "15m")
 	viper.SetDefault("REFRESH_EXPIRY", "168h")
 	viper.SetDefault("CORS_ORIGIN", "http://localhost:3000")
+	viper.SetDefault("COOKIE_SECURE", true)
 	viper.SetDefault("RATE_LIMIT_IP", 100)
 	viper.SetDefault("RATE_LIMIT_USER", 300)
 	viper.SetDefault("SIAKAD_BASE_URL", "https://smartone.smart-service.co.id")
@@ -55,6 +57,7 @@ func Load() (*Config, error) {
 	cfg.WebhookSecret = viper.GetString("WEBHOOK_SECRET")
 	cfg.SIAKADBaseURL = viper.GetString("SIAKAD_BASE_URL")
 	cfg.CORSOrigin = viper.GetString("CORS_ORIGIN")
+	cfg.CookieSecure = viper.GetBool("COOKIE_SECURE")
 	cfg.RateLimitIP = viper.GetInt("RATE_LIMIT_IP")
 	cfg.RateLimitUser = viper.GetInt("RATE_LIMIT_USER")
 
