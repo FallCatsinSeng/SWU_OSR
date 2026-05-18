@@ -1,0 +1,35 @@
+# Local reference directories (not part of the platform)
+SWAAP/
+skill/
+plan/
+
+# Environment & secrets
+.env
+.env.local
+.env.production
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go
+backend/tmp/
+backend/vendor/
+
+# Node / Next.js
+node_modules/
+frontend/.next/
+frontend/out/
+
+# Docker
+*.log
+
+# Build artifacts
+dist/
+build/
