@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Frontend scaffolding and core pages: Initialize Next.js 14 App Router with TypeScript, Tailwind CSS, shadcn/ui, and implement the main pages (login, dashboard/feed, profile, showcase management, forum). Includes API client setup, auth hooks, and Docker configuration.",
+  "status": "completed",
+  "steps": [
+    "Initialize Next.js 14 project in frontend/ with TypeScript, Tailwind CSS, App Router, and src/ directory. Add dependencies: @tanstack/react-query, react-hook-form, zod, axios, lucide-react. Configure tailwind.config.ts and globals.css.",
+    "Set up shadcn/ui in frontend/: initialize with 'npx shadcn-ui@latest init', add core components (Button, Input, Card, Dialog, Badge, Avatar, Skeleton, Tabs, DropdownMenu, Toast).",
+    "Create frontend/src/lib/api.ts with axios client configured with baseURL (/api), request/response interceptors for auth token handling (attach Bearer token from cookie, handle 401 for refresh flow).",
+    "Create frontend/src/lib/auth.ts with auth utilities and frontend/src/hooks/useAuth.ts with authentication hooks (useSIAKADLogin, useGitHubCallback, useRefreshToken, useLogout) using @tanstack/react-query mutations.",
+    "Create frontend/src/app/layout.tsx root layout with QueryClientProvider, Toaster, and global styles. Create frontend/src/app/page.tsx as the public landing/feed page.",
+    "Create frontend/src/features/auth/ module: LoginPage component (NIM + password form with react-hook-form + zod validation), GitHubCallbackPage (handles OAuth redirect, exchanges code). Wire into frontend/src/app/login/page.tsx and frontend/src/app/auth/github/callback/page.tsx.",
+    "Create frontend/src/features/feed/ module: ActivityFeed component (infinite scroll with useInfiniteQuery, cursor-based pagination), ActivityCard component (displays event type icon, user alias/avatar, summary, timestamp). Wire into the main page.tsx.",
+    "Create frontend/src/features/profile/ module: PublicProfilePage (alias, bio, avatar, showcase repos, stats), ProfileEditForm (update alias/bio/avatar), IdentityBadge (shown only to faculty/admin). Wire into frontend/src/app/profiles/[alias]/page.tsx and frontend/src/app/settings/page.tsx.",
+    "Create frontend/src/features/showcase/ module: RepoSelector (fetches available repos, multi-select with academic tag dropdown), ShowcaseGrid (displays selected repos as cards with tags). Wire into frontend/src/app/showcase/page.tsx.",
+    "Create frontend/src/features/forum/ module: ThreadList (paginated threads for a repo), ThreadDetail (thread body + comments), CreateThreadForm, CreateCommentForm, NotificationBell (dropdown showing unread notifications). Wire into frontend/src/app/repos/[id]/discussions/page.tsx and frontend/src/app/repos/[id]/discussions/[threadId]/page.tsx.",
+    "Create frontend/src/types/ directory with TypeScript type definitions matching backend domain: user.ts, showcase.ts, activity.ts, forum.ts, auth.ts.",
+    "Create frontend/Dockerfile with multi-stage build: node:20-alpine builder (npm ci + npm run build), node:20-alpine runner (copy .next standalone output). Create frontend/next.config.js with output: 'standalone' for Docker.",
+    "Create frontend/.env.example with NEXT_PUBLIC_API_URL and NEXT_PUBLIC_GITHUB_CLIENT_ID."
+  ],
+  "acceptance_criteria": [
+    "Running 'cd frontend && npm run build' completes without errors",
+    "Running 'cd frontend && npm run lint' passes",
+    "All page routes render without errors (login, feed, profiles, showcase, forum)",
+    "API client is configured with interceptors for auth token management",
+    "TypeScript types match backend domain models",
+    "Frontend Dockerfile builds a working image"
+  ],
+  "verification": [
+    "cd /projects/sandbox/SWU_OSR/frontend && npm run build",
+    "cd /projects/sandbox/SWU_OSR/frontend && npm run lint"
+  ],
+  "blocked_reason": null,
+  "findings": "Build and lint pass successfully. Used Next.js 14.2.3. The useSearchParams hook requires wrapping in a Suspense boundary for static generation - separated the GitHub callback content into a sub-component. The img element warning in avatar.tsx is expected since we use arbitrary external URLs. All routes compile and generate correctly (static and dynamic)."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Backend project scaffolding: Go module initialization, project structure, configuration, domain types, database migrations, Docker Compose, and Nginx reverse proxy setup. This establishes the entire foundation including all SQL migrations, domain entities, interfaces, and infrastructure config.",
+  "status": "completed",
+  "steps": [
+    "Initialize Go module in backend/ with module name 'github.com/FallCatsinSeng/SWU_OSR/backend' and Go 1.22. Add all dependencies: chi/v5, pgx/v5, golang-migrate/v4, validator/v10, jwt/v5, zap, go-redis/v9, viper, testify, google/uuid, golang.org/x/crypto.",
+    "Create backend/cmd/api/main.go entry point that loads config, initializes logger, connects to PostgreSQL and Redis, sets up the chi router with middleware (RequestID, RealIP, Logger, Recoverer, CORS, rate-limit), mounts route groups, and starts the HTTP server with graceful shutdown.",
+    "Create backend/internal/config/config.go using viper to load environment variables: SERVER_PORT, DATABASE_URL, REDIS_URL, JWT_SECRET, JWT_EXPIRY, REFRESH_EXPIRY, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_REDIRECT_URI, WEBHOOK_SECRET, ENCRYPTION_KEY, SIAKAD_BASE_URL, CORS_ORIGIN, RATE_LIMIT_IP, RATE_LIMIT_USER.",
+    "Create backend/internal/domain/ package with all entity types and interfaces as specified in design.md: user.go (User, Role constants), showcase.go (ShowcaseRepo, AcademicTag constants, ShowcaseSelection), activity.go (ActivityLog, EventType constants, FeedParams, FeedResult, ActivityItem), forum.go (Thread, Comment, Notification, CreateThreadInput, CreateCommentInput), errors.go (domain-level error sentinels: ErrInvalidCredentials, ErrSIAKADUnavailable, ErrForbidden, ErrNotFound, ErrDuplicateAlias, ErrInvalidSignature, ErrTokenInvalid, etc.), and interfaces.go (UserRepository, ShowcaseRepository, ActivityRepository, ThreadRepository, CommentRepository, NotificationRepository interfaces).",
+    "Create backend/internal/handler/response.go with JSON response envelope helpers: respondJSON(w, status, data), respondError(w, status, message) using the {ok: bool, data: ..., error: ...} pattern.",
+    "Create backend/migrations/ directory with golang-migrate SQL files implementing the full schema from design.md: 000001_create_users.up.sql/down.sql, 000002_create_showcase_repos.up.sql/down.sql, 000003_create_activity_logs.up.sql/down.sql, 000004_create_threads.up.sql/down.sql, 000005_create_comments.up.sql/down.sql, 000006_create_notifications.up.sql/down.sql, 000007_create_refresh_tokens.up.sql/down.sql. Include all indexes from the design doc.",
+    "Create backend/sqlc/ directory with sqlc.yaml config pointing to migrations for schema and queries/ subdirectory for query files. Create query files: queries/users.sql, queries/showcase_repos.sql, queries/activity_logs.sql, queries/threads.sql, queries/comments.sql, queries/notifications.sql, queries/refresh_tokens.sql with all necessary CRUD queries using sqlc annotations (-- name: ... :one/:many/:exec).",
+    "Create backend/internal/middleware/ package with: auth.go (JWT verification middleware that extracts claims into context), ratelimit.go (Redis sliding window rate limiter per IP and per user), cors.go (configurable CORS middleware wrapper).",
+    "Create backend/.env.example with all required environment variables and sensible defaults for local development.",
+    "Create docker-compose.yml at project root with services: postgres (PostgreSQL 16 with health check, volume mount), redis (Redis 7 Alpine with health check), backend (Go API built from backend/Dockerfile, depends on postgres and redis), frontend (Next.js from frontend/Dockerfile), nginx (reverse proxy from nginx/nginx.conf). Include docker-compose.prod.yml override for production settings.",
+    "Create backend/Dockerfile with multi-stage build: golang:1.22-alpine builder stage, gcr.io/distroless/static-debian12:nonroot runtime stage. Copy binary and migrations.",
+    "Create nginx/nginx.conf with upstream definitions for backend and frontend services, proxy rules (/api/* -> backend:8080, /* -> frontend:3000), rate limiting, security headers, and gzip compression."
+  ],
+  "acceptance_criteria": [
+    "Running 'cd backend && go build ./cmd/api' compiles without errors",
+    "Running 'cd backend && go vet ./...' reports no issues",
+    "The backend/internal/domain/ package defines all entity types, role/tag constants, error sentinels, and repository interfaces as specified",
+    "All 7 migration files exist with proper up/down SQL matching the design doc schema",
+    "docker-compose.yml defines all required services with proper networking",
+    "sqlc.yaml is configured correctly with query files for all tables"
+  ],
+  "verification": [
+    "cd /projects/sandbox/SWU_OSR/backend && go build ./cmd/api",
+    "cd /projects/sandbox/SWU_OSR/backend && go vet ./..."
+  ],
+  "blocked_reason": null,
+  "findings": "Go module auto-upgraded to go 1.25.0 (from requested 1.22) because latest versions of pgx/v5, redis/v9, migrate/v4, and validator/v10 all require >= 1.25.0. Go 1.25.1 is available via mise so this works fine. The toolchain directive is set to go1.25.1. Build and vet both pass cleanly."
+}

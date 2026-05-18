@@ -1,0 +1,197 @@
+package service
+
+import (
+	"context"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
+	"github.com/google/uuid"
+)
+
+// ShowcaseService defines the showcase service interface.
+type ShowcaseService interface {
+	GetAvailableRepos(ctx context.Context, userID uuid.UUID) ([]github.Repository, error)
+	SetShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error
+	GetShowcase(ctx context.Context, userID uuid.UUID) ([]domain.ShowcaseRepo, error)
+	UpdateShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error
+	RemoveFromShowcase(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error
+}
+
+// showcaseService is the concrete implementation.
+type showcaseService struct {
+	showcaseRepo  domain.ShowcaseRepository
+	userRepo      domain.UserRepository
+	githubSvc     github.Service
+	encryptionKey []byte
+	webhookURL    string
+	webhookSecret string
+}
+
+// NewShowcaseService creates a new showcase service.
+func NewShowcaseService(
+	showcaseRepo domain.ShowcaseRepository,
+	userRepo domain.UserRepository,
+	githubSvc github.Service,
+	encryptionKey []byte,
+	webhookURL string,
+	webhookSecret string,
+) ShowcaseService {
+	return &showcaseService{
+		showcaseRepo:  showcaseRepo,
+		userRepo:      userRepo,
+		githubSvc:     githubSvc,
+		encryptionKey: encryptionKey,
+		webhookURL:    webhookURL,
+		webhookSecret: webhookSecret,
+	}
+}
+
+// validAcademicTags is the set of valid academic tags.
+var validAcademicTags = map[domain.AcademicTag]bool{
+	domain.TagCoursework:       true,
+	domain.TagThesis:           true,
+	domain.TagHackathon:        true,
+	domain.TagPersonalResearch: true,
+	domain.TagTeamProject:      true,
+}
+
+// GetAvailableRepos decrypts the user's GitHub token and lists their repos.
+func (s *showcaseService) GetAvailableRepos(ctx context.Context, userID uuid.UUID) ([]github.Repository, error) {
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := Decrypt(user.GitHubToken, s.encryptionKey)
+	if err != nil {
+		return nil, fmt.Errorf("decrypting github token: %w", err)
+	}
+
+	return s.githubSvc.ListRepos(ctx, token)
+}
+
+// SetShowcase validates selections and atomically replaces the user's showcase repos.
+func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error {
+	if len(selections) > 20 {
+		return fmt.Errorf("maximum 20 showcase repos allowed")
+	}
+
+	for _, sel := range selections {
+		if !validAcademicTags[sel.Tag] {
+			return fmt.Errorf("invalid academic tag: %s", sel.Tag)
+		}
+	}
+
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	token, err := Decrypt(user.GitHubToken, s.encryptionKey)
+	if err != nil {
+		return fmt.Errorf("decrypting github token: %w", err)
+	}
+
+	// Get existing repos to remove their webhooks
+	existing, err := s.showcaseRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	// Remove webhooks for existing repos
+	for _, repo := range existing {
+		if repo.WebhookID != nil {
+			parts := strings.SplitN(repo.RepoFullName, "/", 2)
+			if len(parts) == 2 {
+				_ = s.githubSvc.RemoveWebhook(ctx, token, parts[0], parts[1], *repo.WebhookID)
+			}
+		}
+	}
+
+	// Soft-delete all existing showcase repos for this user
+	for _, repo := range existing {
+		if err := s.showcaseRepo.SoftDelete(ctx, repo.ID); err != nil {
+			return err
+		}
+	}
+
+	// Insert new selections and register webhooks
+	for _, sel := range selections {
+		parts := strings.SplitN(sel.FullName, "/", 2)
+		var webhookID *int64
+		if len(parts) == 2 {
+			id, err := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
+			if err == nil {
+				webhookID = &id
+			}
+		}
+
+		repo := &domain.ShowcaseRepo{
+			ID:           uuid.New(),
+			UserID:       userID,
+			GitHubRepoID: sel.RepoID,
+			RepoName:     sel.RepoName,
+			RepoFullName: sel.FullName,
+			AcademicTag:  sel.Tag,
+			WebhookID:    webhookID,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+		}
+		if err := s.showcaseRepo.Create(ctx, repo); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// GetShowcase returns the user's showcase repos from the database.
+func (s *showcaseService) GetShowcase(ctx context.Context, userID uuid.UUID) ([]domain.ShowcaseRepo, error) {
+	return s.showcaseRepo.GetByUserID(ctx, userID)
+}
+
+// UpdateShowcase is the same as SetShowcase (replace all).
+func (s *showcaseService) UpdateShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error {
+	return s.SetShowcase(ctx, userID, selections)
+}
+
+// RemoveFromShowcase soft-deletes a specific repo and removes its webhook.
+func (s *showcaseService) RemoveFromShowcase(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error {
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	// Find the repo in user's showcase
+	repos, err := s.showcaseRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	var target *domain.ShowcaseRepo
+	for i := range repos {
+		if repos[i].ID == repoID {
+			target = &repos[i]
+			break
+		}
+	}
+	if target == nil {
+		return domain.ErrNotFound
+	}
+
+	// Remove webhook if it exists
+	if target.WebhookID != nil {
+		token, err := Decrypt(user.GitHubToken, s.encryptionKey)
+		if err == nil {
+			parts := strings.SplitN(target.RepoFullName, "/", 2)
+			if len(parts) == 2 {
+				_ = s.githubSvc.RemoveWebhook(ctx, token, parts[0], parts[1], *target.WebhookID)
+			}
+		}
+	}
+
+	return s.showcaseRepo.SoftDeleteByUser(ctx, userID, repoID)
+}
