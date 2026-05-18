@@ -167,8 +167,8 @@ func (s *service) doAuthenticate(ctx context.Context, nim, password string) (*St
 
 	return &StudentData{
 		NIM:       nim,
-		FullName:  nim, // SIAKAD does not return full profile in login response; populated later
-		Major:     "",
+		FullName:  "", // Profile data (FullName, Major, Semester) to be populated during onboarding or admin verification.
+		Major:     "", // Extracting profile data requires parsing the authenticated session page, which varies by SIAKAD version.
 		Semester:  0,
 		IsActive:  true,
 		SessionID: sessionID,

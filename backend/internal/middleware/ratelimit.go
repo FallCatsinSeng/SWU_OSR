@@ -28,8 +28,9 @@ func NewRateLimiter(client *redis.Client, ipLimit, userLimit int) *RateLimiter {
 	}
 }
 
-// Middleware returns an HTTP middleware that enforces rate limiting.
-func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
+// IPMiddleware returns an HTTP middleware that enforces IP-based rate limiting only.
+// This should be applied globally before auth middleware.
+func (rl *RateLimiter) IPMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -41,7 +42,16 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Rate limit by user if authenticated
+		next.ServeHTTP(w, r)
+	})
+}
+
+// UserMiddleware returns an HTTP middleware that enforces per-user rate limiting.
+// This should be applied after JWT auth middleware so that user claims are available.
+func (rl *RateLimiter) UserMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		if claims, ok := GetUserClaims(ctx); ok {
 			userKey := fmt.Sprintf("ratelimit:user:%s", claims.UserID.String())
 			if !rl.allow(ctx, userKey, rl.userLimit) {

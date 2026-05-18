@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/hex"
+	"fmt"
 	"time"
 
 	"github.com/spf13/viper"
@@ -18,7 +20,7 @@ type Config struct {
 	GitHubClientSecret string        `mapstructure:"GITHUB_CLIENT_SECRET"`
 	GitHubRedirectURI  string        `mapstructure:"GITHUB_REDIRECT_URI"`
 	WebhookSecret      string        `mapstructure:"WEBHOOK_SECRET"`
-	EncryptionKey      string        `mapstructure:"ENCRYPTION_KEY"`
+	EncryptionKey      []byte        // decoded from ENCRYPTION_KEY hex string
 	SIAKADBaseURL      string        `mapstructure:"SIAKAD_BASE_URL"`
 	CORSOrigin         string        `mapstructure:"CORS_ORIGIN"`
 	RateLimitIP        int           `mapstructure:"RATE_LIMIT_IP"`
@@ -51,11 +53,23 @@ func Load() (*Config, error) {
 	cfg.GitHubClientSecret = viper.GetString("GITHUB_CLIENT_SECRET")
 	cfg.GitHubRedirectURI = viper.GetString("GITHUB_REDIRECT_URI")
 	cfg.WebhookSecret = viper.GetString("WEBHOOK_SECRET")
-	cfg.EncryptionKey = viper.GetString("ENCRYPTION_KEY")
 	cfg.SIAKADBaseURL = viper.GetString("SIAKAD_BASE_URL")
 	cfg.CORSOrigin = viper.GetString("CORS_ORIGIN")
 	cfg.RateLimitIP = viper.GetInt("RATE_LIMIT_IP")
 	cfg.RateLimitUser = viper.GetInt("RATE_LIMIT_USER")
+
+	// Hex-decode the encryption key (must be 64 hex characters representing 32 bytes)
+	encKeyHex := viper.GetString("ENCRYPTION_KEY")
+	if encKeyHex != "" {
+		decoded, err := hex.DecodeString(encKeyHex)
+		if err != nil {
+			return nil, fmt.Errorf("ENCRYPTION_KEY must be a valid hex string: %w", err)
+		}
+		if len(decoded) != 32 {
+			return nil, fmt.Errorf("ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes), got %d bytes", len(decoded))
+		}
+		cfg.EncryptionKey = decoded
+	}
 
 	return cfg, nil
 }

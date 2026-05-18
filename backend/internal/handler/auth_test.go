@@ -22,6 +22,7 @@ type mockAuthService struct {
 	refreshTokenFn         func(ctx context.Context, refreshToken string) (*service.TokenPair, error)
 	logoutFn               func(ctx context.Context, userID uuid.UUID) error
 	manualVerifyFn         func(ctx context.Context, adminID, studentID uuid.UUID, nim string) error
+	getCurrentUserFn       func(ctx context.Context, userID uuid.UUID) (*domain.User, error)
 }
 
 func (m *mockAuthService) InitiateSIAKADLogin(ctx context.Context, nim, password string) (*service.PendingSession, error) {
@@ -41,6 +42,12 @@ func (m *mockAuthService) ManualVerify(ctx context.Context, adminID, studentID u
 		return m.manualVerifyFn(ctx, adminID, studentID, nim)
 	}
 	return nil
+}
+func (m *mockAuthService) GetCurrentUser(ctx context.Context, userID uuid.UUID) (*domain.User, error) {
+	if m.getCurrentUserFn != nil {
+		return m.getCurrentUserFn(ctx, userID)
+	}
+	return nil, domain.ErrNotFound
 }
 
 func TestHandleSIAKADLogin_Success(t *testing.T) {

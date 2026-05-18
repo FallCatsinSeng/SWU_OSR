@@ -26,6 +26,9 @@ func NewAggregatorHandler(aggregatorService service.AggregatorService) *Aggregat
 // HandleWebhook handles POST /api/webhooks/github.
 // Always returns 200 to GitHub to prevent retry storms.
 func (h *AggregatorHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
+	// Limit request body to 5MB to prevent memory exhaustion from oversized payloads
+	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
+
 	payload, err := io.ReadAll(r.Body)
 	if err != nil {
 		// Still return 200 to GitHub

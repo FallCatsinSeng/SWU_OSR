@@ -78,7 +78,7 @@ func main() {
 	siakadSvc := siakad.NewService(cfg.SIAKADBaseURL, 30*time.Second)
 
 	// Initialize application services
-	encryptionKey := []byte(cfg.EncryptionKey)
+	encryptionKey := cfg.EncryptionKey
 	webhookURL := fmt.Sprintf("https://api.example.com/api/webhooks/github") // configured via env in production
 
 	authSvc := service.NewAuthService(siakadSvc, githubSvc, userRepo, refreshTokenRepo, rdb, cfg)
@@ -104,9 +104,9 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(mw.CORS(cfg.CORSOrigin))
 
-	// Rate limiter
+	// Rate limiter (IP-only applied globally)
 	rateLimiter := mw.NewRateLimiter(rdb, cfg.RateLimitIP, cfg.RateLimitUser)
-	r.Use(rateLimiter.Middleware)
+	r.Use(rateLimiter.IPMiddleware)
 
 	// Health check
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -135,12 +135,14 @@ func main() {
 			r.Group(func(r chi.Router) {
 				r.Use(mw.JWTAuth(cfg.JWTSecret))
 				r.Post("/logout", authHandler.HandleLogout)
+				r.Get("/me", authHandler.HandleGetMe)
 			})
 		})
 
 		// Protected routes (auth required)
 		r.Group(func(r chi.Router) {
 			r.Use(mw.JWTAuth(cfg.JWTSecret))
+			r.Use(rateLimiter.UserMiddleware)
 
 			r.Put("/profile", profileHandler.HandleUpdateProfile)
 			r.Get("/profiles/{alias}/identity", profileHandler.HandleGetRealIdentity)

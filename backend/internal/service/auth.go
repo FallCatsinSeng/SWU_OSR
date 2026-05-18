@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"time"
 
+	"crypto/sha256"
+
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/config"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
@@ -16,7 +18,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // PendingSession holds the data stored in Redis while waiting for GitHub OAuth callback.
@@ -45,6 +46,7 @@ type AuthService interface {
 	RefreshToken(ctx context.Context, refreshToken string) (*TokenPair, error)
 	Logout(ctx context.Context, userID uuid.UUID) error
 	ManualVerify(ctx context.Context, adminID, studentID uuid.UUID, nim string) error
+	GetCurrentUser(ctx context.Context, userID uuid.UUID) (*domain.User, error)
 }
 
 // authService is the concrete implementation.
@@ -153,8 +155,7 @@ func (s *authService) CompleteGitHubOAuth(ctx context.Context, sessionID, code s
 	}
 
 	// Encrypt GitHub token for storage
-	encryptionKey := []byte(s.cfg.EncryptionKey)
-	encryptedToken, err := Encrypt(oauthToken.AccessToken, encryptionKey)
+	encryptedToken, err := Encrypt(oauthToken.AccessToken, s.cfg.EncryptionKey)
 	if err != nil {
 		return nil, fmt.Errorf("encrypting GitHub token: %w", err)
 	}
@@ -294,6 +295,11 @@ func (s *authService) ManualVerify(ctx context.Context, adminID, studentID uuid.
 	return s.userRepo.Update(ctx, user)
 }
 
+// GetCurrentUser retrieves the current user by their ID.
+func (s *authService) GetCurrentUser(ctx context.Context, userID uuid.UUID) (*domain.User, error) {
+	return s.userRepo.GetByID(ctx, userID)
+}
+
 // generateJWT creates a signed JWT for the given user.
 func (s *authService) generateJWT(user *domain.User) (string, error) {
 	now := time.Now()
@@ -333,11 +339,10 @@ func (s *authService) generateRefreshToken(ctx context.Context, userID uuid.UUID
 	return rawToken, nil
 }
 
-// hashRefreshToken creates a bcrypt hash of the refresh token.
+// hashRefreshToken creates a deterministic SHA-256 hash of the refresh token.
+// SHA-256 is appropriate here because refresh tokens are high-entropy (32 random bytes),
+// making brute-force infeasible without the computational cost of bcrypt.
 func hashRefreshToken(token string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hash), nil
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:]), nil
 }

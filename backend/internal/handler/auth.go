@@ -157,6 +157,23 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// HandleGetMe handles GET /api/auth/me.
+func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
+	claims, ok := domain.GetUserClaims(r.Context())
+	if !ok {
+		RespondError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	user, err := h.authService.GetCurrentUser(r.Context(), claims.UserID)
+	if err != nil {
+		RespondError(w, http.StatusInternalServerError, "failed to fetch user")
+		return
+	}
+
+	RespondJSON(w, http.StatusOK, user)
+}
+
 // handleAuthError maps domain errors to HTTP responses.
 func (h *AuthHandler) handleAuthError(w http.ResponseWriter, err error) {
 	switch {

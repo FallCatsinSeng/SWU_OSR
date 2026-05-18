@@ -191,7 +191,7 @@ func setupTestAuthService(t *testing.T) (*authService, *miniredis.Miniredis, *mo
 		JWTSecret:     "test-secret-key-for-testing-only",
 		JWTExpiry:     15 * time.Minute,
 		RefreshExpiry: 7 * 24 * time.Hour,
-		EncryptionKey: "01234567890123456789012345678901", // 32 bytes
+		EncryptionKey: []byte("01234567890123456789012345678901"), // 32 bytes
 	}
 
 	svc := &authService{

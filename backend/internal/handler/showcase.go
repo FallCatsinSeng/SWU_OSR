@@ -121,6 +121,6 @@ func (h *ShowcaseHandler) handleShowcaseError(w http.ResponseWriter, err error) 
 	case errors.Is(err, domain.ErrNotFound):
 		RespondError(w, http.StatusNotFound, "not found")
 	default:
-		RespondError(w, http.StatusBadRequest, err.Error())
+		RespondError(w, http.StatusInternalServerError, "internal server error")
 	}
 }

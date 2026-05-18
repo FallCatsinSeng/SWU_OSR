@@ -104,6 +104,12 @@ func (s *forumService) CreateThread(ctx context.Context, input domain.CreateThre
 		return nil, fmt.Errorf("body must not exceed 10000 characters")
 	}
 
+	// Verify the showcase repo exists before allowing thread creation
+	_, err := s.showcaseRepo.GetByID(ctx, input.RepoID)
+	if err != nil {
+		return nil, domain.ErrNotFound
+	}
+
 	now := time.Now()
 	thread := &domain.Thread{
 		ID:             uuid.New(),
