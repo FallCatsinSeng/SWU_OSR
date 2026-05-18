@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { setAccessToken, setSessionId, clearTokens } from "@/lib/auth";
+import { getAccessToken, setAccessToken, setSessionId, clearTokens } from "@/lib/auth";
 import type { LoginInput, PendingSession, AuthResult } from "@/types/auth";
 import type { User } from "@/types/user";
 
@@ -53,12 +53,15 @@ export function useLogout() {
 }
 
 export function useCurrentUser() {
+  const hasToken = typeof window !== "undefined" ? !!getAccessToken() : false;
+
   return useQuery<User>({
     queryKey: ["currentUser"],
     queryFn: async () => {
       const { data } = await api.get<{ ok: boolean; data: User }>("/auth/me");
       return data.data;
     },
+    enabled: hasToken,
     retry: false,
     staleTime: 5 * 60 * 1000,
   });
