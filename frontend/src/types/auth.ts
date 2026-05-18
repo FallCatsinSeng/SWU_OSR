@@ -5,7 +5,7 @@ export interface LoginInput {
 
 export interface PendingSession {
   session_id: string;
-  github_oauth_url: string;
+  redirect_url: string;
 }
 
 export interface AuthResult {

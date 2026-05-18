@@ -17,7 +17,7 @@ export function useSIAKADLogin() {
     },
     onSuccess: (data) => {
       setSessionId(data.session_id);
-      window.location.href = data.github_oauth_url;
+      window.location.href = data.redirect_url;
     },
   });
 }
