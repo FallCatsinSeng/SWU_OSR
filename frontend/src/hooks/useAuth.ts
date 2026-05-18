@@ -27,7 +27,7 @@ export function useGitHubCallback() {
     mutationFn: async (params: { code: string; state: string }) => {
       const { data } = await api.post<{ ok: boolean; data: AuthResult }>(
         "/auth/github-callback",
-        params
+        { session_id: params.state, code: params.code }
       );
       return data.data;
     },
