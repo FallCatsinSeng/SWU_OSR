@@ -202,6 +202,25 @@ func TestCreateThread_ValidatesBodyTooLong(t *testing.T) {
 	assert.Contains(t, err.Error(), "must not exceed 10000 characters")
 }
 
+func TestCreateThread_ReturnsNotFoundWhenRepoDoesNotExist(t *testing.T) {
+	svc, _, _, _, _, _ := setupForumService()
+
+	// Use a RepoID that does not match any showcase repo in the mock
+	nonExistentRepoID := uuid.New()
+
+	input := domain.CreateThreadInput{
+		RepoID:   nonExistentRepoID,
+		AuthorID: uuid.New(),
+		Title:    "Valid Thread Title",
+		Body:     "This is a valid body text for the thread.",
+	}
+
+	thread, err := svc.CreateThread(context.Background(), input)
+	require.Error(t, err)
+	assert.Nil(t, thread)
+	assert.ErrorIs(t, err, domain.ErrNotFound)
+}
+
 func TestCreateThread_CreatesNotificationForRepoOwner(t *testing.T) {
 	svc, _, _, notifRepo, showcaseRepo, userRepo := setupForumService()
 

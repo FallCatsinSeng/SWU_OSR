@@ -2,8 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
@@ -91,7 +93,7 @@ func (h *ForumHandler) HandleCreateThread(w http.ResponseWriter, r *http.Request
 
 	thread, err := h.forumService.CreateThread(r.Context(), input)
 	if err != nil {
-		RespondError(w, http.StatusBadRequest, err.Error())
+		h.handleForumError(w, err)
 		return
 	}
 
@@ -155,7 +157,7 @@ func (h *ForumHandler) HandleCreateComment(w http.ResponseWriter, r *http.Reques
 
 	comment, err := h.forumService.CreateComment(r.Context(), input)
 	if err != nil {
-		RespondError(w, http.StatusBadRequest, err.Error())
+		h.handleForumError(w, err)
 		return
 	}
 
@@ -200,4 +202,36 @@ func (h *ForumHandler) HandleMarkNotificationRead(w http.ResponseWriter, r *http
 	}
 
 	RespondJSON(w, http.StatusOK, map[string]string{"message": "notification marked as read"})
+}
+
+// handleForumError maps service errors to appropriate HTTP responses.
+// Validation errors (containing known patterns) return 400 with the message.
+// ErrNotFound returns 404 with a generic message.
+// All other errors return 500 with a generic message to avoid leaking internals.
+func (h *ForumHandler) handleForumError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, domain.ErrNotFound):
+		RespondError(w, http.StatusNotFound, "resource not found")
+	case isValidationError(err):
+		RespondError(w, http.StatusBadRequest, err.Error())
+	default:
+		RespondError(w, http.StatusInternalServerError, "internal server error")
+	}
+}
+
+// isValidationError checks if the error message matches known validation patterns
+// from the forum service layer.
+func isValidationError(err error) bool {
+	msg := err.Error()
+	validationPatterns := []string{
+		"must be at least",
+		"must not exceed",
+		"must not be empty",
+	}
+	for _, pattern := range validationPatterns {
+		if strings.Contains(msg, pattern) {
+			return true
+		}
+	}
+	return false
 }
