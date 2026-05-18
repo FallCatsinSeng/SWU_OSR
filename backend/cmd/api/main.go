@@ -10,8 +10,12 @@ import (
 	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/config"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/handler"
 	mw "github.com/FallCatsinSeng/SWU_OSR/backend/internal/middleware"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/repository"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/siakad"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -60,6 +64,31 @@ func main() {
 	}
 	logger.Info("connected to Redis")
 
+	// Initialize repositories
+	userRepo := repository.NewUserRepo(pool)
+	refreshTokenRepo := repository.NewRefreshTokenRepo(pool)
+	showcaseRepo := repository.NewShowcaseRepo(pool)
+	activityRepo := repository.NewActivityRepo(pool)
+
+	// Initialize external services
+	githubSvc := github.NewService(cfg.GitHubClientID, cfg.GitHubClientSecret, cfg.GitHubRedirectURI)
+	siakadSvc := siakad.NewService(cfg.SIAKADBaseURL, 30*time.Second)
+
+	// Initialize application services
+	encryptionKey := []byte(cfg.EncryptionKey)
+	webhookURL := fmt.Sprintf("https://api.example.com/api/webhooks/github") // configured via env in production
+
+	authSvc := service.NewAuthService(siakadSvc, githubSvc, userRepo, refreshTokenRepo, rdb, cfg)
+	profileSvc := service.NewProfileService(userRepo, showcaseRepo, activityRepo)
+	showcaseSvc := service.NewShowcaseService(showcaseRepo, userRepo, githubSvc, encryptionKey, webhookURL, cfg.WebhookSecret)
+	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, cfg.WebhookSecret)
+
+	// Initialize handlers
+	authHandler := handler.NewAuthHandler(authSvc)
+	profileHandler := handler.NewProfileHandler(profileSvc)
+	showcaseHandler := handler.NewShowcaseHandler(showcaseSvc)
+	aggregatorHandler := handler.NewAggregatorHandler(aggregatorSvc)
+
 	// Set up router
 	r := chi.NewRouter()
 
@@ -81,53 +110,39 @@ func main() {
 
 	// API route groups
 	r.Route("/api", func(r chi.Router) {
-		// Public routes
+		// Public routes (no auth)
 		r.Group(func(r chi.Router) {
-			r.Get("/feed", func(w http.ResponseWriter, r *http.Request) {
-				handler.RespondJSON(w, http.StatusOK, nil)
-			})
-			r.Get("/profiles/{alias}", func(w http.ResponseWriter, r *http.Request) {
-				handler.RespondJSON(w, http.StatusOK, nil)
-			})
+			r.Get("/profiles/{alias}", profileHandler.HandleGetPublicProfile)
+			r.Get("/feed", aggregatorHandler.HandleGetFeed)
+			r.Get("/users/{id}/activity", aggregatorHandler.HandleGetUserActivity)
 		})
+
+		// Webhook endpoint (no auth, signature verified internally)
+		r.Post("/webhooks/github", aggregatorHandler.HandleWebhook)
 
 		// Auth routes
 		r.Route("/auth", func(r chi.Router) {
-			r.Post("/siakad-login", func(w http.ResponseWriter, r *http.Request) {
-				handler.RespondJSON(w, http.StatusOK, nil)
-			})
-			r.Post("/github-callback", func(w http.ResponseWriter, r *http.Request) {
-				handler.RespondJSON(w, http.StatusOK, nil)
-			})
-			r.Post("/refresh", func(w http.ResponseWriter, r *http.Request) {
-				handler.RespondJSON(w, http.StatusOK, nil)
+			r.Post("/siakad-login", authHandler.HandleSIAKADLogin)
+			r.Post("/github-callback", authHandler.HandleGitHubCallback)
+			r.Post("/refresh", authHandler.HandleRefreshToken)
+			r.Group(func(r chi.Router) {
+				r.Use(mw.JWTAuth(cfg.JWTSecret))
+				r.Post("/logout", authHandler.HandleLogout)
 			})
 		})
 
-		// Protected routes
+		// Protected routes (auth required)
 		r.Group(func(r chi.Router) {
 			r.Use(mw.JWTAuth(cfg.JWTSecret))
 
-			r.Put("/profile", func(w http.ResponseWriter, r *http.Request) {
-				handler.RespondJSON(w, http.StatusOK, nil)
-			})
-			r.Get("/repos/available", func(w http.ResponseWriter, r *http.Request) {
-				handler.RespondJSON(w, http.StatusOK, nil)
-			})
-			r.Post("/showcase", func(w http.ResponseWriter, r *http.Request) {
-				handler.RespondJSON(w, http.StatusOK, nil)
-			})
-		})
-
-		// Webhook endpoint
-		r.Post("/webhooks/github", func(w http.ResponseWriter, r *http.Request) {
-			handler.RespondJSON(w, http.StatusOK, nil)
+			r.Put("/profile", profileHandler.HandleUpdateProfile)
+			r.Get("/profiles/{alias}/identity", profileHandler.HandleGetRealIdentity)
+			r.Get("/repos/available", showcaseHandler.HandleGetAvailableRepos)
+			r.Post("/showcase", showcaseHandler.HandleSetShowcase)
+			r.Get("/showcase", showcaseHandler.HandleGetShowcase)
+			r.Delete("/showcase/{id}", showcaseHandler.HandleRemoveFromShowcase)
 		})
 	})
-
-	// Keep references to pool and rdb for future use
-	_ = pool
-	_ = rdb
 
 	// Start HTTP server
 	srv := &http.Server{

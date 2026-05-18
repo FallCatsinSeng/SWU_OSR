@@ -21,6 +21,7 @@ Thumbs.db
 # Go
 backend/tmp/
 backend/vendor/
+backend/api
 
 # Node / Next.js
 node_modules/
