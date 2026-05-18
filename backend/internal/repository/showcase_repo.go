@@ -35,6 +35,31 @@ func (r *ShowcaseRepo) Create(ctx context.Context, repo *domain.ShowcaseRepo) er
 	return err
 }
 
+// GetByID retrieves a showcase repo by its ID.
+func (r *ShowcaseRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.ShowcaseRepo, error) {
+	query := `
+		SELECT id, user_id, github_repo_id, repo_name, repo_full_name, description, language,
+			html_url, academic_tag, webhook_id, created_at, updated_at
+		FROM showcase_repos
+		WHERE id = $1 AND deleted_at IS NULL`
+
+	var repo domain.ShowcaseRepo
+	var tag string
+	err := r.pool.QueryRow(ctx, query, id).Scan(
+		&repo.ID, &repo.UserID, &repo.GitHubRepoID, &repo.RepoName, &repo.RepoFullName,
+		&repo.Description, &repo.Language, &repo.HTMLURL, &tag,
+		&repo.WebhookID, &repo.CreatedAt, &repo.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	repo.AcademicTag = domain.AcademicTag(tag)
+	return &repo, nil
+}
+
 // GetByUserID retrieves all active showcase repos for a user.
 func (r *ShowcaseRepo) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domain.ShowcaseRepo, error) {
 	query := `

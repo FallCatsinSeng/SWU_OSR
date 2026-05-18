@@ -69,6 +69,9 @@ func main() {
 	refreshTokenRepo := repository.NewRefreshTokenRepo(pool)
 	showcaseRepo := repository.NewShowcaseRepo(pool)
 	activityRepo := repository.NewActivityRepo(pool)
+	threadRepo := repository.NewThreadRepo(pool)
+	commentRepo := repository.NewCommentRepo(pool)
+	notifRepo := repository.NewNotificationRepo(pool)
 
 	// Initialize external services
 	githubSvc := github.NewService(cfg.GitHubClientID, cfg.GitHubClientSecret, cfg.GitHubRedirectURI)
@@ -82,12 +85,14 @@ func main() {
 	profileSvc := service.NewProfileService(userRepo, showcaseRepo, activityRepo)
 	showcaseSvc := service.NewShowcaseService(showcaseRepo, userRepo, githubSvc, encryptionKey, webhookURL, cfg.WebhookSecret)
 	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, cfg.WebhookSecret)
+	forumSvc := service.NewForumService(threadRepo, commentRepo, notifRepo, showcaseRepo, userRepo, logger)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authSvc)
 	profileHandler := handler.NewProfileHandler(profileSvc)
 	showcaseHandler := handler.NewShowcaseHandler(showcaseSvc)
 	aggregatorHandler := handler.NewAggregatorHandler(aggregatorSvc)
+	forumHandler := handler.NewForumHandler(forumSvc)
 
 	// Set up router
 	r := chi.NewRouter()
@@ -115,6 +120,8 @@ func main() {
 			r.Get("/profiles/{alias}", profileHandler.HandleGetPublicProfile)
 			r.Get("/feed", aggregatorHandler.HandleGetFeed)
 			r.Get("/users/{id}/activity", aggregatorHandler.HandleGetUserActivity)
+			r.Get("/repos/{id}/threads", forumHandler.HandleListThreads)
+			r.Get("/threads/{id}", forumHandler.HandleGetThread)
 		})
 
 		// Webhook endpoint (no auth, signature verified internally)
@@ -141,6 +148,10 @@ func main() {
 			r.Post("/showcase", showcaseHandler.HandleSetShowcase)
 			r.Get("/showcase", showcaseHandler.HandleGetShowcase)
 			r.Delete("/showcase/{id}", showcaseHandler.HandleRemoveFromShowcase)
+			r.Post("/repos/{id}/threads", forumHandler.HandleCreateThread)
+			r.Post("/threads/{id}/comments", forumHandler.HandleCreateComment)
+			r.Get("/notifications", forumHandler.HandleListNotifications)
+			r.Put("/notifications/{id}/read", forumHandler.HandleMarkNotificationRead)
 		})
 	})
 

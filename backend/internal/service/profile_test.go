@@ -25,6 +25,15 @@ func (m *mockShowcaseRepo) Create(_ context.Context, repo *domain.ShowcaseRepo) 
 	return nil
 }
 
+func (m *mockShowcaseRepo) GetByID(_ context.Context, id uuid.UUID) (*domain.ShowcaseRepo, error) {
+	for i := range m.repos {
+		if m.repos[i].ID == id && m.repos[i].DeletedAt == nil {
+			return &m.repos[i], nil
+		}
+	}
+	return nil, domain.ErrNotFound
+}
+
 func (m *mockShowcaseRepo) GetByUserID(_ context.Context, userID uuid.UUID) ([]domain.ShowcaseRepo, error) {
 	var result []domain.ShowcaseRepo
 	for _, r := range m.repos {

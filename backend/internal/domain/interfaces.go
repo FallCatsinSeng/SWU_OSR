@@ -21,6 +21,7 @@ type UserRepository interface {
 // ShowcaseRepository defines data access methods for showcase repos.
 type ShowcaseRepository interface {
 	Create(ctx context.Context, repo *ShowcaseRepo) error
+	GetByID(ctx context.Context, id uuid.UUID) (*ShowcaseRepo, error)
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]ShowcaseRepo, error)
 	GetByUserAndRepoFullName(ctx context.Context, userID uuid.UUID, repoFullName string) (*ShowcaseRepo, error)
 	SoftDelete(ctx context.Context, id uuid.UUID) error
