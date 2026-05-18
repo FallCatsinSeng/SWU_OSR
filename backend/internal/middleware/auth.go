@@ -11,14 +11,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type contextKey string
-
-const userClaimsKey contextKey = "user_claims"
-
 // GetUserClaims extracts UserClaims from request context.
 func GetUserClaims(ctx context.Context) (*domain.UserClaims, bool) {
-	claims, ok := ctx.Value(userClaimsKey).(*domain.UserClaims)
-	return claims, ok
+	return domain.GetUserClaims(ctx)
 }
 
 // JWTAuth returns middleware that verifies JWT tokens from the Authorization
@@ -65,7 +60,7 @@ func JWTAuth(secret string) func(http.Handler) http.Handler {
 				Role:   domain.Role(role),
 			}
 
-			ctx := context.WithValue(r.Context(), userClaimsKey, userClaims)
+			ctx := context.WithValue(r.Context(), domain.UserClaimsKey, userClaims)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

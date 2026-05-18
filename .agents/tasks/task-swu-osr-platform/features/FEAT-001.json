@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Backend project scaffolding: Go module initialization, project structure, configuration, domain types, database migrations, Docker Compose, and Nginx reverse proxy setup. This establishes the entire foundation including all SQL migrations, domain entities, interfaces, and infrastructure config.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Initialize Go module in backend/ with module name 'github.com/FallCatsinSeng/SWU_OSR/backend' and Go 1.22. Add all dependencies: chi/v5, pgx/v5, golang-migrate/v4, validator/v10, jwt/v5, zap, go-redis/v9, viper, testify, google/uuid, golang.org/x/crypto.",
     "Create backend/cmd/api/main.go entry point that loads config, initializes logger, connects to PostgreSQL and Redis, sets up the chi router with middleware (RequestID, RealIP, Logger, Recoverer, CORS, rate-limit), mounts route groups, and starts the HTTP server with graceful shutdown.",
@@ -30,5 +30,5 @@
     "cd /projects/sandbox/SWU_OSR/backend && go vet ./..."
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Go module auto-upgraded to go 1.25.0 (from requested 1.22) because latest versions of pgx/v5, redis/v9, migrate/v4, and validator/v10 all require >= 1.25.0. Go 1.25.1 is available via mise so this works fine. The toolchain directive is set to go1.25.1. Build and vet both pass cleanly."
 }

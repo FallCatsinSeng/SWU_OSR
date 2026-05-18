@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -40,4 +41,16 @@ type UserClaims struct {
 	UserID uuid.UUID `json:"user_id"`
 	Alias  string    `json:"alias"`
 	Role   Role      `json:"role"`
+}
+
+// ContextKey is a typed key used for storing values in context.
+type ContextKey string
+
+// UserClaimsKey is the context key for storing UserClaims.
+const UserClaimsKey ContextKey = "user_claims"
+
+// GetUserClaims extracts UserClaims from request context.
+func GetUserClaims(ctx context.Context) (*UserClaims, bool) {
+	claims, ok := ctx.Value(UserClaimsKey).(*UserClaims)
+	return claims, ok
 }
