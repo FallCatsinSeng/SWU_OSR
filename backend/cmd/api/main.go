@@ -106,6 +106,7 @@ func main() {
 	showcaseHandler := handler.NewShowcaseHandler(showcaseSvc)
 	aggregatorHandler := handler.NewAggregatorHandler(aggregatorSvc)
 	forumHandler := handler.NewForumHandler(forumSvc)
+	communityHandler := handler.NewCommunityHandler(pool)
 
 	// Set up router
 	r := chi.NewRouter()
@@ -133,6 +134,8 @@ func main() {
 			r.Get("/profiles/{alias}", profileHandler.HandleGetPublicProfile)
 			r.Get("/members", profileHandler.HandleListMembers)
 			r.Get("/feed", aggregatorHandler.HandleGetFeed)
+			r.Get("/stats", communityHandler.HandleGetStats)
+			r.Get("/repos/popular", communityHandler.HandleGetPopularRepos)
 			r.Get("/users/{id}/activity", aggregatorHandler.HandleGetUserActivity)
 			r.Get("/repos/{id}/threads", forumHandler.HandleListThreads)
 			r.Get("/threads/{id}", forumHandler.HandleGetThread)
