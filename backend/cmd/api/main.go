@@ -85,6 +85,7 @@ func main() {
 	threadRepo := repository.NewThreadRepo(pool)
 	commentRepo := repository.NewCommentRepo(pool)
 	notifRepo := repository.NewNotificationRepo(pool)
+	leaderboardRepo := repository.NewLeaderboardRepo(pool)
 
 	// Initialize external services
 	githubSvc := github.NewService(cfg.GitHubClientID, cfg.GitHubClientSecret, cfg.GitHubRedirectURI)
@@ -99,6 +100,7 @@ func main() {
 	showcaseSvc := service.NewShowcaseService(showcaseRepo, userRepo, githubSvc, encryptionKey, webhookURL, cfg.WebhookSecret)
 	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, githubSvc, encryptionKey, cfg.WebhookSecret)
 	forumSvc := service.NewForumService(threadRepo, commentRepo, notifRepo, showcaseRepo, userRepo, logger)
+	leaderboardSvc := service.NewLeaderboardService(leaderboardRepo, logger)
 
 	// Wire aggregator into showcase for auto-sync on repo add
 	showcaseSvc.SetAggregatorService(aggregatorSvc)
@@ -110,6 +112,7 @@ func main() {
 	aggregatorHandler := handler.NewAggregatorHandler(aggregatorSvc)
 	forumHandler := handler.NewForumHandler(forumSvc)
 	communityHandler := handler.NewCommunityHandler(pool)
+	leaderboardHandler := handler.NewLeaderboardHandler(leaderboardSvc)
 
 	// Set up router
 	r := chi.NewRouter()
@@ -143,6 +146,8 @@ func main() {
 			r.Get("/repos/{id}/activity", aggregatorHandler.HandleGetRepoActivity)
 			r.Get("/repos/{id}/threads", forumHandler.HandleListThreads)
 			r.Get("/threads/{id}", forumHandler.HandleGetThread)
+			r.Get("/leaderboard", leaderboardHandler.HandleGetLeaderboard)
+			r.Get("/leaderboard/users/{id}", leaderboardHandler.HandleGetUserSummary)
 		})
 
 		// Webhook endpoint (no auth, signature verified internally)
@@ -177,6 +182,7 @@ func main() {
 			r.Post("/threads/{id}/comments", forumHandler.HandleCreateComment)
 			r.Get("/notifications", forumHandler.HandleListNotifications)
 			r.Put("/notifications/{id}/read", forumHandler.HandleMarkNotificationRead)
+			r.Get("/leaderboard/me", leaderboardHandler.HandleGetMyPoints)
 		})
 	})
 
