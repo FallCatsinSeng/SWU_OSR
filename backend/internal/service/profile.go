@@ -143,15 +143,11 @@ func (s *profileService) UpdateProfile(ctx context.Context, userID uuid.UUID, in
 	return s.userRepo.Update(ctx, user)
 }
 
-// GetRealIdentity returns academic identity only if the requester is faculty or admin.
+// GetRealIdentity returns academic identity for any authenticated user.
 func (s *profileService) GetRealIdentity(ctx context.Context, requesterID uuid.UUID, alias string) (*AcademicIdentity, error) {
-	requester, err := s.userRepo.GetByID(ctx, requesterID)
+	_, err := s.userRepo.GetByID(ctx, requesterID)
 	if err != nil {
 		return nil, err
-	}
-
-	if requester.Role != domain.RoleFaculty && requester.Role != domain.RoleAdmin {
-		return nil, domain.ErrForbidden
 	}
 
 	target, err := s.userRepo.GetByAlias(ctx, alias)

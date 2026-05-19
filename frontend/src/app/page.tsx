@@ -1,4 +1,5 @@
 import { ActivityFeed } from "@/features/feed/ActivityFeed";
+import { OnboardingPrompt } from "@/features/profile/OnboardingPrompt";
 
 export default function HomePage() {
   return (
@@ -12,6 +13,8 @@ export default function HomePage() {
           Srinakharinwirot University students and faculty.
         </p>
       </div>
+
+      <OnboardingPrompt />
 
       <section>
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">

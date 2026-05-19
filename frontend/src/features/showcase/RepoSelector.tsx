@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import type { Repository, AcademicTag, ShowcaseSelection } from "@/types/showcase";
+import type { Repository, AcademicTag, ShowcaseSelection, ShowcaseRepo } from "@/types/showcase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,7 @@ export function RepoSelector() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: repos, isLoading } = useQuery<Repository[]>({
+  const { data: repos, isLoading, isError, refetch } = useQuery<Repository[]>({
     queryKey: ["availableRepos"],
     queryFn: async () => {
       const { data } = await api.get<{ ok: boolean; data: Repository[] }>(
@@ -33,6 +33,20 @@ export function RepoSelector() {
       return data.data;
     },
   });
+
+  const { data: showcaseRepos } = useQuery<ShowcaseRepo[]>({
+    queryKey: ["showcaseRepos"],
+    queryFn: async () => {
+      const { data } = await api.get<{ ok: boolean; data: ShowcaseRepo[] }>(
+        "/showcase"
+      );
+      return data.data;
+    },
+  });
+
+  const showcasedFullNames = new Set(
+    (showcaseRepos ?? []).map((r) => r.repo_full_name)
+  );
 
   const saveShowcase = useMutation({
     mutationFn: async (items: ShowcaseSelection[]) => {
@@ -88,6 +102,19 @@ export function RepoSelector() {
     );
   }
 
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-gray-600 mb-3">Failed to load available repositories.</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            Try Again
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!repos || repos.length === 0) {
     return (
       <p className="text-center text-gray-500">
@@ -99,46 +126,62 @@ export function RepoSelector() {
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        {repos.map((repo) => (
-          <Card
-            key={repo.id}
-            className={selections.has(repo.id) ? "border-blue-300 bg-blue-50" : ""}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{repo.name}</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {repo.description || "No description"}
-                  </p>
-                  {repo.language && (
-                    <Badge variant="secondary" className="mt-2">
-                      {repo.language}
-                    </Badge>
+        {repos.map((repo) => {
+          const alreadyShowcased = showcasedFullNames.has(repo.full_name);
+          return (
+            <Card
+              key={repo.id}
+              className={
+                alreadyShowcased
+                  ? "opacity-60"
+                  : selections.has(repo.id)
+                    ? "border-blue-300 bg-blue-50"
+                    : ""
+              }
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">{repo.name}</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {repo.description || "No description"}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      {repo.language && (
+                        <Badge variant="secondary">{repo.language}</Badge>
+                      )}
+                      {alreadyShowcased && (
+                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                          Already in showcase
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  {selections.has(repo.id) && (
+                    <Check className="h-5 w-5 text-blue-600" />
                   )}
                 </div>
-                {selections.has(repo.id) && (
-                  <Check className="h-5 w-5 text-blue-600" />
+                {!alreadyShowcased && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {ACADEMIC_TAGS.map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={() => toggleRepo(repo, tag)}
+                        className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                          selections.get(repo.id) === tag
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-white text-gray-600 border-gray-300 hover:border-blue-300"
+                        }`}
+                      >
+                        {tag.replace("_", " ")}
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </div>
-              <div className="flex flex-wrap gap-2 mt-3">
-                {ACADEMIC_TAGS.map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => toggleRepo(repo, tag)}
-                    className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                      selections.get(repo.id) === tag
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-gray-600 border-gray-300 hover:border-blue-300"
-                    }`}
-                  >
-                    {tag.replace("_", " ")}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
       {selections.size > 0 && (
         <div className="flex justify-end">

@@ -28,12 +28,20 @@ export function Navbar() {
                 Feed
               </Link>
               {user && (
-                <Link
-                  href="/showcase"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Showcase
-                </Link>
+                <>
+                  <Link
+                    href="/showcase"
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Showcase
+                  </Link>
+                  <Link
+                    href="/members"
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    Members
+                  </Link>
+                </>
               )}
             </div>
           </div>

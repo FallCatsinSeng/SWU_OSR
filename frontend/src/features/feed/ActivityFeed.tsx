@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { FeedResponse } from "@/types/activity";
 import { ActivityCard } from "./ActivityCard";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function ActivityFeed() {
@@ -15,6 +17,7 @@ export function ActivityFeed() {
     isFetchingNextPage,
     isLoading,
     isError,
+    refetch,
   } = useInfiniteQuery<FeedResponse>({
     queryKey: ["activityFeed"],
     queryFn: async ({ pageParam }) => {
@@ -42,7 +45,14 @@ export function ActivityFeed() {
 
   if (isError) {
     return (
-      <p className="text-center text-gray-500">Failed to load activity feed.</p>
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-gray-600 mb-3">Failed to load activity feed.</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            Try Again
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -50,7 +60,14 @@ export function ActivityFeed() {
 
   if (items.length === 0) {
     return (
-      <p className="text-center text-gray-500">No activity yet. Check back later!</p>
+      <Card>
+        <CardContent className="p-6 text-center">
+          <p className="text-gray-600 mb-3">No activity yet. Add repos to your showcase to start tracking activity.</p>
+          <Link href="/showcase">
+            <Button variant="outline" size="sm">Go to Showcase</Button>
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 
