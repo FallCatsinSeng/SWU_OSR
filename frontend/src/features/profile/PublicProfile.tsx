@@ -110,9 +110,9 @@ export function PublicProfile({ alias }: PublicProfileProps) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Profile Header */}
-      <Card className="overflow-hidden">
+      <Card>
         {/* Gradient banner */}
-        <div className="h-24 gradient-primary relative">
+        <div className="h-24 gradient-primary relative rounded-t-lg overflow-hidden">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djZoLTJ2LTZoMnptMC0xMHY2aC0ydi02aDJ6bTAtMTB2NmgtMlY0aDJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" />
         </div>
         <CardContent className="px-6 pb-6 -mt-12">
@@ -122,11 +122,11 @@ export function PublicProfile({ alias }: PublicProfileProps) {
               alt={profile.alias}
               fallback={profile.alias.charAt(0).toUpperCase()}
               size="lg"
-              className="ring-4 ring-white shadow-lg"
+              className="ring-4 ring-white shadow-lg shrink-0"
             />
             <div className="flex-1 min-w-0 pt-2 sm:pt-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div className="min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                <div className="min-w-0 flex-1">
                   <h1 className="text-2xl font-bold text-gray-900 break-words">
                     {profile.alias}
                   </h1>
