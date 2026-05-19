@@ -239,20 +239,19 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                     No recent activity recorded for this repository.
                   </p>
                   <p className="text-xs text-gray-400 mt-1 mb-3">
-                    Sync your GitHub activity to see commits and events here.
+                    Click below to fetch commits and events from GitHub.
                   </p>
                   <Button
                     size="sm"
-                    variant="outline"
                     onClick={handleSync}
                     disabled={syncing}
-                    className="gap-1.5"
+                    className="gap-1.5 gradient-primary text-white border-0"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
                     {syncing ? "Syncing..." : "Sync GitHub Activity"}
                   </Button>
                   {syncResult && (
-                    <p className="text-xs text-gray-500 mt-2">{syncResult}</p>
+                    <p className="text-xs text-green-600 mt-2 font-medium">{syncResult}</p>
                   )}
                 </div>
               )}
