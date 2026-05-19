@@ -45,7 +45,7 @@ func TestProcessWebhook_ValidSignature(t *testing.T) {
 		RepoFullName: "ghuser/myrepo",
 	})
 
-	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, testWebhookSecret)
+	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, nil, nil, testWebhookSecret)
 
 	payload := []byte(`{"repository":{"full_name":"ghuser/myrepo"},"pusher":{"name":"ghuser"},"ref":"refs/heads/main","commits":[{"id":"abc123","message":"test","author":{"name":"ghuser"}}]}`)
 	signature := computeSignature(payload, testWebhookSecret)
@@ -60,7 +60,7 @@ func TestProcessWebhook_InvalidSignature(t *testing.T) {
 	showcaseRepo := newMockShowcaseRepo()
 	activityRepo := newMockActivityRepo()
 
-	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, testWebhookSecret)
+	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, nil, nil, testWebhookSecret)
 
 	payload := []byte(`{"test": true}`)
 	err := svc.ProcessWebhook(context.Background(), payload, "sha256=invalid", "push", "delivery-1")
@@ -80,7 +80,7 @@ func TestProcessWebhook_PushEvent(t *testing.T) {
 		ID: uuid.New(), UserID: userID, RepoFullName: "pushuser/repo",
 	})
 
-	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, testWebhookSecret)
+	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, nil, nil, testWebhookSecret)
 
 	payload := []byte(`{"repository":{"full_name":"pushuser/repo"},"pusher":{"name":"pushuser"},"ref":"refs/heads/main","commits":[{"id":"1","message":"first","author":{"name":"pushuser"}},{"id":"2","message":"second","author":{"name":"pushuser"}}]}`)
 	signature := computeSignature(payload, testWebhookSecret)
@@ -105,7 +105,7 @@ func TestProcessWebhook_PREvent(t *testing.T) {
 		ID: uuid.New(), UserID: userID, RepoFullName: "pruser/repo",
 	})
 
-	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, testWebhookSecret)
+	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, nil, nil, testWebhookSecret)
 
 	payload := []byte(`{"action":"opened","number":42,"repository":{"full_name":"pruser/repo"},"pull_request":{"title":"Add feature X","user":{"login":"pruser"}}}`)
 	signature := computeSignature(payload, testWebhookSecret)
@@ -130,7 +130,7 @@ func TestProcessWebhook_ReleaseEvent(t *testing.T) {
 		ID: uuid.New(), UserID: userID, RepoFullName: "reluser/repo",
 	})
 
-	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, testWebhookSecret)
+	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, nil, nil, testWebhookSecret)
 
 	payload := []byte(`{"repository":{"full_name":"reluser/repo"},"release":{"tag_name":"v1.0.0","name":"Version 1.0","author":{"login":"reluser"}}}`)
 	signature := computeSignature(payload, testWebhookSecret)
@@ -155,7 +155,7 @@ func TestProcessWebhook_Idempotency(t *testing.T) {
 		ID: uuid.New(), UserID: userID, RepoFullName: "idempuser/repo",
 	})
 
-	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, testWebhookSecret)
+	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, nil, nil, testWebhookSecret)
 
 	payload := []byte(`{"repository":{"full_name":"idempuser/repo"},"pusher":{"name":"idempuser"},"ref":"refs/heads/main","commits":[{"id":"abc","message":"test","author":{"name":"idempuser"}}]}`)
 	signature := computeSignature(payload, testWebhookSecret)
@@ -175,7 +175,7 @@ func TestGetActivityFeed_LimitClamping(t *testing.T) {
 	userRepo := newMockUserRepo()
 	showcaseRepo := newMockShowcaseRepo()
 
-	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, testWebhookSecret)
+	svc := NewAggregatorService(activityRepo, userRepo, showcaseRepo, nil, nil, testWebhookSecret)
 
 	result, err := svc.GetActivityFeed(context.Background(), domain.FeedParams{Limit: 0})
 	require.NoError(t, err)

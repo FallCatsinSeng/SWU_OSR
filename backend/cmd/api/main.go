@@ -100,6 +100,9 @@ func main() {
 	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, githubSvc, encryptionKey, cfg.WebhookSecret)
 	forumSvc := service.NewForumService(threadRepo, commentRepo, notifRepo, showcaseRepo, userRepo, logger)
 
+	// Wire aggregator into showcase for auto-sync on repo add
+	showcaseSvc.SetAggregatorService(aggregatorSvc)
+
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authSvc, cfg.CookieSecure)
 	profileHandler := handler.NewProfileHandler(profileSvc)
@@ -137,6 +140,7 @@ func main() {
 			r.Get("/stats", communityHandler.HandleGetStats)
 			r.Get("/repos/popular", communityHandler.HandleGetPopularRepos)
 			r.Get("/users/{id}/activity", aggregatorHandler.HandleGetUserActivity)
+			r.Get("/repos/{id}/activity", aggregatorHandler.HandleGetRepoActivity)
 			r.Get("/repos/{id}/threads", forumHandler.HandleListThreads)
 			r.Get("/threads/{id}", forumHandler.HandleGetThread)
 		})

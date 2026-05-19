@@ -124,3 +124,36 @@ func (h *AggregatorHandler) HandleGetUserActivity(w http.ResponseWriter, r *http
 
 	RespondJSON(w, http.StatusOK, result)
 }
+
+// HandleGetRepoActivity handles GET /api/repos/{id}/activity.
+func (h *AggregatorHandler) HandleGetRepoActivity(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	repoID, err := uuid.Parse(idStr)
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "invalid repo id")
+		return
+	}
+
+	cursor := r.URL.Query().Get("cursor")
+	limitStr := r.URL.Query().Get("limit")
+
+	limit := 20
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil {
+			limit = l
+		}
+	}
+
+	params := domain.FeedParams{
+		Cursor: cursor,
+		Limit:  limit,
+	}
+
+	result, err := h.aggregatorService.GetRepoActivity(r.Context(), repoID, params)
+	if err != nil {
+		RespondError(w, http.StatusInternalServerError, "failed to fetch repo activity")
+		return
+	}
+
+	RespondJSON(w, http.StatusOK, result)
+}

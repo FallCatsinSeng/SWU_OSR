@@ -19,16 +19,18 @@ type ShowcaseService interface {
 	UpdateShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error
 	RemoveFromShowcase(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error
 	UpdateRepoDescription(ctx context.Context, userID uuid.UUID, repoID uuid.UUID, description string) error
+	SetAggregatorService(agg AggregatorService)
 }
 
 // showcaseService is the concrete implementation.
 type showcaseService struct {
-	showcaseRepo  domain.ShowcaseRepository
-	userRepo      domain.UserRepository
-	githubSvc     github.Service
-	encryptionKey []byte
-	webhookURL    string
-	webhookSecret string
+	showcaseRepo   domain.ShowcaseRepository
+	userRepo       domain.UserRepository
+	githubSvc      github.Service
+	encryptionKey  []byte
+	webhookURL     string
+	webhookSecret  string
+	aggregatorSvc  AggregatorService
 }
 
 // NewShowcaseService creates a new showcase service.
@@ -48,6 +50,12 @@ func NewShowcaseService(
 		webhookURL:    webhookURL,
 		webhookSecret: webhookSecret,
 	}
+}
+
+// SetAggregatorService sets the aggregator service for auto-sync on showcase add.
+// This is set after construction to avoid circular initialization.
+func (s *showcaseService) SetAggregatorService(agg AggregatorService) {
+	s.aggregatorSvc = agg
 }
 
 // validAcademicTags is the set of valid academic tags.
@@ -164,6 +172,15 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 			if err := s.showcaseRepo.Restore(ctx, existingDeleted); err != nil {
 				continue
 			}
+
+			// Auto-sync activity for restored repo (background, non-blocking)
+			if s.aggregatorSvc != nil {
+				go func(uid uuid.UUID, repoID uuid.UUID) {
+					syncCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+					defer cancel()
+					_, _ = s.aggregatorSvc.SyncRepoActivity(syncCtx, uid, repoID)
+				}(userID, existingDeleted.ID)
+			}
 			continue
 		}
 
@@ -205,6 +222,15 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 		if err := s.showcaseRepo.Create(ctx, repo); err != nil {
 			// If it fails (e.g. constraint), skip this repo but don't abort
 			continue
+		}
+
+		// Auto-sync activity for newly added repo (background, non-blocking)
+		if s.aggregatorSvc != nil {
+			go func(uid uuid.UUID, repoID uuid.UUID) {
+				syncCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+				defer cancel()
+				_, _ = s.aggregatorSvc.SyncRepoActivity(syncCtx, uid, repoID)
+			}(userID, repo.ID)
 		}
 	}
 
