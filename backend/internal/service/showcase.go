@@ -105,10 +105,12 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 		return fmt.Errorf("maximum 20 showcase repos allowed (currently %d)", len(existing))
 	}
 
-	// Build set of already-showcased full names to skip duplicates
+	// Build set of already-showcased full names and repo IDs to skip duplicates
 	existingFullNames := make(map[string]bool)
+	existingRepoIDs := make(map[int64]bool)
 	for _, repo := range existing {
 		existingFullNames[repo.RepoFullName] = true
+		existingRepoIDs[repo.GitHubRepoID] = true
 	}
 
 	// Fetch all repos from GitHub to get metadata (html_url, description, language)
@@ -119,16 +121,57 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 	}
 
 	for _, sel := range selections {
-		// Skip if already in showcase
-		if existingFullNames[sel.FullName] {
+		// Skip if already in showcase (active) — check both full_name and repo_id
+		if existingFullNames[sel.FullName] || existingRepoIDs[sel.RepoID] {
 			continue
 		}
 
+		// Check if this repo was previously soft-deleted — if so, restore it
+		// We check by both full_name and github_repo_id (the DB constraint is on github_repo_id)
+		existingDeleted, _ := s.showcaseRepo.GetByUserAndRepoFullNameIncludeDeleted(ctx, userID, sel.FullName)
+		if existingDeleted == nil {
+			// Also try by github_repo_id directly
+			existingDeleted, _ = s.showcaseRepo.GetByUserAndGitHubRepoIDIncludeDeleted(ctx, userID, sel.RepoID)
+		}
+		if existingDeleted != nil {
+			// Restore the soft-deleted entry
+			existingDeleted.DeletedAt = nil
+			existingDeleted.AcademicTag = sel.Tag
+			existingDeleted.RepoName = sel.RepoName
+			existingDeleted.RepoFullName = sel.FullName
+			existingDeleted.UpdatedAt = time.Now()
+
+			// Update metadata
+			if meta, ok := repoMetaMap[sel.FullName]; ok {
+				existingDeleted.Description = meta.Description
+				existingDeleted.Language = meta.Language
+				existingDeleted.HTMLURL = meta.HTMLURL
+			}
+			if existingDeleted.HTMLURL == "" {
+				existingDeleted.HTMLURL = fmt.Sprintf("https://github.com/%s", sel.FullName)
+			}
+
+			// Re-register webhook
+			parts := strings.SplitN(sel.FullName, "/", 2)
+			if len(parts) == 2 {
+				id, whErr := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
+				if whErr == nil {
+					existingDeleted.WebhookID = &id
+				}
+			}
+
+			if err := s.showcaseRepo.Restore(ctx, existingDeleted); err != nil {
+				continue
+			}
+			continue
+		}
+
+		// New repo — register webhook and create
 		parts := strings.SplitN(sel.FullName, "/", 2)
 		var webhookID *int64
 		if len(parts) == 2 {
-			id, err := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
-			if err == nil {
+			id, whErr := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
+			if whErr == nil {
 				webhookID = &id
 			}
 		}
@@ -159,7 +202,8 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 			UpdatedAt:    time.Now(),
 		}
 		if err := s.showcaseRepo.Create(ctx, repo); err != nil {
-			return err
+			// If it fails (e.g. constraint), skip this repo but don't abort
+			continue
 		}
 	}
 
