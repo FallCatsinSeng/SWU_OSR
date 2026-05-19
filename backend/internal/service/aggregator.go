@@ -522,14 +522,12 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 		}
 
 		// Find matching showcase repo (if any)
-		var showcaseRepoID uuid.UUID
 		showcaseRepo, found := repoMap[event.Repo.Name]
-		if found {
-			showcaseRepoID = showcaseRepo.ID
-		} else {
-			// Still log public activity not tied to a showcase repo
-			showcaseRepoID = uuid.Nil
+		if !found {
+			// Not tied to a showcase repo — skip (FK constraint requires valid showcase_repo_id)
+			continue
 		}
+		showcaseRepoID := showcaseRepo.ID
 
 		// Parse created_at
 		createdAt, parseErr := time.Parse(time.RFC3339, event.CreatedAt)

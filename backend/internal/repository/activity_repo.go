@@ -21,12 +21,12 @@ func NewActivityRepo(pool *pgxpool.Pool) domain.ActivityRepository {
 	return &ActivityRepo{pool: pool}
 }
 
-// Insert inserts a new activity log with ON CONFLICT DO NOTHING for idempotency.
+// Insert inserts a new activity log with deduplication by github_event_id.
 func (r *ActivityRepo) Insert(ctx context.Context, log *domain.ActivityLog) error {
 	query := `
 		INSERT INTO activity_logs (id, user_id, showcase_repo_id, event_type, summary, metadata, github_event_id, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		ON CONFLICT (github_event_id) DO NOTHING`
+		ON CONFLICT (github_event_id) WHERE github_event_id IS NOT NULL DO NOTHING`
 
 	_, err := r.pool.Exec(ctx, query,
 		log.ID, log.UserID, log.ShowcaseRepoID, string(log.EventType),
