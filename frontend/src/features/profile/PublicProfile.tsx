@@ -124,10 +124,10 @@ export function PublicProfile({ alias }: PublicProfileProps) {
               size="lg"
               className="ring-4 ring-white shadow-lg"
             />
-            <div className="flex-1 pt-2 sm:pt-8">
+            <div className="flex-1 min-w-0 pt-2 sm:pt-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                <div className="min-w-0">
+                  <h1 className="text-2xl font-bold text-gray-900 truncate">
                     {profile.alias}
                   </h1>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
