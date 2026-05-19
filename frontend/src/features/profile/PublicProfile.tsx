@@ -225,8 +225,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
           </CardHeader>
           <CardContent>
             <ContributionHeatmap
-              activeDays={profile.stats.active_days}
-              totalCommits={profile.stats.total_commits}
+              contributionDays={profile.stats.contribution_days}
             />
           </CardContent>
         </Card>

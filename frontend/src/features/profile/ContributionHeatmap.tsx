@@ -1,80 +1,114 @@
 "use client";
 
 interface ContributionHeatmapProps {
-  activeDays: number;
-  totalCommits: number;
+  contributionDays: Record<string, number> | undefined;
 }
 
-// Generate a simulated heatmap based on user stats
-function generateHeatmapData(activeDays: number, totalCommits: number) {
+function getLevel(count: number): number {
+  if (count === 0) return 0;
+  if (count <= 2) return 1;
+  if (count <= 5) return 2;
+  if (count <= 10) return 3;
+  return 4;
+}
+
+function formatDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function getMonthLabel(date: Date): string {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return months[date.getMonth()];
+}
+
+export function ContributionHeatmap({ contributionDays }: ContributionHeatmapProps) {
   const weeks = 20;
-  const days = weeks * 7;
-  const data: number[] = [];
+  const totalDays = weeks * 7;
 
-  // Use total commits to seed randomness deterministically
-  let seed = totalCommits + activeDays;
-  const pseudoRandom = () => {
-    seed = (seed * 1664525 + 1013904223) % 4294967296;
-    return seed / 4294967296;
-  };
+  // Build date grid: last N weeks ending today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const avgPerDay = activeDays > 0 ? totalCommits / activeDays : 0;
+  // Find the start date (totalDays ago, aligned to start of week - Sunday)
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - totalDays + 1);
+  // Align to Sunday
+  const dayOfWeek = startDate.getDay();
+  startDate.setDate(startDate.getDate() - dayOfWeek);
 
-  for (let i = 0; i < days; i++) {
-    const rand = pseudoRandom();
-    // Higher chance of activity for users with more active days
-    const activityChance = Math.min(activeDays / days, 0.7);
+  // Build the grid
+  const grid: { date: string; count: number; level: number }[][] = [];
+  const monthLabels: { label: string; weekIdx: number }[] = [];
+  let lastMonth = -1;
 
-    if (rand < activityChance) {
-      const intensity = pseudoRandom();
-      if (intensity < 0.4) data.push(1);
-      else if (intensity < 0.7) data.push(2);
-      else if (intensity < 0.9) data.push(3);
-      else data.push(4);
-    } else {
-      data.push(0);
+  const currentDate = new Date(startDate);
+  for (let w = 0; w < weeks; w++) {
+    const week: { date: string; count: number; level: number }[] = [];
+    for (let d = 0; d < 7; d++) {
+      const dateStr = formatDate(currentDate);
+      const count = contributionDays?.[dateStr] ?? 0;
+      week.push({ date: dateStr, count, level: getLevel(count) });
+
+      // Track month labels
+      if (d === 0 && currentDate.getMonth() !== lastMonth) {
+        lastMonth = currentDate.getMonth();
+        monthLabels.push({ label: getMonthLabel(currentDate), weekIdx: w });
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
+    grid.push(week);
   }
 
-  return data;
-}
-
-export function ContributionHeatmap({
-  activeDays,
-  totalCommits,
-}: ContributionHeatmapProps) {
-  const data = generateHeatmapData(activeDays, totalCommits);
-  const weeks = 20;
+  const hasAnyData = Object.keys(contributionDays ?? {}).length > 0;
 
   return (
     <div className="overflow-x-auto">
+      {/* Month labels */}
+      <div className="flex gap-0.5 mb-1 ml-0">
+        {monthLabels.map((m, i) => (
+          <span
+            key={i}
+            className="text-[10px] text-gray-400"
+            style={{ marginLeft: `${m.weekIdx * 14}px`, position: i === 0 ? "relative" : "absolute", left: i > 0 ? `${m.weekIdx * 14}px` : undefined }}
+          >
+            {m.label}
+          </span>
+        ))}
+      </div>
+
+      {/* Heatmap grid */}
       <div className="inline-flex gap-0.5">
-        {Array.from({ length: weeks }).map((_, weekIdx) => (
+        {grid.map((week, weekIdx) => (
           <div key={weekIdx} className="flex flex-col gap-0.5">
-            {Array.from({ length: 7 }).map((_, dayIdx) => {
-              const idx = weekIdx * 7 + dayIdx;
-              const level = data[idx] ?? 0;
-              return (
-                <div
-                  key={dayIdx}
-                  className={`heatmap-cell w-3 h-3 heatmap-level-${level}`}
-                  title={`${level} contribution${level !== 1 ? "s" : ""}`}
-                />
-              );
-            })}
+            {week.map((day, dayIdx) => (
+              <div
+                key={dayIdx}
+                className={`heatmap-cell w-3 h-3 heatmap-level-${day.level}`}
+                title={`${day.date}: ${day.count} contribution${day.count !== 1 ? "s" : ""}`}
+              />
+            ))}
           </div>
         ))}
       </div>
+
       {/* Legend */}
-      <div className="flex items-center gap-1 mt-2 justify-end">
-        <span className="text-[10px] text-gray-400 mr-1">Less</span>
-        {[0, 1, 2, 3, 4].map((level) => (
-          <div
-            key={level}
-            className={`w-3 h-3 rounded-sm heatmap-level-${level}`}
-          />
-        ))}
-        <span className="text-[10px] text-gray-400 ml-1">More</span>
+      <div className="flex items-center justify-between mt-2">
+        {!hasAnyData && (
+          <span className="text-[10px] text-gray-400">
+            Click &quot;Sync from GitHub&quot; to populate activity data
+          </span>
+        )}
+        <div className="flex items-center gap-1 ml-auto">
+          <span className="text-[10px] text-gray-400 mr-1">Less</span>
+          {[0, 1, 2, 3, 4].map((level) => (
+            <div
+              key={level}
+              className={`w-3 h-3 rounded-sm heatmap-level-${level}`}
+            />
+          ))}
+          <span className="text-[10px] text-gray-400 ml-1">More</span>
+        </div>
       </div>
     </div>
   );
