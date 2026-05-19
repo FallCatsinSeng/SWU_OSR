@@ -26,6 +26,7 @@ type ShowcaseRepository interface {
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]ShowcaseRepo, error)
 	GetByUserAndRepoFullName(ctx context.Context, userID uuid.UUID, repoFullName string) (*ShowcaseRepo, error)
 	GetByUserAndRepoFullNameIncludeDeleted(ctx context.Context, userID uuid.UUID, repoFullName string) (*ShowcaseRepo, error)
+	GetByUserAndGitHubRepoIDIncludeDeleted(ctx context.Context, userID uuid.UUID, githubRepoID int64) (*ShowcaseRepo, error)
 	SoftDelete(ctx context.Context, id uuid.UUID) error
 	SoftDeleteByUser(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error
 	Restore(ctx context.Context, repo *ShowcaseRepo) error

@@ -136,7 +136,7 @@ func (r *ShowcaseRepo) SoftDeleteByUser(ctx context.Context, userID uuid.UUID, r
 }
 
 
-// GetByUserAndRepoFullNameIncludeDeleted retrieves a showcase repo including soft-deleted ones.
+// GetByUserAndRepoFullNameIncludeDeleted retrieves a soft-deleted showcase repo by user and full name OR github_repo_id.
 func (r *ShowcaseRepo) GetByUserAndRepoFullNameIncludeDeleted(ctx context.Context, userID uuid.UUID, repoFullName string) (*domain.ShowcaseRepo, error) {
 	query := `
 		SELECT id, user_id, github_repo_id, repo_name, repo_full_name, description, language,
@@ -168,12 +168,39 @@ func (r *ShowcaseRepo) Restore(ctx context.Context, repo *domain.ShowcaseRepo) e
 	query := `
 		UPDATE showcase_repos
 		SET deleted_at = NULL, academic_tag = $2, description = $3, language = $4,
-			html_url = $5, webhook_id = $6, updated_at = $7
+			html_url = $5, webhook_id = $6, updated_at = $7, repo_name = $8, repo_full_name = $9
 		WHERE id = $1`
 
 	_, err := r.pool.Exec(ctx, query,
 		repo.ID, string(repo.AcademicTag), repo.Description, repo.Language,
-		repo.HTMLURL, repo.WebhookID, repo.UpdatedAt,
+		repo.HTMLURL, repo.WebhookID, repo.UpdatedAt, repo.RepoName, repo.RepoFullName,
 	)
 	return err
+}
+
+// GetByUserAndGitHubRepoIDIncludeDeleted retrieves a soft-deleted showcase repo by github_repo_id.
+func (r *ShowcaseRepo) GetByUserAndGitHubRepoIDIncludeDeleted(ctx context.Context, userID uuid.UUID, githubRepoID int64) (*domain.ShowcaseRepo, error) {
+	query := `
+		SELECT id, user_id, github_repo_id, repo_name, repo_full_name, description, language,
+			html_url, academic_tag, webhook_id, created_at, updated_at
+		FROM showcase_repos
+		WHERE user_id = $1 AND github_repo_id = $2 AND deleted_at IS NOT NULL
+		ORDER BY deleted_at DESC
+		LIMIT 1`
+
+	var repo domain.ShowcaseRepo
+	var tag string
+	err := r.pool.QueryRow(ctx, query, userID, githubRepoID).Scan(
+		&repo.ID, &repo.UserID, &repo.GitHubRepoID, &repo.RepoName, &repo.RepoFullName,
+		&repo.Description, &repo.Language, &repo.HTMLURL, &tag,
+		&repo.WebhookID, &repo.CreatedAt, &repo.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	repo.AcademicTag = domain.AcademicTag(tag)
+	return &repo, nil
 }

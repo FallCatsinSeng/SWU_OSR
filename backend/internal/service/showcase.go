@@ -105,10 +105,12 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 		return fmt.Errorf("maximum 20 showcase repos allowed (currently %d)", len(existing))
 	}
 
-	// Build set of already-showcased full names to skip duplicates
+	// Build set of already-showcased full names and repo IDs to skip duplicates
 	existingFullNames := make(map[string]bool)
+	existingRepoIDs := make(map[int64]bool)
 	for _, repo := range existing {
 		existingFullNames[repo.RepoFullName] = true
+		existingRepoIDs[repo.GitHubRepoID] = true
 	}
 
 	// Fetch all repos from GitHub to get metadata (html_url, description, language)
@@ -119,17 +121,24 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 	}
 
 	for _, sel := range selections {
-		// Skip if already in showcase (active)
-		if existingFullNames[sel.FullName] {
+		// Skip if already in showcase (active) — check both full_name and repo_id
+		if existingFullNames[sel.FullName] || existingRepoIDs[sel.RepoID] {
 			continue
 		}
 
 		// Check if this repo was previously soft-deleted — if so, restore it
+		// We check by both full_name and github_repo_id (the DB constraint is on github_repo_id)
 		existingDeleted, _ := s.showcaseRepo.GetByUserAndRepoFullNameIncludeDeleted(ctx, userID, sel.FullName)
+		if existingDeleted == nil {
+			// Also try by github_repo_id directly
+			existingDeleted, _ = s.showcaseRepo.GetByUserAndGitHubRepoIDIncludeDeleted(ctx, userID, sel.RepoID)
+		}
 		if existingDeleted != nil {
 			// Restore the soft-deleted entry
 			existingDeleted.DeletedAt = nil
 			existingDeleted.AcademicTag = sel.Tag
+			existingDeleted.RepoName = sel.RepoName
+			existingDeleted.RepoFullName = sel.FullName
 			existingDeleted.UpdatedAt = time.Now()
 
 			// Update metadata
@@ -152,7 +161,7 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 			}
 
 			if err := s.showcaseRepo.Restore(ctx, existingDeleted); err != nil {
-				return err
+				continue
 			}
 			continue
 		}
