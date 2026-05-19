@@ -13,7 +13,6 @@ type Role string
 const (
 	RoleStudent Role = "student"
 	RoleFaculty Role = "faculty"
-	RoleAdmin   Role = "admin"
 )
 
 // User is the central identity binding entity.

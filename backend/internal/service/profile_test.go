@@ -223,7 +223,7 @@ func TestGetRealIdentity_FacultySucceeds(t *testing.T) {
 	assert.Equal(t, 6, identity.Semester)
 }
 
-func TestGetRealIdentity_StudentForbidden(t *testing.T) {
+func TestGetRealIdentity_StudentSucceeds(t *testing.T) {
 	userRepo := newMockUserRepo()
 	showcaseRepo := newMockShowcaseRepo()
 	activityRepo := newMockActivityRepo()
@@ -252,41 +252,10 @@ func TestGetRealIdentity_StudentForbidden(t *testing.T) {
 
 	svc := NewProfileService(userRepo, showcaseRepo, activityRepo)
 
-	_, err := svc.GetRealIdentity(context.Background(), studentID, "student2")
-	assert.ErrorIs(t, err, domain.ErrForbidden)
-}
-
-func TestGetRealIdentity_AdminSucceeds(t *testing.T) {
-	userRepo := newMockUserRepo()
-	showcaseRepo := newMockShowcaseRepo()
-	activityRepo := newMockActivityRepo()
-
-	adminID := uuid.New()
-	studentID := uuid.New()
-
-	admin := &domain.User{
-		ID:    adminID,
-		NIM:   "ADM001",
-		Alias: "admin1",
-		Role:  domain.RoleAdmin,
-	}
-	student := &domain.User{
-		ID:       studentID,
-		NIM:      "2021003",
-		FullName: "Bob Builder",
-		Major:    "Engineering",
-		Semester: 2,
-		Alias:    "bob",
-		Role:     domain.RoleStudent,
-	}
-
-	userRepo.users["ADM001"] = admin
-	userRepo.users["2021003"] = student
-
-	svc := NewProfileService(userRepo, showcaseRepo, activityRepo)
-
-	identity, err := svc.GetRealIdentity(context.Background(), adminID, "bob")
+	identity, err := svc.GetRealIdentity(context.Background(), studentID, "student2")
 	require.NoError(t, err)
-	assert.Equal(t, "Bob Builder", identity.FullName)
-	assert.Equal(t, "2021003", identity.NIM)
+	assert.Equal(t, "Jane Doe", identity.FullName)
+	assert.Equal(t, "2021002", identity.NIM)
+	assert.Equal(t, "Mathematics", identity.Major)
+	assert.Equal(t, 4, identity.Semester)
 }
