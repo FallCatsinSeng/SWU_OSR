@@ -16,7 +16,8 @@ type leaderboardService struct {
 }
 
 // NewLeaderboardService creates a new leaderboard service.
-func NewLeaderboardService(repo domain.LeaderboardRepository, logger *zap.Logger) domain.LeaderboardService {
+// The returned value also satisfies scheduler.LeaderboardRefresher via RefreshLeaderboard.
+func NewLeaderboardService(repo domain.LeaderboardRepository, logger *zap.Logger) *leaderboardService {
 	return &leaderboardService{
 		repo:   repo,
 		logger: logger,
