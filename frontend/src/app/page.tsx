@@ -394,7 +394,7 @@ export default function HomePage() {
                 <Code2 className="h-5 w-5 text-white" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg font-bold text-gray-900 truncate">
+                <h1 className="text-lg font-bold text-gray-900 break-words">
                   Welcome back, {user.alias}!
                 </h1>
                 <p className="text-sm text-gray-600">
