@@ -60,7 +60,7 @@ function HeroSection() {
         <div className="text-center max-w-3xl mx-auto">
           {/* Mono eyebrow badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-geist-full bg-geist-canvas-soft border border-geist-hairline dark:bg-neutral-900 dark:border-neutral-800 mb-8 animate-fade-in">
-            <span className="text-caption-mono text-geist-body dark:text-neutral-400">
+            <span className="text-caption-mono text-geist-body dark:text-neutral-300">
               Open source platform for students
             </span>
           </div>
@@ -71,7 +71,7 @@ function HeroSection() {
           </h1>
 
           {/* Lead paragraph — body-lg */}
-          <p className="mt-6 text-body-lg text-geist-body dark:text-neutral-400 max-w-2xl mx-auto animate-slide-up">
+          <p className="mt-6 text-body-lg text-geist-body dark:text-neutral-300 max-w-2xl mx-auto animate-slide-up">
             Platform mahasiswa STMIK Widya Utama untuk menampilkan proyek open
             source, berkolaborasi dengan peers, dan membangun portofolio
             profesional.
@@ -149,7 +149,7 @@ function FeaturesSection() {
           <h2 className="text-display-lg text-geist-ink dark:text-white">
             Everything you need to stand out.
           </h2>
-          <p className="mt-4 text-body-lg text-geist-body dark:text-neutral-400 max-w-xl mx-auto">
+          <p className="mt-4 text-body-lg text-geist-body dark:text-neutral-300 max-w-xl mx-auto">
             Satu platform untuk semua kebutuhan portofolio open source
             mahasiswa.
           </p>
@@ -171,7 +171,7 @@ function FeaturesSection() {
                 <h3 className="text-display-sm text-geist-ink dark:text-white mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-body-sm text-geist-body dark:text-neutral-400">
+                <p className="text-body-sm text-geist-body dark:text-neutral-300">
                   {feature.description}
                 </p>
               </div>
@@ -275,7 +275,7 @@ function PopularReposSection({
         </h2>
         <Link
           href="/showcase"
-          className="text-caption text-geist-link hover:text-geist-link-deep transition-colors dark:text-neutral-400 dark:hover:text-white"
+          className="text-caption text-geist-link hover:text-geist-link-deep transition-colors dark:text-neutral-300 dark:hover:text-white"
         >
           View all
         </Link>
@@ -297,7 +297,7 @@ function PopularReposSection({
                     <span className="text-body-sm-strong text-geist-ink dark:text-white truncate group-hover:text-geist-link dark:group-hover:text-white transition-colors">
                       {repo.repo_name}
                     </span>
-                    <ExternalLink className="h-3 w-3 text-geist-hairline-strong dark:text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <ExternalLink className="h-3 w-3 text-geist-hairline-strong dark:text-neutral-300 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </div>
                   {repo.activity_count > 0 && (
                     <Badge variant="success" className="text-[10px] shrink-0">
@@ -400,7 +400,7 @@ function ActiveMembersSection() {
         </h3>
         <Link
           href="/members"
-          className="text-caption text-geist-link hover:text-geist-link-deep transition-colors dark:text-neutral-400 dark:hover:text-white"
+          className="text-caption text-geist-link hover:text-geist-link-deep transition-colors dark:text-neutral-300 dark:hover:text-white"
         >
           View all
         </Link>
@@ -475,7 +475,7 @@ export default function HomePage() {
                 <h1 className="text-display-sm text-geist-ink dark:text-white break-words">
                   Welcome back, {user.alias}.
                 </h1>
-                <p className="text-body-sm text-geist-body dark:text-neutral-400">
+                <p className="text-body-sm text-geist-body dark:text-neutral-300">
                   Here&apos;s what&apos;s happening in the community.
                 </p>
               </div>
@@ -537,21 +537,21 @@ export default function HomePage() {
               <div className="space-y-2">
                 <Link
                   href="/showcase"
-                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-white"
+                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-300 dark:hover:text-white"
                 >
                   <FolderGit2 className="h-4 w-4" />
                   Manage Showcase
                 </Link>
                 <Link
                   href="/members"
-                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-white"
+                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-300 dark:hover:text-white"
                 >
                   <Users className="h-4 w-4" />
                   Discover Members
                 </Link>
                 <Link
                   href="/settings"
-                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-white"
+                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-300 dark:hover:text-white"
                 >
                   <Activity className="h-4 w-4" />
                   Settings
@@ -560,7 +560,7 @@ export default function HomePage() {
                   href="https://github.com/FallCatsinSeng/SWU_OSR"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-white"
+                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-300 dark:hover:text-white"
                 >
                   <Globe className="h-4 w-4" />
                   Source Code

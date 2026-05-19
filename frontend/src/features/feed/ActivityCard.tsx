@@ -95,20 +95,20 @@ export function ActivityCard({ item }: ActivityCardProps) {
               >
                 {item.user_alias}
               </Link>
-              <span className="text-caption text-geist-mute dark:text-neutral-500">
+              <span className="text-caption text-geist-mute dark:text-neutral-300">
                 {config.label}
               </span>
               <Badge variant="secondary" className="text-[10px]">
                 {repoShort}
               </Badge>
             </div>
-            <p className="text-body-sm text-geist-body dark:text-neutral-400 mt-1 line-clamp-2">
+            <p className="text-body-sm text-geist-body dark:text-neutral-300 mt-1 line-clamp-2">
               {item.summary}
             </p>
           </div>
 
           {/* Timestamp — mono caption */}
-          <span className="text-caption-mono text-geist-mute dark:text-neutral-500 shrink-0 pt-0.5">
+          <span className="text-caption-mono text-geist-mute dark:text-neutral-300 shrink-0 pt-0.5">
             {getRelativeTime(item.created_at)}
           </span>
         </div>

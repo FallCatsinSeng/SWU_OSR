@@ -66,7 +66,7 @@ export function Navbar() {
                       className={`px-3 py-2 rounded-geist-full text-body-sm transition-colors ${
                         isActive(link.href)
                           ? "text-geist-ink bg-geist-canvas-soft-2 dark:text-white dark:bg-neutral-800"
-                          : "text-geist-body hover:text-geist-ink dark:text-neutral-400 dark:hover:text-white"
+                          : "text-geist-body hover:text-geist-ink dark:text-neutral-300 dark:hover:text-white"
                       }`}
                     >
                       {link.label}
@@ -97,7 +97,7 @@ export function Navbar() {
                       <p className="text-body-sm-strong text-geist-ink dark:text-white break-words">
                         {user.alias}
                       </p>
-                      <p className="text-caption text-geist-mute dark:text-neutral-500 truncate">
+                      <p className="text-caption text-geist-mute dark:text-neutral-300 truncate">
                         {user.nim}
                       </p>
                     </div>
@@ -148,7 +148,7 @@ export function Navbar() {
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden p-2 rounded-geist-sm text-geist-body hover:bg-geist-canvas-soft-2 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-800"
+                className="md:hidden p-2 rounded-geist-sm text-geist-body hover:bg-geist-canvas-soft-2 transition-colors dark:text-neutral-300 dark:hover:bg-neutral-800"
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? (
@@ -177,7 +177,7 @@ export function Navbar() {
                   className={`flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm transition-colors ${
                     isActive(link.href)
                       ? "text-geist-ink bg-geist-canvas-soft-2 dark:text-white dark:bg-neutral-800"
-                      : "text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900"
+                      : "text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-900"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -191,7 +191,7 @@ export function Navbar() {
                 <Link
                   href={`/profiles/${user.alias}`}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900"
+                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-900"
                 >
                   <User className="h-4 w-4" />
                   My Profile
@@ -199,7 +199,7 @@ export function Navbar() {
                 <Link
                   href="/settings"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900"
+                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-900"
                 >
                   <Settings className="h-4 w-4" />
                   Settings

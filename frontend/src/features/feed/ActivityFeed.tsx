@@ -95,9 +95,9 @@ export function ActivityFeed() {
       <Card>
         <CardContent className="p-8 text-center">
           <div className="h-12 w-12 rounded-geist-full bg-geist-error-soft dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-            <RefreshCw className="h-5 w-5 text-geist-error dark:text-neutral-400" />
+            <RefreshCw className="h-5 w-5 text-geist-error dark:text-neutral-300" />
           </div>
-          <p className="text-body-sm text-geist-body dark:text-neutral-400 mb-4">
+          <p className="text-body-sm text-geist-body dark:text-neutral-300 mb-4">
             Failed to load activity feed.
           </p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -115,12 +115,12 @@ export function ActivityFeed() {
       <Card className="border border-dashed border-geist-hairline dark:border-neutral-700">
         <CardContent className="p-10 text-center">
           <div className="h-12 w-12 rounded-geist-full bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
-            <Inbox className="h-6 w-6 text-geist-mute dark:text-neutral-500" />
+            <Inbox className="h-6 w-6 text-geist-mute dark:text-neutral-300" />
           </div>
           <h3 className="text-body-md-strong text-geist-ink dark:text-white mb-1">
             No activity yet.
           </h3>
-          <p className="text-body-sm text-geist-body dark:text-neutral-400 max-w-sm mx-auto mb-6">
+          <p className="text-body-sm text-geist-body dark:text-neutral-300 max-w-sm mx-auto mb-6">
             {user
               ? "Sync your GitHub activity or add repos to your showcase to start tracking contributions."
               : "Sign in and add repos to your showcase to start tracking open source contributions."}

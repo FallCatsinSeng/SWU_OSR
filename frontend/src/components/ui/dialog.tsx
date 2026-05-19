@@ -68,7 +68,7 @@ function DialogClose({ onClose }: { onClose: () => void }) {
   return (
     <button
       onClick={onClose}
-      className="absolute right-4 top-4 rounded-geist-sm p-1 text-geist-mute hover:text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-neutral-500 dark:hover:text-white dark:hover:bg-neutral-800"
+      className="absolute right-4 top-4 rounded-geist-sm p-1 text-geist-mute hover:text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-800"
     >
       <X className="h-4 w-4" />
     </button>
