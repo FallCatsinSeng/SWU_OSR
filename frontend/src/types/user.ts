@@ -12,6 +12,14 @@ export interface User {
   updated_at: string;
 }
 
+export interface UserStats {
+  total_commits: number;
+  total_repos: number;
+  languages: string[];
+  active_days: number;
+  current_streak: number;
+}
+
 export interface PublicProfile {
   id: string;
   alias: string;
@@ -20,6 +28,7 @@ export interface PublicProfile {
   github_username: string;
   role: Role;
   showcase_repos: import("./showcase").ShowcaseRepo[];
+  stats: UserStats | null;
   created_at: string;
 }
 

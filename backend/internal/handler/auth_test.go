@@ -60,7 +60,7 @@ func TestHandleSIAKADLogin_Success(t *testing.T) {
 		},
 	}
 
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	body := `{"nim": "12345", "password": "secret"}`
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/siakad-login", strings.NewReader(body))
@@ -83,7 +83,7 @@ func TestHandleSIAKADLogin_Success(t *testing.T) {
 
 func TestHandleSIAKADLogin_InvalidBody(t *testing.T) {
 	mock := &mockAuthService{}
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/siakad-login", strings.NewReader("not json"))
 	w := httptest.NewRecorder()
@@ -95,7 +95,7 @@ func TestHandleSIAKADLogin_InvalidBody(t *testing.T) {
 
 func TestHandleSIAKADLogin_MissingFields(t *testing.T) {
 	mock := &mockAuthService{}
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	body := `{"nim": ""}`
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/siakad-login", strings.NewReader(body))
@@ -114,7 +114,7 @@ func TestHandleSIAKADLogin_InvalidCredentials(t *testing.T) {
 		},
 	}
 
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	body := `{"nim": "12345", "password": "wrong"}`
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/siakad-login", strings.NewReader(body))
@@ -145,7 +145,7 @@ func TestHandleGitHubCallback_Success(t *testing.T) {
 		},
 	}
 
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	body := `{"session_id": "session-123", "code": "auth-code"}`
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/github-callback", strings.NewReader(body))
@@ -172,7 +172,7 @@ func TestHandleGitHubCallback_Success(t *testing.T) {
 
 func TestHandleGitHubCallback_InvalidBody(t *testing.T) {
 	mock := &mockAuthService{}
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/github-callback", strings.NewReader("{}"))
 	req.Header.Set("Content-Type", "application/json")
@@ -193,7 +193,7 @@ func TestHandleRefreshToken_Success(t *testing.T) {
 		},
 	}
 
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", nil)
 	req.AddCookie(&http.Cookie{Name: "refresh_token", Value: "old-refresh-token"})
@@ -211,7 +211,7 @@ func TestHandleRefreshToken_Success(t *testing.T) {
 
 func TestHandleRefreshToken_MissingCookie(t *testing.T) {
 	mock := &mockAuthService{}
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/refresh", nil)
 	w := httptest.NewRecorder()
@@ -231,7 +231,7 @@ func TestHandleLogout_Success(t *testing.T) {
 		},
 	}
 
-	h := NewAuthHandler(mock)
+	h := NewAuthHandler(mock, false)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", nil)
 	// Simulate auth middleware injecting claims into context

@@ -11,12 +11,15 @@ import (
 
 // PublicProfile is the public-facing user profile. Never includes NIM, full_name, major, semester.
 type PublicProfile struct {
-	Alias         string               `json:"alias"`
-	Bio           string               `json:"bio"`
-	AvatarURL     string               `json:"avatar_url"`
-	ShowcaseRepos []domain.ShowcaseRepo `json:"showcase_repos"`
-	Stats         *UserStats           `json:"stats"`
-	JoinedAt      time.Time            `json:"joined_at"`
+	ID             uuid.UUID            `json:"id"`
+	Alias          string               `json:"alias"`
+	Bio            string               `json:"bio"`
+	AvatarURL      string               `json:"avatar_url"`
+	GitHubUsername string               `json:"github_username"`
+	Role           domain.Role          `json:"role"`
+	ShowcaseRepos  []domain.ShowcaseRepo `json:"showcase_repos"`
+	Stats          *UserStats           `json:"stats"`
+	CreatedAt      time.Time            `json:"created_at"`
 }
 
 // AcademicIdentity holds private academic information only visible to faculty/admin.
@@ -92,12 +95,15 @@ func (s *profileService) GetPublicProfile(ctx context.Context, alias string) (*P
 	}
 
 	return &PublicProfile{
-		Alias:         user.Alias,
-		Bio:           user.Bio,
-		AvatarURL:     user.AvatarURL,
-		ShowcaseRepos: repos,
-		Stats:         stats,
-		JoinedAt:      user.CreatedAt,
+		ID:             user.ID,
+		Alias:          user.Alias,
+		Bio:            user.Bio,
+		AvatarURL:      user.AvatarURL,
+		GitHubUsername: user.GitHubUsername,
+		Role:           user.Role,
+		ShowcaseRepos:  repos,
+		Stats:          stats,
+		CreatedAt:      user.CreatedAt,
 	}, nil
 }
 

@@ -39,7 +39,7 @@ export function ProfileEditForm() {
 
   const updateProfile = useMutation({
     mutationFn: async (values: ProfileFormValues) => {
-      const { data } = await api.put("/profiles/me", values);
+      const { data } = await api.put("/profile", values);
       return data;
     },
     onSuccess: () => {

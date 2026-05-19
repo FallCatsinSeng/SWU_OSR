@@ -37,7 +37,7 @@ export function CreateCommentForm({ repoId, threadId }: CreateCommentFormProps) 
   const createComment = useMutation({
     mutationFn: async (values: CommentFormValues) => {
       const { data } = await api.post(
-        `/repos/${repoId}/threads/${threadId}/comments`,
+        `/threads/${threadId}/comments`,
         values
       );
       return data;

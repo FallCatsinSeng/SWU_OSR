@@ -13,15 +13,17 @@ import (
 
 // AuthHandler handles authentication HTTP requests.
 type AuthHandler struct {
-	authService service.AuthService
-	validate    *validator.Validate
+	authService  service.AuthService
+	secureCookie bool
+	validate     *validator.Validate
 }
 
 // NewAuthHandler creates a new auth handler.
-func NewAuthHandler(authService service.AuthService) *AuthHandler {
+func NewAuthHandler(authService service.AuthService, secureCookie bool) *AuthHandler {
 	return &AuthHandler{
-		authService: authService,
-		validate:    validator.New(),
+		authService:  authService,
+		secureCookie: secureCookie,
+		validate:     validator.New(),
 	}
 }
 
@@ -82,13 +84,17 @@ func (h *AuthHandler) HandleGitHubCallback(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Set refresh token as httpOnly cookie
+	sameSite := http.SameSiteLaxMode
+	if h.secureCookie {
+		sameSite = http.SameSiteStrictMode
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    result.RefreshToken,
 		Path:     "/api/auth",
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		Secure:   h.secureCookie,
+		SameSite: sameSite,
 		MaxAge:   int(7 * 24 * time.Hour / time.Second),
 	})
 
@@ -113,13 +119,17 @@ func (h *AuthHandler) HandleRefreshToken(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Set new refresh token cookie
+	sameSite := http.SameSiteLaxMode
+	if h.secureCookie {
+		sameSite = http.SameSiteStrictMode
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    result.RefreshToken,
 		Path:     "/api/auth",
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		Secure:   h.secureCookie,
+		SameSite: sameSite,
 		MaxAge:   int(7 * 24 * time.Hour / time.Second),
 	})
 
@@ -142,13 +152,17 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Clear refresh token cookie
+	sameSite := http.SameSiteLaxMode
+	if h.secureCookie {
+		sameSite = http.SameSiteStrictMode
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    "",
 		Path:     "/api/auth",
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		Secure:   h.secureCookie,
+		SameSite: sameSite,
 		MaxAge:   -1,
 	})
 

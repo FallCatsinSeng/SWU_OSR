@@ -101,7 +101,7 @@ func main() {
 	forumSvc := service.NewForumService(threadRepo, commentRepo, notifRepo, showcaseRepo, userRepo, logger)
 
 	// Initialize handlers
-	authHandler := handler.NewAuthHandler(authSvc)
+	authHandler := handler.NewAuthHandler(authSvc, cfg.CookieSecure)
 	profileHandler := handler.NewProfileHandler(profileSvc)
 	showcaseHandler := handler.NewShowcaseHandler(showcaseSvc)
 	aggregatorHandler := handler.NewAggregatorHandler(aggregatorSvc)
