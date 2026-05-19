@@ -12,24 +12,24 @@ const buttonVariants = cva(
           "bg-geist-primary text-geist-on-primary hover:bg-geist-ink/90 dark:bg-white dark:text-black dark:hover:bg-neutral-200 rounded-geist-pill text-button-lg",
         // White pill paired with primary — inverts in dark mode (dark pill)
         secondary:
-          "bg-geist-canvas text-geist-ink hover:bg-geist-canvas-soft dark:bg-neutral-900 dark:text-neutral-50 dark:hover:bg-neutral-800 rounded-geist-pill text-button-lg geist-level-1",
+          "bg-geist-canvas text-geist-ink hover:bg-geist-canvas-soft dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800 rounded-geist-pill text-button-lg geist-level-1",
         // Destructive
         destructive:
           "bg-geist-error text-white hover:bg-geist-error-deep dark:bg-red-600 dark:hover:bg-red-700 rounded-geist-pill text-button-lg",
         // Outline — hairline border, white fill
         outline:
-          "border border-geist-hairline bg-geist-canvas text-geist-ink hover:bg-geist-canvas-soft dark:border-neutral-700 dark:bg-black dark:text-neutral-50 dark:hover:bg-neutral-900 rounded-geist-sm text-button-md",
+          "border border-geist-hairline bg-geist-canvas text-geist-ink hover:bg-geist-canvas-soft dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800 rounded-geist-sm text-button-md",
         // Ghost — no border, no fill
         ghost:
-          "text-geist-body hover:bg-geist-canvas-soft-2 hover:text-geist-ink dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50 rounded-geist-sm text-button-md",
+          "text-geist-body hover:bg-geist-canvas-soft-2 hover:text-geist-ink dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white rounded-geist-sm text-button-md",
         // Link style
-        link: "text-geist-link underline-offset-4 hover:underline dark:text-cyan-400 text-body-sm",
+        link: "text-geist-link underline-offset-4 hover:underline dark:text-white text-body-sm",
         // Nav CTA — small black pill (6px radius) — inverts in dark
         "nav-primary":
           "bg-geist-primary text-geist-on-primary hover:bg-geist-ink/90 dark:bg-white dark:text-black dark:hover:bg-neutral-200 rounded-geist-sm text-body-sm-strong",
         // Nav secondary — white with hairline
         "nav-secondary":
-          "bg-geist-canvas text-geist-ink border border-geist-hairline hover:bg-geist-canvas-soft dark:bg-black dark:text-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900 rounded-geist-sm text-body-sm-strong",
+          "bg-geist-canvas text-geist-ink border border-geist-hairline hover:bg-geist-canvas-soft dark:bg-neutral-900 dark:text-white dark:border-neutral-700 dark:hover:bg-neutral-800 rounded-geist-sm text-body-sm-strong",
       },
       size: {
         // Marketing scale — ~48px tall pill

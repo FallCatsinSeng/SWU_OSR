@@ -51,7 +51,7 @@ function DropdownMenuItem({
   return (
     <div
       className={cn(
-        "cursor-pointer px-3 py-2 text-body-sm text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-neutral-50 dark:hover:bg-neutral-800",
+        "cursor-pointer px-3 py-2 text-body-sm text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-white dark:hover:bg-neutral-800",
         className
       )}
       {...props}

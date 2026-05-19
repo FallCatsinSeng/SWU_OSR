@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply bg-geist-canvas-soft text-geist-ink antialiased dark:bg-[#0A0A0A] dark:text-neutral-50;
+    @apply bg-geist-canvas-soft text-geist-ink antialiased dark:bg-black dark:text-white;
     font-feature-settings: "ss01", "ss02";
   }
 }

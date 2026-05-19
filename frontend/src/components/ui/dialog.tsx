@@ -46,7 +46,7 @@ function DialogTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      className={cn("text-display-sm text-geist-ink dark:text-neutral-50", className)}
+      className={cn("text-display-sm text-geist-ink dark:text-white", className)}
       {...props}
     />
   );
@@ -68,7 +68,7 @@ function DialogClose({ onClose }: { onClose: () => void }) {
   return (
     <button
       onClick={onClose}
-      className="absolute right-4 top-4 rounded-geist-sm p-1 text-geist-mute hover:text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-neutral-500 dark:hover:text-neutral-50 dark:hover:bg-neutral-800"
+      className="absolute right-4 top-4 rounded-geist-sm p-1 text-geist-mute hover:text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-neutral-500 dark:hover:text-white dark:hover:bg-neutral-800"
     >
       <X className="h-4 w-4" />
     </button>

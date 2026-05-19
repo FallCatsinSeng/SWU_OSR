@@ -84,14 +84,14 @@ export function ActivityCard({ item }: ActivityCardProps) {
         <div className="flex items-start gap-3">
           {/* Event icon — neutral canvas-soft-2 background */}
           <div className="h-8 w-8 rounded-geist-sm bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center shrink-0">
-            <Icon className="h-4 w-4 text-geist-ink dark:text-neutral-50" />
+            <Icon className="h-4 w-4 text-geist-ink dark:text-white" />
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 href={`/profiles/${item.user_alias}`}
-                className="text-body-sm-strong text-geist-ink dark:text-neutral-50 hover:text-geist-link dark:hover:text-cyan-400 transition-colors"
+                className="text-body-sm-strong text-geist-ink dark:text-white hover:text-geist-link dark:hover:text-white transition-colors"
               >
                 {item.user_alias}
               </Link>

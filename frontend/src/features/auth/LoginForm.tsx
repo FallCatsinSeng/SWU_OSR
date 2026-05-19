@@ -55,7 +55,7 @@ export function LoginForm() {
           <div className="space-y-2">
             <label
               htmlFor="nim"
-              className="text-body-sm-strong text-geist-ink dark:text-neutral-50"
+              className="text-body-sm-strong text-geist-ink dark:text-white"
             >
               NIM (Student ID)
             </label>
@@ -66,7 +66,7 @@ export function LoginForm() {
               className="h-12"
             />
             {errors.nim && (
-              <p className="text-caption text-geist-error dark:text-red-400 flex items-center gap-1">
+              <p className="text-caption text-geist-error dark:text-neutral-400 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {errors.nim.message}
               </p>
@@ -75,7 +75,7 @@ export function LoginForm() {
           <div className="space-y-2">
             <label
               htmlFor="password"
-              className="text-body-sm-strong text-geist-ink dark:text-neutral-50"
+              className="text-body-sm-strong text-geist-ink dark:text-white"
             >
               Password
             </label>
@@ -87,15 +87,15 @@ export function LoginForm() {
               className="h-12"
             />
             {errors.password && (
-              <p className="text-caption text-geist-error dark:text-red-400 flex items-center gap-1">
+              <p className="text-caption text-geist-error dark:text-neutral-400 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {errors.password.message}
               </p>
             )}
           </div>
           {login.isError && (
-            <div className="p-3 rounded-geist-sm bg-geist-error-soft dark:bg-red-950">
-              <p className="text-body-sm text-geist-error-deep dark:text-red-400 flex items-center gap-1.5">
+            <div className="p-3 rounded-geist-sm bg-geist-error-soft dark:bg-neutral-800">
+              <p className="text-body-sm text-geist-error-deep dark:text-neutral-400 flex items-center gap-1.5">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 Authentication failed. Please check your credentials.
               </p>

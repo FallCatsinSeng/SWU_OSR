@@ -50,7 +50,7 @@ export function Navbar() {
                 <div className="h-7 w-7 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center">
                   <Code2 className="h-3.5 w-3.5 text-geist-on-primary dark:text-black" />
                 </div>
-                <span className="text-body-sm-strong text-geist-ink dark:text-neutral-50 hidden sm:inline">
+                <span className="text-body-sm-strong text-geist-ink dark:text-white hidden sm:inline">
                   SWU OSR
                 </span>
               </Link>
@@ -65,8 +65,8 @@ export function Navbar() {
                       href={link.href}
                       className={`px-3 py-2 rounded-geist-full text-body-sm transition-colors ${
                         isActive(link.href)
-                          ? "text-geist-ink bg-geist-canvas-soft-2 dark:text-neutral-50 dark:bg-neutral-800"
-                          : "text-geist-body hover:text-geist-ink dark:text-neutral-400 dark:hover:text-neutral-50"
+                          ? "text-geist-ink bg-geist-canvas-soft-2 dark:text-white dark:bg-neutral-800"
+                          : "text-geist-body hover:text-geist-ink dark:text-neutral-400 dark:hover:text-white"
                       }`}
                     >
                       {link.label}
@@ -94,7 +94,7 @@ export function Navbar() {
                     }
                   >
                     <div className="px-3 py-2 border-b border-geist-hairline dark:border-neutral-800 max-w-[200px]">
-                      <p className="text-body-sm-strong text-geist-ink dark:text-neutral-50 break-words">
+                      <p className="text-body-sm-strong text-geist-ink dark:text-white break-words">
                         {user.alias}
                       </p>
                       <p className="text-caption text-geist-mute dark:text-neutral-500 truncate">
@@ -176,8 +176,8 @@ export function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm transition-colors ${
                     isActive(link.href)
-                      ? "text-geist-ink bg-geist-canvas-soft-2 dark:text-neutral-50 dark:bg-neutral-800"
-                      : "text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-neutral-50 dark:hover:bg-neutral-900"
+                      ? "text-geist-ink bg-geist-canvas-soft-2 dark:text-white dark:bg-neutral-800"
+                      : "text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -191,7 +191,7 @@ export function Navbar() {
                 <Link
                   href={`/profiles/${user.alias}`}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-neutral-50 dark:hover:bg-neutral-900"
+                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900"
                 >
                   <User className="h-4 w-4" />
                   My Profile
@@ -199,7 +199,7 @@ export function Navbar() {
                 <Link
                   href="/settings"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-neutral-50 dark:hover:bg-neutral-900"
+                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-900"
                 >
                   <Settings className="h-4 w-4" />
                   Settings

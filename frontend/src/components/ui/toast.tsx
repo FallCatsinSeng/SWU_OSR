@@ -54,17 +54,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center justify-between rounded-geist-md px-4 py-3 text-body-sm geist-level-3 min-w-[300px] animate-slide-up",
               t.type === "success" &&
-                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-success dark:bg-neutral-900 dark:text-neutral-50 dark:border-l-cyan-400",
+                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-success dark:bg-neutral-900 dark:text-white dark:border-l-neutral-400",
               t.type === "error" &&
-                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-error dark:bg-neutral-900 dark:text-neutral-50 dark:border-l-red-500",
+                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-error dark:bg-neutral-900 dark:text-white dark:border-l-neutral-400",
               t.type === "info" &&
-                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-link dark:bg-neutral-900 dark:text-neutral-50 dark:border-l-blue-400"
+                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-link dark:bg-neutral-900 dark:text-white dark:border-l-neutral-400"
             )}
           >
             <span>{t.message}</span>
             <button
               onClick={() => removeToast(t.id)}
-              className="ml-3 text-geist-mute hover:text-geist-ink transition-colors dark:text-neutral-500 dark:hover:text-neutral-50"
+              className="ml-3 text-geist-mute hover:text-geist-ink transition-colors dark:text-neutral-500 dark:hover:text-white"
             >
               <X className="h-3.5 w-3.5" />
             </button>

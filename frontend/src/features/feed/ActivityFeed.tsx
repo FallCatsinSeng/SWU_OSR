@@ -94,8 +94,8 @@ export function ActivityFeed() {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <div className="h-12 w-12 rounded-geist-full bg-geist-error-soft dark:bg-red-950 flex items-center justify-center mx-auto mb-3">
-            <RefreshCw className="h-5 w-5 text-geist-error dark:text-red-400" />
+          <div className="h-12 w-12 rounded-geist-full bg-geist-error-soft dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+            <RefreshCw className="h-5 w-5 text-geist-error dark:text-neutral-400" />
           </div>
           <p className="text-body-sm text-geist-body dark:text-neutral-400 mb-4">
             Failed to load activity feed.
@@ -117,7 +117,7 @@ export function ActivityFeed() {
           <div className="h-12 w-12 rounded-geist-full bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
             <Inbox className="h-6 w-6 text-geist-mute dark:text-neutral-500" />
           </div>
-          <h3 className="text-body-md-strong text-geist-ink dark:text-neutral-50 mb-1">
+          <h3 className="text-body-md-strong text-geist-ink dark:text-white mb-1">
             No activity yet.
           </h3>
           <p className="text-body-sm text-geist-body dark:text-neutral-400 max-w-sm mx-auto mb-6">

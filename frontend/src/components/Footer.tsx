@@ -13,7 +13,7 @@ export function Footer() {
               <div className="h-7 w-7 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center">
                 <Code2 className="h-3.5 w-3.5 text-geist-on-primary dark:text-black" />
               </div>
-              <span className="text-body-sm-strong text-geist-ink dark:text-neutral-50">
+              <span className="text-body-sm-strong text-geist-ink dark:text-white">
                 SWU OSR
               </span>
             </Link>
@@ -32,7 +32,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/"
-                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-neutral-50"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-white"
                 >
                   Activity Feed
                 </Link>
@@ -40,7 +40,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/showcase"
-                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-neutral-50"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-white"
                 >
                   Showcase
                 </Link>
@@ -48,7 +48,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/members"
-                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-neutral-50"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-white"
                 >
                   Members
                 </Link>
@@ -67,7 +67,7 @@ export function Footer() {
                   href="https://www.stmikwidyautama.ac.id"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors inline-flex items-center gap-1 dark:text-neutral-400 dark:hover:text-neutral-50"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors inline-flex items-center gap-1 dark:text-neutral-400 dark:hover:text-white"
                 >
                   STMIK Widya Utama
                   <ExternalLink className="h-3 w-3" />
@@ -97,7 +97,7 @@ export function Footer() {
                   href="https://github.com/FallCatsinSeng/SWU_OSR"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors inline-flex items-center gap-1 dark:text-neutral-400 dark:hover:text-neutral-50"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors inline-flex items-center gap-1 dark:text-neutral-400 dark:hover:text-white"
                 >
                   <Github className="h-3 w-3" />
                   Source Code
@@ -106,7 +106,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/login"
-                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-neutral-50"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-white"
                 >
                   Get Started
                 </Link>
@@ -126,7 +126,7 @@ export function Footer() {
               href="https://github.com/FallCatsinSeng/SWU_OSR"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-geist-mute hover:text-geist-ink transition-colors dark:text-neutral-500 dark:hover:text-neutral-50"
+              className="text-geist-mute hover:text-geist-ink transition-colors dark:text-neutral-500 dark:hover:text-white"
               aria-label="GitHub"
             >
               <Github className="h-4 w-4" />
