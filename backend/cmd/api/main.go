@@ -131,6 +131,7 @@ func main() {
 		// Public routes (no auth)
 		r.Group(func(r chi.Router) {
 			r.Get("/profiles/{alias}", profileHandler.HandleGetPublicProfile)
+			r.Get("/members", profileHandler.HandleListMembers)
 			r.Get("/feed", aggregatorHandler.HandleGetFeed)
 			r.Get("/users/{id}/activity", aggregatorHandler.HandleGetUserActivity)
 			r.Get("/repos/{id}/threads", forumHandler.HandleListThreads)

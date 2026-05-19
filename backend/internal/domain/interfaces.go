@@ -13,6 +13,7 @@ type UserRepository interface {
 	GetByNIM(ctx context.Context, nim string) (*User, error)
 	GetByAlias(ctx context.Context, alias string) (*User, error)
 	GetByGitHubUsername(ctx context.Context, username string) (*User, error)
+	ListAll(ctx context.Context) ([]*User, error)
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, user *User) error
 	MarkTokenInvalid(ctx context.Context, id uuid.UUID) error

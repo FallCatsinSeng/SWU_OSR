@@ -23,7 +23,7 @@ export default function LoginPage() {
             </h2>
             <p className="text-gray-600 max-w-sm">
               Showcase your projects, track contributions, and collaborate with
-              fellow students at UIN Walisongo.
+              fellow students at STMIK Widya Utama.
             </p>
 
             <div className="space-y-4 pt-4">

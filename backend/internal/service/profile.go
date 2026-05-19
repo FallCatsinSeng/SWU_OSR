@@ -45,6 +45,7 @@ type ProfileService interface {
 	UpdateProfile(ctx context.Context, userID uuid.UUID, input UpdateProfileInput) error
 	GetRealIdentity(ctx context.Context, requesterID uuid.UUID, alias string) (*AcademicIdentity, error)
 	GetUserStats(ctx context.Context, userID uuid.UUID) (*UserStats, error)
+	ListMembers(ctx context.Context) ([]*PublicProfile, error)
 }
 
 // UpdateProfileInput holds the input for updating a profile.
@@ -217,4 +218,40 @@ func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*U
 		ActiveDays:    len(daySet),
 		CurrentStreak: streak,
 	}, nil
+}
+
+
+// ListMembers returns all active users as public profiles.
+func (s *profileService) ListMembers(ctx context.Context) ([]*PublicProfile, error) {
+	users, err := s.userRepo.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	profiles := make([]*PublicProfile, 0, len(users))
+	for _, user := range users {
+		repos, err := s.showcaseRepo.GetByUserID(ctx, user.ID)
+		if err != nil {
+			repos = nil
+		}
+
+		stats, err := s.GetUserStats(ctx, user.ID)
+		if err != nil {
+			stats = nil
+		}
+
+		profiles = append(profiles, &PublicProfile{
+			ID:             user.ID,
+			Alias:          user.Alias,
+			Bio:            user.Bio,
+			AvatarURL:      user.AvatarURL,
+			GitHubUsername: user.GitHubUsername,
+			Role:           user.Role,
+			ShowcaseRepos:  repos,
+			Stats:          stats,
+			CreatedAt:      user.CreatedAt,
+		})
+	}
+
+	return profiles, nil
 }

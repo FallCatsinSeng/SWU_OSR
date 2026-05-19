@@ -42,7 +42,7 @@ function HeroSection() {
           </h1>
 
           <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto animate-slide-up">
-            Platform mahasiswa UIN Walisongo untuk menampilkan proyek open source,
+            Platform mahasiswa STMIK Widya Utama untuk menampilkan proyek open source,
             berkolaborasi dengan peers, dan membangun portofolio profesional.
           </p>
 

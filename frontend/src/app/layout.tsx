@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "SWU Open Source Repository",
   description:
-    "Platform mahasiswa UIN Walisongo untuk showcase karya open source, kolaborasi, dan membangun portofolio.",
+    "Platform mahasiswa STMIK Widya Utama untuk showcase karya open source, kolaborasi, dan membangun portofolio.",
 };
 
 export default function RootLayout({
