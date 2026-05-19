@@ -16,7 +16,7 @@ export default function DiscussionsPage({ params }: DiscussionsPageProps) {
       <div className="mb-6">
         <Link
           href="/showcase"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 mb-3 transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white mb-3 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Showcase
@@ -26,8 +26,8 @@ export default function DiscussionsPage({ params }: DiscussionsPageProps) {
             <MessageSquare className="h-5 w-5 text-indigo-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Discussions</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Discussions</h1>
+            <p className="text-sm text-gray-500 dark:text-white">
               Ask questions, share feedback, and collaborate.
             </p>
           </div>

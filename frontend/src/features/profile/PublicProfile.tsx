@@ -91,15 +91,15 @@ export function PublicProfile({ alias }: PublicProfileProps) {
 
   if (isError || !profile) {
     return (
-      <Card className="border-gray-100">
+      <Card className="border-gray-100 dark:border-neutral-800">
         <CardContent className="p-12 text-center">
-          <div className="h-16 w-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+          <div className="h-16 w-16 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
             <Code2 className="h-8 w-8 text-gray-300" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
             Profile not found
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-white">
             This user doesn&apos;t exist or has been removed.
           </p>
         </CardContent>
@@ -127,7 +127,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
             <div className="flex-1 min-w-0 pt-2 sm:pt-14">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-2xl font-bold text-gray-900 break-words">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white break-words">
                     {profile.alias}
                   </h1>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -135,7 +135,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
                       className={`${
                         profile.role === "faculty"
                           ? "bg-orange-50 text-orange-700 border-orange-200"
-                          : "bg-primary-50 text-primary-700 border-primary-200"
+                          : "bg-primary-50 text-primary-700 dark:bg-neutral-800 dark:text-white border-primary-200"
                       }`}
                     >
                       {profile.role}
@@ -145,13 +145,13 @@ export function PublicProfile({ alias }: PublicProfileProps) {
                         href={`https://github.com/${profile.github_username}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-gray-500 hover:text-primary-600 flex items-center gap-1 transition-colors"
+                        className="text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white flex items-center gap-1 transition-colors"
                       >
                         @{profile.github_username}
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     )}
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                    <span className="text-xs text-gray-400 dark:text-white flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
                       Joined {formatDate(profile.created_at)}
                     </span>
@@ -171,7 +171,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
                 )}
               </div>
               {profile.bio && (
-                <p className="text-gray-600 mt-3 max-w-lg">{profile.bio}</p>
+                <p className="text-gray-600 dark:text-white mt-3 max-w-lg">{profile.bio}</p>
               )}
             </div>
           </div>
@@ -191,7 +191,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
             icon={FolderGit2}
             value={profile.stats.total_repos}
             label="Repos"
-            color="text-blue-600 bg-blue-50"
+            color="text-blue-600 dark:text-white bg-blue-50"
           />
           <StatItem
             icon={Code2}
@@ -219,7 +219,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <GitBranch className="h-4 w-4 text-secondary-600" />
+              <GitBranch className="h-4 w-4 text-secondary-600 dark:text-white" />
               Contribution Activity
             </CardTitle>
           </CardHeader>
@@ -257,7 +257,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
               {profile.stats.languages.map((lang) => (
                 <span
                   key={lang}
-                  className="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-50 text-gray-700 border border-gray-100 hover:border-primary-200 hover:bg-primary-50 transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-white border border-gray-100 dark:border-neutral-800 hover:border-primary-200 hover:bg-primary-50 transition-colors"
                 >
                   {lang}
                 </span>
@@ -270,8 +270,8 @@ export function PublicProfile({ alias }: PublicProfileProps) {
       {/* Showcase Repos */}
       {profile.showcase_repos && profile.showcase_repos.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FolderGit2 className="h-5 w-5 text-primary-600" />
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <FolderGit2 className="h-5 w-5 text-primary-600 dark:text-white" />
             Showcase Repositories
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -286,19 +286,19 @@ export function PublicProfile({ alias }: PublicProfileProps) {
                       href={repo.html_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium text-primary-600 hover:underline flex items-center gap-1"
+                      className="font-medium text-primary-600 dark:text-white hover:underline flex items-center gap-1"
                     >
                       {repo.repo_name}
                       <ExternalLink className="h-3 w-3" />
                     </a>
                     <Badge
                       variant="secondary"
-                      className="text-[10px] bg-secondary-50 text-secondary-700"
+                      className="text-[10px] bg-secondary-50 text-secondary-700 dark:bg-neutral-800 dark:text-white"
                     >
                       {repo.academic_tag.replace("_", " ")}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                  <p className="text-sm text-gray-500 dark:text-white mb-3 line-clamp-2">
                     {repo.description || "No description"}
                   </p>
                   <div className="flex items-center gap-3">
@@ -309,7 +309,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
                     )}
                     <Link
                       href={`/repos/${repo.id}/discussions`}
-                      className="text-xs text-gray-400 hover:text-primary-600 flex items-center gap-1 ml-auto transition-colors"
+                      className="text-xs text-gray-400 dark:text-white hover:text-primary-600 dark:hover:text-white flex items-center gap-1 ml-auto transition-colors"
                     >
                       <MessageSquare className="h-3 w-3" />
                       Discussions
@@ -336,18 +336,18 @@ export function PublicProfile({ alias }: PublicProfileProps) {
         <DialogContent>
           {identity ? (
             <div className="space-y-3">
-              <div className="p-4 rounded-xl bg-gray-50 space-y-2">
+              <div className="p-4 rounded-xl bg-gray-50 dark:bg-neutral-800 space-y-2">
                 <InfoRow label="Full Name" value={identity.full_name} />
                 <InfoRow label="NIM" value={identity.nim} />
                 <InfoRow label="Major" value={identity.major} />
                 <InfoRow label="Semester" value={String(identity.semester)} />
               </div>
-              <p className="text-xs text-gray-400 text-center">
+              <p className="text-xs text-gray-400 dark:text-white text-center">
                 This information is only visible to registered users.
               </p>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">
+            <p className="text-gray-500 dark:text-white text-center py-4">
               Unable to load identity information.
             </p>
           )}
@@ -377,8 +377,8 @@ function StatItem({
         >
           <Icon className={`h-4 w-4 ${iconColor}`} />
         </div>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <p className="text-xs text-gray-500">{label}</p>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+        <p className="text-xs text-gray-500 dark:text-white">{label}</p>
       </CardContent>
     </Card>
   );
@@ -387,8 +387,8 @@ function StatItem({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900">{value}</span>
+      <span className="text-sm text-gray-500 dark:text-white">{label}</span>
+      <span className="text-sm font-medium text-gray-900 dark:text-white">{value}</span>
     </div>
   );
 }

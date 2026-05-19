@@ -2,7 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { FeedResponse } from "@/types/activity";
 import { useCurrentUser } from "@/hooks/useAuth";
@@ -11,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
-import { FolderGit2, RefreshCw, Inbox, Zap } from "lucide-react";
+import { FolderGit2, RefreshCw, Inbox } from "lucide-react";
 
 export function ActivityFeed() {
   const { data: user } = useCurrentUser();
@@ -45,9 +49,10 @@ export function ActivityFeed() {
 
   const syncMutation = useMutation({
     mutationFn: async () => {
-      const { data } = await api.post<{ ok: boolean; data: { synced: number } }>(
-        "/activity/sync"
-      );
+      const { data } = await api.post<{
+        ok: boolean;
+        data: { synced: number };
+      }>("/activity/sync");
       return data.data;
     },
     onSuccess: (result) => {
@@ -63,7 +68,7 @@ export function ActivityFeed() {
     },
   });
 
-  // Auto-sync on first load when feed is empty and user is logged in
+  // Auto-sync on first load when feed is empty
   const autoSyncRef = useRef(false);
   useEffect(() => {
     if (autoSyncRef.current) return;
@@ -79,7 +84,7 @@ export function ActivityFeed() {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-20 w-full rounded-xl" />
+          <Skeleton key={i} className="h-20 w-full rounded-geist-md" />
         ))}
       </div>
     );
@@ -87,14 +92,16 @@ export function ActivityFeed() {
 
   if (isError) {
     return (
-      <Card className="border-red-100">
+      <Card>
         <CardContent className="p-8 text-center">
-          <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
-            <RefreshCw className="h-6 w-6 text-red-400" />
+          <div className="h-12 w-12 rounded-geist-full bg-geist-error-soft dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+            <RefreshCw className="h-5 w-5 text-geist-error dark:text-white" />
           </div>
-          <p className="text-gray-600 mb-3">Failed to load activity feed.</p>
+          <p className="text-body-sm text-geist-body dark:text-white mb-4">
+            Failed to load activity feed.
+          </p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
-            Try Again
+            Try again
           </Button>
         </CardContent>
       </Card>
@@ -105,15 +112,15 @@ export function ActivityFeed() {
 
   if (items.length === 0) {
     return (
-      <Card className="border-dashed border-2 border-gray-200">
+      <Card className="border border-dashed border-geist-hairline dark:border-neutral-700">
         <CardContent className="p-10 text-center">
-          <div className="h-14 w-14 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
-            <Inbox className="h-7 w-7 text-gray-300" />
+          <div className="h-12 w-12 rounded-geist-full bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+            <Inbox className="h-6 w-6 text-geist-mute dark:text-white" />
           </div>
-          <h3 className="text-base font-medium text-gray-900 mb-1">
-            No activity yet
+          <h3 className="text-body-md-strong text-geist-ink dark:text-white mb-1">
+            No activity yet.
           </h3>
-          <p className="text-sm text-gray-500 max-w-sm mx-auto mb-4">
+          <p className="text-body-sm text-geist-body dark:text-white max-w-sm mx-auto mb-6">
             {user
               ? "Sync your GitHub activity or add repos to your showcase to start tracking contributions."
               : "Sign in and add repos to your showcase to start tracking open source contributions."}
@@ -123,21 +130,22 @@ export function ActivityFeed() {
               <Button
                 variant="default"
                 size="sm"
-                className="gap-1.5 gradient-primary text-white border-0"
                 onClick={() => syncMutation.mutate()}
                 disabled={syncMutation.isPending}
               >
                 {syncMutation.isPending ? (
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Zap className="h-3.5 w-3.5" />
+                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
                 )}
-                {syncMutation.isPending ? "Syncing..." : "Sync GitHub Activity"}
+                {syncMutation.isPending
+                  ? "Syncing..."
+                  : "Sync GitHub activity"}
               </Button>
             )}
             <Link href={user ? "/showcase" : "/login"}>
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <FolderGit2 className="h-3.5 w-3.5" />
+              <Button variant="outline" size="sm">
+                <FolderGit2 className="mr-1.5 h-3.5 w-3.5" />
                 {user ? "Go to Showcase" : "Sign In"}
               </Button>
             </Link>
@@ -149,20 +157,19 @@ export function ActivityFeed() {
 
   return (
     <div className="space-y-3">
-      {/* Sync button at top when there are items */}
+      {/* Sync button */}
       {user && (
         <div className="flex justify-end mb-2">
           <Button
             variant="outline"
             size="sm"
-            className="gap-1.5 text-xs"
             onClick={() => syncMutation.mutate()}
             disabled={syncMutation.isPending}
           >
             {syncMutation.isPending ? (
-              <RefreshCw className="h-3 w-3 animate-spin" />
+              <RefreshCw className="mr-1.5 h-3 w-3 animate-spin" />
             ) : (
-              <RefreshCw className="h-3 w-3" />
+              <RefreshCw className="mr-1.5 h-3 w-3" />
             )}
             {syncMutation.isPending ? "Syncing..." : "Sync from GitHub"}
           </Button>
@@ -172,21 +179,22 @@ export function ActivityFeed() {
       {items.map((item) => (
         <ActivityCard key={item.id} item={item} />
       ))}
+
       {hasNextPage && (
         <div className="flex justify-center pt-4">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => fetchNextPage()}
             disabled={isFetchingNextPage}
-            className="gap-1.5"
           >
             {isFetchingNextPage ? (
               <>
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                 Loading...
               </>
             ) : (
-              "Load More"
+              "Load more"
             )}
           </Button>
         </div>

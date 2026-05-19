@@ -18,77 +18,34 @@ interface ActivityCardProps {
 }
 
 function getEventConfig(eventType: string, summary: string) {
-  // Detect sub-types from the summary text
   if (summary.startsWith("Forked")) {
-    return {
-      icon: GitFork,
-      color: "text-teal-600",
-      bg: "bg-teal-50",
-      label: "forked",
-    };
+    return { icon: GitFork, label: "forked" };
   }
   if (summary.startsWith("Starred")) {
-    return {
-      icon: Star,
-      color: "text-yellow-600",
-      bg: "bg-yellow-50",
-      label: "starred",
-    };
+    return { icon: Star, label: "starred" };
   }
   if (summary.startsWith("Created repository")) {
-    return {
-      icon: Plus,
-      color: "text-indigo-600",
-      bg: "bg-indigo-50",
-      label: "created",
-    };
+    return { icon: Plus, label: "created" };
   }
-  if (summary.startsWith("Created branch") || summary.startsWith("Created tag")) {
-    return {
-      icon: GitBranch,
-      color: "text-cyan-600",
-      bg: "bg-cyan-50",
-      label: "created",
-    };
+  if (
+    summary.startsWith("Created branch") ||
+    summary.startsWith("Created tag")
+  ) {
+    return { icon: GitBranch, label: "created" };
   }
   if (summary.startsWith("Issue")) {
-    return {
-      icon: CircleDot,
-      color: "text-orange-600",
-      bg: "bg-orange-50",
-      label: "issue on",
-    };
+    return { icon: CircleDot, label: "issue on" };
   }
 
   switch (eventType) {
     case "push":
-      return {
-        icon: GitCommit,
-        color: "text-green-600",
-        bg: "bg-green-50",
-        label: "pushed to",
-      };
+      return { icon: GitCommit, label: "pushed to" };
     case "pull_request":
-      return {
-        icon: GitPullRequest,
-        color: "text-purple-600",
-        bg: "bg-purple-50",
-        label: "PR on",
-      };
+      return { icon: GitPullRequest, label: "PR on" };
     case "release":
-      return {
-        icon: Tag,
-        color: "text-blue-600",
-        bg: "bg-blue-50",
-        label: "released",
-      };
+      return { icon: Tag, label: "released" };
     default:
-      return {
-        icon: GitBranch,
-        color: "text-gray-600",
-        bg: "bg-gray-50",
-        label: "updated",
-      };
+      return { icon: GitBranch, label: "updated" };
   }
 }
 
@@ -109,7 +66,6 @@ function getRelativeTime(dateString: string): string {
   return "just now";
 }
 
-// Extract repo short name from full name (e.g. "owner/repo" -> "repo")
 function getRepoShortName(repoName: string): string {
   if (repoName.includes("/")) {
     return repoName.split("/").pop() || repoName;
@@ -123,39 +79,36 @@ export function ActivityCard({ item }: ActivityCardProps) {
   const repoShort = getRepoShortName(item.repo_name);
 
   return (
-    <Card className="hover:border-gray-200 hover:shadow-sm transition-all duration-200 group">
+    <Card className="transition-shadow hover:shadow-geist-3">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          {/* Event icon */}
-          <div
-            className={`h-9 w-9 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}
-          >
-            <Icon className={`h-4 w-4 ${config.color}`} />
+          {/* Event icon — neutral canvas-soft-2 background */}
+          <div className="h-8 w-8 rounded-geist-sm bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+            <Icon className="h-4 w-4 text-geist-ink dark:text-white" />
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 href={`/profiles/${item.user_alias}`}
-                className="font-medium text-sm text-gray-900 hover:text-primary-600 transition-colors"
+                className="text-body-sm-strong text-geist-ink dark:text-white hover:text-geist-link dark:hover:text-white transition-colors"
               >
                 {item.user_alias}
               </Link>
-              <span className="text-xs text-gray-400">{config.label}</span>
-              <Badge
-                variant="secondary"
-                className="text-[10px] bg-gray-50 text-gray-600 border-gray-100"
-              >
+              <span className="text-caption text-geist-mute dark:text-white">
+                {config.label}
+              </span>
+              <Badge variant="secondary" className="text-[10px]">
                 {repoShort}
               </Badge>
             </div>
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+            <p className="text-body-sm text-geist-body dark:text-white mt-1 line-clamp-2">
               {item.summary}
             </p>
           </div>
 
-          {/* Time */}
-          <span className="text-[11px] text-gray-400 shrink-0 pt-0.5">
+          {/* Timestamp — mono caption */}
+          <span className="text-caption-mono text-geist-mute dark:text-white shrink-0 pt-0.5">
             {getRelativeTime(item.created_at)}
           </span>
         </div>

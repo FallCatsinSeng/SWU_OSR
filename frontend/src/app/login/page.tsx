@@ -14,14 +14,14 @@ export default function LoginPage() {
               <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center">
                 <Code2 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gradient">SWU OSR</span>
+              <span className="text-2xl font-bold text-gradient dark:text-white">SWU OSR</span>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 leading-tight">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">
               Join the student
               <br />
               developer community
             </h2>
-            <p className="text-gray-600 max-w-sm">
+            <p className="text-gray-600 dark:text-white max-w-sm">
               Showcase your projects, track contributions, and collaborate with
               fellow students at STMIK Widya Utama.
             </p>
@@ -66,12 +66,12 @@ function Step({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="h-8 w-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-        <Icon className="h-4 w-4 text-primary-600" />
+      <div className="h-8 w-8 rounded-lg bg-primary-50 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+        <Icon className="h-4 w-4 text-primary-600 dark:text-white" />
       </div>
       <div>
-        <p className="text-sm font-medium text-gray-900">{title}</p>
-        <p className="text-xs text-gray-500">{description}</p>
+        <p className="text-sm font-medium text-gray-900 dark:text-white">{title}</p>
+        <p className="text-xs text-gray-500 dark:text-white">{description}</p>
       </div>
     </div>
   );

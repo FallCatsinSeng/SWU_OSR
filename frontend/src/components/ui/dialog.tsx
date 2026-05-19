@@ -16,11 +16,11 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
   return (
     <div className="fixed inset-0 z-50">
       <div
-        className="fixed inset-0 bg-black/50"
+        className="fixed inset-0 bg-geist-ink/50 backdrop-blur-sm dark:bg-black/70"
         onClick={() => onOpenChange(false)}
       />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-lg max-w-lg w-full max-h-[85vh] overflow-auto">
+        <div className="relative bg-geist-canvas dark:bg-neutral-900 rounded-geist-lg geist-level-5 max-w-lg w-full max-h-[85vh] overflow-auto animate-scale-in">
           {children}
         </div>
       </div>
@@ -28,7 +28,10 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
   );
 }
 
-function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function DialogHeader({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn("flex flex-col space-y-1.5 p-6 pb-0", className)}
@@ -37,16 +40,23 @@ function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
   );
 }
 
-function DialogTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+function DialogTitle({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+      className={cn("text-display-sm text-geist-ink dark:text-white", className)}
       {...props}
     />
   );
 }
 
-function DialogContent({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function DialogContent({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={cn("p-6", className)} {...props}>
       {children}
@@ -58,7 +68,7 @@ function DialogClose({ onClose }: { onClose: () => void }) {
   return (
     <button
       onClick={onClose}
-      className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100"
+      className="absolute right-4 top-4 rounded-geist-sm p-1 text-geist-mute hover:text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-white dark:hover:text-white dark:hover:bg-neutral-800"
     >
       <X className="h-4 w-4" />
     </button>

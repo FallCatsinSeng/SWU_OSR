@@ -64,7 +64,7 @@ const BADGES: BadgeConfig[] = [
     label: "Polyglot",
     description: "Used 3+ programming languages",
     icon: Zap,
-    color: "text-blue-600",
+    color: "text-blue-600 dark:text-white",
     bgColor: "bg-blue-50 border-blue-200",
     check: (stats) => stats.languages.length >= 3,
   },
@@ -105,10 +105,10 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
   if (!stats) {
     return (
       <div className="text-center py-6">
-        <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2">
+        <div className="h-12 w-12 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-2">
           <Award className="h-6 w-6 text-gray-300" />
         </div>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-400 dark:text-white">
           Start contributing to earn badges!
         </p>
       </div>
@@ -121,10 +121,10 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
   if (earned.length === 0) {
     return (
       <div className="text-center py-6">
-        <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2">
+        <div className="h-12 w-12 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-2">
           <Award className="h-6 w-6 text-gray-300" />
         </div>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-400 dark:text-white">
           Keep contributing to unlock your first badge!
         </p>
         {/* Show locked badges */}
@@ -134,11 +134,11 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
             return (
               <div
                 key={badge.id}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50 border border-gray-100 opacity-40"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50 dark:bg-neutral-800 border border-gray-100 dark:border-neutral-800 opacity-40"
                 title={badge.description}
               >
-                <Icon className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-xs text-gray-400">{badge.label}</span>
+                <Icon className="h-3.5 w-3.5 text-gray-400 dark:text-white" />
+                <span className="text-xs text-gray-400 dark:text-white">{badge.label}</span>
               </div>
             );
           })}
@@ -160,7 +160,7 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
               title={badge.description}
             >
               <Icon className={`h-4 w-4 ${badge.color}`} />
-              <span className="text-xs font-medium text-gray-700">
+              <span className="text-xs font-medium text-gray-700 dark:text-white">
                 {badge.label}
               </span>
             </div>
@@ -171,7 +171,7 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
       {/* Locked badges hint */}
       {locked.length > 0 && (
         <div className="flex items-center gap-2 pt-2">
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-gray-400 dark:text-white">
             {locked.length} more to unlock
           </span>
           <div className="flex gap-1">
@@ -180,10 +180,10 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
               return (
                 <div
                   key={badge.id}
-                  className="h-5 w-5 rounded bg-gray-50 flex items-center justify-center opacity-40"
+                  className="h-5 w-5 rounded bg-gray-50 dark:bg-neutral-800 flex items-center justify-center opacity-40"
                   title={`${badge.label}: ${badge.description}`}
                 >
-                  <Icon className="h-3 w-3 text-gray-400" />
+                  <Icon className="h-3 w-3 text-gray-400 dark:text-white" />
                 </div>
               );
             })}

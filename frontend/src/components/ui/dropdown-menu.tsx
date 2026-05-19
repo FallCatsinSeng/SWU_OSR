@@ -9,7 +9,11 @@ interface DropdownMenuProps {
   align?: "left" | "right";
 }
 
-function DropdownMenu({ trigger, children, align = "right" }: DropdownMenuProps) {
+function DropdownMenu({
+  trigger,
+  children,
+  align = "right",
+}: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -29,7 +33,7 @@ function DropdownMenu({ trigger, children, align = "right" }: DropdownMenuProps)
       {open && (
         <div
           className={cn(
-            "absolute z-50 mt-2 min-w-[200px] rounded-md border border-gray-200 bg-white shadow-lg py-1",
+            "absolute z-50 mt-2 min-w-[200px] rounded-geist-sm bg-geist-canvas dark:bg-neutral-900 geist-level-5 py-1 animate-scale-in",
             align === "right" ? "right-0" : "left-0"
           )}
         >
@@ -47,7 +51,7 @@ function DropdownMenuItem({
   return (
     <div
       className={cn(
-        "cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 transition-colors",
+        "cursor-pointer px-3 py-2 text-body-sm text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-white dark:hover:bg-neutral-800",
         className
       )}
       {...props}

@@ -14,7 +14,9 @@ interface ToastContextValue {
   toast: (message: string, type?: Toast["type"]) => void;
 }
 
-const ToastContext = React.createContext<ToastContextValue | undefined>(undefined);
+const ToastContext = React.createContext<ToastContextValue | undefined>(
+  undefined
+);
 
 export function useToast() {
   const context = React.useContext(ToastContext);
@@ -27,13 +29,16 @@ export function useToast() {
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<Toast[]>([]);
 
-  const addToast = React.useCallback((message: string, type: Toast["type"] = "info") => {
-    const id = Math.random().toString(36).substring(7);
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 5000);
-  }, []);
+  const addToast = React.useCallback(
+    (message: string, type: Toast["type"] = "info") => {
+      const id = Math.random().toString(36).substring(7);
+      setToasts((prev) => [...prev, { id, message, type }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 5000);
+    },
+    []
+  );
 
   const removeToast = React.useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -47,15 +52,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={cn(
-              "flex items-center justify-between rounded-md px-4 py-3 text-sm shadow-lg min-w-[300px]",
-              t.type === "success" && "bg-green-50 text-green-800 border border-green-200",
-              t.type === "error" && "bg-red-50 text-red-800 border border-red-200",
-              t.type === "info" && "bg-blue-50 text-blue-800 border border-blue-200"
+              "flex items-center justify-between rounded-geist-md px-4 py-3 text-body-sm geist-level-3 min-w-[300px] animate-slide-up",
+              t.type === "success" &&
+                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-success dark:bg-neutral-900 dark:text-white dark:border-l-neutral-400",
+              t.type === "error" &&
+                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-error dark:bg-neutral-900 dark:text-white dark:border-l-neutral-400",
+              t.type === "info" &&
+                "bg-geist-canvas text-geist-ink border-l-2 border-l-geist-link dark:bg-neutral-900 dark:text-white dark:border-l-neutral-400"
             )}
           >
             <span>{t.message}</span>
-            <button onClick={() => removeToast(t.id)} className="ml-2">
-              <X className="h-4 w-4" />
+            <button
+              onClick={() => removeToast(t.id)}
+              className="ml-3 text-geist-mute hover:text-geist-ink transition-colors dark:text-white dark:hover:text-white"
+            >
+              <X className="h-3.5 w-3.5" />
             </button>
           </div>
         ))}

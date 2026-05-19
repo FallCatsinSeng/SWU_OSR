@@ -3,139 +3,204 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --primary: 210 100% 30%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 174 62% 40%;
-    --secondary-foreground: 0 0% 100%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 210 100% 30%;
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --border: 214 20% 90%;
-    --ring: 210 100% 30%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 142 76% 36%;
-    --warning: 38 92% 50%;
-  }
-}
-
-@layer base {
   * {
-    @apply border-gray-200;
+    @apply border-geist-hairline dark:border-neutral-800;
   }
 
   body {
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
+    @apply bg-geist-canvas-soft text-geist-ink antialiased dark:bg-black dark:text-white;
+    font-feature-settings: "ss01", "ss02";
   }
 }
 
 @layer components {
-  .gradient-primary {
-    @apply bg-gradient-to-r from-[hsl(210,100%,30%)] to-[hsl(174,62%,40%)];
+  /* Geist Brand Mesh Gradient — hero scale only */
+  .geist-mesh-gradient {
+    background: radial-gradient(
+        ellipse 80% 60% at 30% 40%,
+        rgba(0, 124, 240, 0.15) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 60% 30%,
+        rgba(0, 223, 216, 0.12) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 50% 60% at 70% 60%,
+        rgba(121, 40, 202, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 50% 70%,
+        rgba(255, 0, 128, 0.08) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 40% 40% at 80% 80%,
+        rgba(249, 203, 40, 0.06) 0%,
+        transparent 40%
+      );
   }
 
-  .gradient-primary-subtle {
-    @apply bg-gradient-to-br from-[hsl(210,100%,95%)] via-white to-[hsl(174,62%,95%)];
+  /* Dark mode mesh gradient — more vibrant against dark bg */
+  :is(.dark) .geist-mesh-gradient {
+    background: radial-gradient(
+        ellipse 80% 60% at 30% 40%,
+        rgba(0, 124, 240, 0.2) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 60% 30%,
+        rgba(0, 223, 216, 0.15) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 50% 60% at 70% 60%,
+        rgba(121, 40, 202, 0.15) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 50% 70%,
+        rgba(255, 0, 128, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 40% 40% at 80% 80%,
+        rgba(249, 203, 40, 0.08) 0%,
+        transparent 40%
+      );
   }
 
-  .gradient-card {
-    @apply bg-gradient-to-br from-white to-[hsl(210,20%,98%)];
+  /* Geist Elevation Levels — Light Mode */
+  .geist-level-0 {
+    box-shadow: none;
   }
 
-  .glass-card {
-    @apply bg-white/80 backdrop-blur-sm border border-gray-200/60 shadow-sm;
+  .geist-level-1 {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
   }
 
-  .animate-fade-in {
-    animation: fadeIn 0.5s ease-out;
+  .geist-level-2 {
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.02),
+      0px 2px 2px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
   }
 
-  .animate-slide-up {
-    animation: slideUp 0.5s ease-out;
+  .geist-level-3 {
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.04),
+      0px 8px 8px -8px rgba(0, 0, 0, 0.04),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.08);
   }
 
-  .animate-slide-down {
-    animation: slideDown 0.3s ease-out;
+  .geist-level-4 {
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.04),
+      0px 8px 16px -4px rgba(0, 0, 0, 0.04),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.08);
   }
 
-  .animate-scale-in {
-    animation: scaleIn 0.3s ease-out;
+  .geist-level-5 {
+    box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.02),
+      0px 8px 16px -4px rgba(0, 0, 0, 0.04),
+      0px 24px 32px -8px rgba(0, 0, 0, 0.06),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.08);
   }
 
-  .animate-pulse-soft {
-    animation: pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  /* Geist Elevation Levels — Dark Mode (border-based, minimal shadow) */
+  :is(.dark) .geist-level-0 {
+    box-shadow: none;
   }
 
-  .hover-lift {
-    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-md;
+  :is(.dark) .geist-level-1 {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
 
-  .hover-glow {
-    @apply transition-all duration-200 hover:shadow-lg hover:shadow-blue-100;
+  :is(.dark) .geist-level-2 {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  :is(.dark) .geist-level-3 {
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  :is(.dark) .geist-level-4 {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  :is(.dark) .geist-level-5 {
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.5),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
 }
 
 @layer utilities {
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[hsl(210,100%,30%)] to-[hsl(174,62%,40%)];
+  /* Display typography with negative tracking */
+  .text-display-xl {
+    @apply text-5xl font-semibold leading-none;
+    letter-spacing: -2.4px;
   }
-}
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+  .text-display-lg {
+    @apply text-3xl font-semibold leading-tight;
+    letter-spacing: -1.28px;
   }
-  to {
-    opacity: 1;
-  }
-}
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  .text-display-md {
+    @apply text-2xl font-semibold leading-snug;
+    letter-spacing: -0.96px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
+  .text-display-sm {
+    @apply text-xl font-semibold leading-7;
+    letter-spacing: -0.6px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
+  /* Body typography */
+  .text-body-lg {
+    @apply text-lg font-normal leading-7 tracking-normal;
   }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
 
-@keyframes pulseSoft {
-  0%,
-  100% {
-    opacity: 1;
+  .text-body-md {
+    @apply text-base font-normal leading-6 tracking-normal;
   }
-  50% {
-    opacity: 0.7;
+
+  .text-body-md-strong {
+    @apply text-base font-medium leading-6 tracking-normal;
+  }
+
+  .text-body-sm {
+    @apply text-sm font-normal leading-5;
+    letter-spacing: -0.28px;
+  }
+
+  .text-body-sm-strong {
+    @apply text-sm font-medium leading-5;
+    letter-spacing: -0.28px;
+  }
+
+  /* Caption & Code typography */
+  .text-caption {
+    @apply text-xs font-normal leading-4 tracking-normal;
+  }
+
+  .text-caption-mono {
+    @apply font-mono text-xs font-normal leading-4 tracking-normal;
+  }
+
+  .text-code {
+    @apply font-mono font-normal leading-5 tracking-normal;
+    font-size: 13px;
+  }
+
+  /* Button typography */
+  .text-button-md {
+    @apply text-sm font-medium leading-5 tracking-normal;
+  }
+
+  .text-button-lg {
+    @apply text-base font-medium leading-6 tracking-normal;
   }
 }
 
@@ -145,34 +210,38 @@
 }
 
 .heatmap-level-0 {
-  @apply bg-gray-100;
+  @apply bg-geist-canvas-soft-2 dark:bg-neutral-800;
 }
 
 .heatmap-level-1 {
-  @apply bg-teal-200;
+  @apply bg-emerald-200 dark:bg-emerald-900;
 }
 
 .heatmap-level-2 {
-  @apply bg-teal-400;
+  @apply bg-emerald-400 dark:bg-emerald-700;
 }
 
 .heatmap-level-3 {
-  @apply bg-teal-600;
+  @apply bg-emerald-600 dark:bg-emerald-500;
 }
 
 .heatmap-level-4 {
-  @apply bg-teal-800;
+  @apply bg-emerald-800 dark:bg-emerald-400;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — subtle */
 ::-webkit-scrollbar {
   width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100 rounded-full;
+  @apply bg-geist-canvas-soft dark:bg-neutral-950;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+  @apply bg-geist-hairline rounded-full dark:bg-neutral-700;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-geist-hairline-strong dark:bg-neutral-600;
 }

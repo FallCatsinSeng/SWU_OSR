@@ -34,8 +34,8 @@ export function NotificationBell() {
   return (
     <DropdownMenu
       trigger={
-        <button className="relative p-2 rounded-md hover:bg-gray-100 transition-colors">
-          <Bell className="h-5 w-5 text-gray-600" />
+        <button className="relative p-2 rounded-md hover:bg-gray-100 dark:bg-neutral-800 transition-colors">
+          <Bell className="h-5 w-5 text-gray-600 dark:text-white" />
           {unreadCount > 0 && (
             <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">
               {unreadCount > 9 ? "9+" : unreadCount}
@@ -46,7 +46,7 @@ export function NotificationBell() {
     >
       <div className="max-h-64 overflow-auto">
         {!notifications || notifications.length === 0 ? (
-          <div className="px-3 py-4 text-sm text-gray-500 text-center">
+          <div className="px-3 py-4 text-sm text-gray-500 dark:text-white text-center">
             No notifications
           </div>
         ) : (
@@ -59,7 +59,7 @@ export function NotificationBell() {
               className={notif.is_read ? "opacity-60" : "font-medium"}
             >
               <p className="text-sm">{notif.message}</p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-400 dark:text-white mt-0.5">
                 {new Date(notif.created_at).toLocaleDateString()}
               </p>
             </DropdownMenuItem>
