@@ -65,23 +65,20 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
     },
   });
 
-  // Fetch recent activity for this repo from the feed
-  const { data: feedData } = useQuery<{ items: ActivityItem[] }>({
+  // Fetch recent activity for this repo from the dedicated endpoint
+  const { data: feedData, isLoading: activityLoading } = useQuery<{ items: ActivityItem[] }>({
     queryKey: ["repoActivity", params.id],
     queryFn: async () => {
       const { data } = await api.get<{ ok: boolean; data: { items: ActivityItem[] } }>(
-        "/feed",
-        { params: { limit: 10 } }
+        `/repos/${params.id}/activity`,
+        { params: { limit: 20 } }
       );
       return data.data;
     },
   });
 
   const repo = repos?.find((r) => r.id === params.id);
-  // Filter activities related to this repo
-  const repoActivities = (feedData?.items ?? []).filter(
-    (item) => repo && item.repo_name.includes(repo.repo_name)
-  ).slice(0, 8);
+  const repoActivities = feedData?.items ?? [];
 
   if (isLoading) {
     return (

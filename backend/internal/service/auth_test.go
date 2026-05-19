@@ -64,6 +64,15 @@ func (m *mockGitHubService) RemoveWebhook(ctx context.Context, token, owner, rep
 	}
 	return nil
 }
+func (m *mockGitHubService) GetRepoEvents(_ context.Context, _, _, _ string) ([]github.RepoEvent, error) {
+	return nil, nil
+}
+func (m *mockGitHubService) GetUserPublicEvents(_ context.Context, _, _ string) ([]github.RepoEvent, error) {
+	return nil, nil
+}
+func (m *mockGitHubService) GetRepoCommits(_ context.Context, _, _, _ string, _ int) ([]github.Commit, error) {
+	return nil, nil
+}
 
 // mockUserRepo is a mock for domain.UserRepository.
 type mockUserRepo struct {
@@ -126,6 +135,14 @@ func (m *mockUserRepo) MarkTokenInvalid(_ context.Context, id uuid.UUID) error {
 		}
 	}
 	return nil
+}
+
+func (m *mockUserRepo) ListAll(_ context.Context) ([]*domain.User, error) {
+	var users []*domain.User
+	for _, u := range m.users {
+		users = append(users, u)
+	}
+	return users, nil
 }
 
 // mockRefreshTokenRepo is a mock for domain.RefreshTokenRepository.

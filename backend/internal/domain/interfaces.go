@@ -38,6 +38,7 @@ type ActivityRepository interface {
 	Insert(ctx context.Context, log *ActivityLog) error
 	GetFeed(ctx context.Context, cursor time.Time, limit int) ([]ActivityItem, error)
 	GetUserFeed(ctx context.Context, userID uuid.UUID, cursor time.Time, limit int) ([]ActivityItem, error)
+	GetRepoFeed(ctx context.Context, showcaseRepoID uuid.UUID, cursor time.Time, limit int) ([]ActivityItem, error)
 	GetByGitHubEventID(ctx context.Context, eventID string) (*ActivityLog, error)
 }
 

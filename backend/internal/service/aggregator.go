@@ -21,7 +21,9 @@ type AggregatorService interface {
 	ProcessWebhook(ctx context.Context, payload []byte, signature, eventType, deliveryID string) error
 	GetActivityFeed(ctx context.Context, params domain.FeedParams) (*domain.FeedResult, error)
 	GetUserActivity(ctx context.Context, userID uuid.UUID, params domain.FeedParams) (*domain.FeedResult, error)
+	GetRepoActivity(ctx context.Context, showcaseRepoID uuid.UUID, params domain.FeedParams) (*domain.FeedResult, error)
 	SyncUserActivity(ctx context.Context, userID uuid.UUID) (int, error)
+	SyncRepoActivity(ctx context.Context, userID uuid.UUID, showcaseRepoID uuid.UUID) (int, error)
 }
 
 // aggregatorService is the concrete implementation.
@@ -170,6 +172,128 @@ func (s *aggregatorService) GetUserActivity(ctx context.Context, userID uuid.UUI
 		NextCursor: nextCursor,
 		HasMore:    hasMore,
 	}, nil
+}
+
+// GetRepoActivity returns a paginated activity feed for a specific showcase repo.
+func (s *aggregatorService) GetRepoActivity(ctx context.Context, showcaseRepoID uuid.UUID, params domain.FeedParams) (*domain.FeedResult, error) {
+	limit := clampLimit(params.Limit)
+	cursor := decodeCursor(params.Cursor)
+
+	items, err := s.activityRepo.GetRepoFeed(ctx, showcaseRepoID, cursor, limit+1)
+	if err != nil {
+		return nil, err
+	}
+
+	hasMore := len(items) > limit
+	if hasMore {
+		items = items[:limit]
+	}
+
+	var nextCursor string
+	if hasMore && len(items) > 0 {
+		nextCursor = encodeCursor(items[len(items)-1].CreatedAt)
+	}
+
+	return &domain.FeedResult{
+		Items:      items,
+		NextCursor: nextCursor,
+		HasMore:    hasMore,
+	}, nil
+}
+
+// SyncRepoActivity fetches recent commits for a specific showcase repo and inserts them into activity logs.
+func (s *aggregatorService) SyncRepoActivity(ctx context.Context, userID uuid.UUID, showcaseRepoID uuid.UUID) (int, error) {
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	if user.GitHubUsername == "" {
+		return 0, nil
+	}
+
+	// Decrypt the user's GitHub token
+	var token string
+	if user.GitHubToken != "" {
+		decrypted, err := Decrypt(user.GitHubToken, s.encryptionKey)
+		if err == nil {
+			token = decrypted
+		}
+	}
+
+	// Get the specific showcase repo
+	repo, err := s.showcaseRepo.GetByID(ctx, showcaseRepoID)
+	if err != nil {
+		return 0, err
+	}
+
+	// Verify the repo belongs to this user
+	if repo.UserID != userID {
+		return 0, domain.ErrNotFound
+	}
+
+	parts := strings.SplitN(repo.RepoFullName, "/", 2)
+	if len(parts) != 2 {
+		return 0, fmt.Errorf("invalid repo full name: %s", repo.RepoFullName)
+	}
+
+	inserted := 0
+
+	// Fetch commits from GitHub
+	commits, err := s.githubSvc.GetRepoCommits(ctx, token, parts[0], parts[1], 30)
+	if err != nil {
+		return 0, fmt.Errorf("fetching repo commits: %w", err)
+	}
+
+	for _, commit := range commits {
+		// Only include commits by this user
+		if commit.Author.Login != "" && commit.Author.Login != user.GitHubUsername {
+			continue
+		}
+
+		// Use commit SHA as event ID for dedup
+		eventID := "commit:" + commit.SHA
+		existing, _ := s.activityRepo.GetByGitHubEventID(ctx, eventID)
+		if existing != nil {
+			continue
+		}
+
+		// Parse commit date
+		commitTime, parseErr := time.Parse(time.RFC3339, commit.Commit.Author.Date)
+		if parseErr != nil {
+			continue
+		}
+
+		// Truncate long commit messages
+		msg := commit.Commit.Message
+		if len(msg) > 100 {
+			msg = msg[:100] + "..."
+		}
+
+		summary := fmt.Sprintf("Committed to %s: %s", repo.RepoName, msg)
+		meta, _ := json.Marshal(map[string]string{
+			"sha":     commit.SHA[:7],
+			"message": commit.Commit.Message,
+		})
+
+		log := &domain.ActivityLog{
+			ID:             uuid.New(),
+			UserID:         userID,
+			ShowcaseRepoID: repo.ID,
+			EventType:      domain.EventPush,
+			Summary:        summary,
+			Metadata:       meta,
+			GitHubEventID:  eventID,
+			CreatedAt:      commitTime,
+		}
+
+		if insertErr := s.activityRepo.Insert(ctx, log); insertErr != nil {
+			continue
+		}
+		inserted++
+	}
+
+	return inserted, nil
 }
 
 // verifySignature checks the HMAC-SHA256 signature.

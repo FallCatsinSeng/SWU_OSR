@@ -76,6 +76,43 @@ func (m *mockShowcaseRepo) SoftDeleteByUser(_ context.Context, userID uuid.UUID,
 	return nil
 }
 
+func (m *mockShowcaseRepo) GetByUserAndRepoFullNameIncludeDeleted(_ context.Context, userID uuid.UUID, repoFullName string) (*domain.ShowcaseRepo, error) {
+	for i := range m.repos {
+		if m.repos[i].UserID == userID && m.repos[i].RepoFullName == repoFullName {
+			return &m.repos[i], nil
+		}
+	}
+	return nil, domain.ErrNotFound
+}
+
+func (m *mockShowcaseRepo) GetByUserAndGitHubRepoIDIncludeDeleted(_ context.Context, userID uuid.UUID, githubRepoID int64) (*domain.ShowcaseRepo, error) {
+	for i := range m.repos {
+		if m.repos[i].UserID == userID && m.repos[i].GitHubRepoID == githubRepoID {
+			return &m.repos[i], nil
+		}
+	}
+	return nil, domain.ErrNotFound
+}
+
+func (m *mockShowcaseRepo) Restore(_ context.Context, repo *domain.ShowcaseRepo) error {
+	for i := range m.repos {
+		if m.repos[i].ID == repo.ID {
+			m.repos[i] = *repo
+			return nil
+		}
+	}
+	return nil
+}
+
+func (m *mockShowcaseRepo) UpdateDescription(_ context.Context, repoID uuid.UUID, description string) error {
+	for i := range m.repos {
+		if m.repos[i].ID == repoID {
+			m.repos[i].Description = description
+		}
+	}
+	return nil
+}
+
 // mockActivityRepo is a mock implementation of domain.ActivityRepository.
 type mockActivityRepo struct {
 	logs []domain.ActivityLog
@@ -141,6 +178,29 @@ func (m *mockActivityRepo) GetUserFeed(_ context.Context, userID uuid.UUID, curs
 	return items, nil
 }
 
+func (m *mockActivityRepo) GetRepoFeed(_ context.Context, showcaseRepoID uuid.UUID, cursor time.Time, limit int) ([]domain.ActivityItem, error) {
+	var items []domain.ActivityItem
+	for _, l := range m.logs {
+		if l.ShowcaseRepoID == showcaseRepoID && l.CreatedAt.Before(cursor) {
+			items = append(items, domain.ActivityItem{
+				ID:        l.ID,
+				UserID:    l.UserID,
+				EventType: l.EventType,
+				Summary:   l.Summary,
+				Metadata:  l.Metadata,
+				CreatedAt: l.CreatedAt,
+			})
+		}
+	}
+	if len(items) > limit {
+		items = items[:limit]
+	}
+	if items == nil {
+		items = []domain.ActivityItem{}
+	}
+	return items, nil
+}
+
 func (m *mockActivityRepo) GetByGitHubEventID(_ context.Context, eventID string) (*domain.ActivityLog, error) {
 	for i := range m.logs {
 		if m.logs[i].GitHubEventID == eventID {
@@ -171,7 +231,7 @@ func TestGetPublicProfile_NeverExposesPrivateData(t *testing.T) {
 	}
 	userRepo.users["2021001"] = user
 
-	svc := NewProfileService(userRepo, showcaseRepo, activityRepo)
+	svc := NewProfileService(userRepo, showcaseRepo, activityRepo, nil, nil)
 
 	profile, err := svc.GetPublicProfile(context.Background(), "johndoe")
 	require.NoError(t, err)
@@ -213,7 +273,7 @@ func TestGetRealIdentity_FacultySucceeds(t *testing.T) {
 	userRepo.users["FAC001"] = faculty
 	userRepo.users["2021001"] = student
 
-	svc := NewProfileService(userRepo, showcaseRepo, activityRepo)
+	svc := NewProfileService(userRepo, showcaseRepo, activityRepo, nil, nil)
 
 	identity, err := svc.GetRealIdentity(context.Background(), facultyID, "johndoe")
 	require.NoError(t, err)
@@ -250,7 +310,7 @@ func TestGetRealIdentity_StudentSucceeds(t *testing.T) {
 	userRepo.users["2021001"] = student
 	userRepo.users["2021002"] = otherStudent
 
-	svc := NewProfileService(userRepo, showcaseRepo, activityRepo)
+	svc := NewProfileService(userRepo, showcaseRepo, activityRepo, nil, nil)
 
 	identity, err := svc.GetRealIdentity(context.Background(), studentID, "student2")
 	require.NoError(t, err)
