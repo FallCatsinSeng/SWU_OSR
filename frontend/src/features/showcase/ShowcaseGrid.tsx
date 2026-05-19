@@ -51,16 +51,35 @@ export function ShowcaseGrid() {
   const updateTagMutation = useMutation({
     mutationFn: async ({ repo, newTag }: { repo: ShowcaseRepo; newTag: AcademicTag }) => {
       await api.delete(`/showcase/${repo.id}`);
-      await api.post("/showcase", {
-        selections: [
-          {
-            repo_id: repo.github_repo_id,
-            repo_name: repo.repo_name,
-            full_name: repo.repo_full_name,
-            tag: newTag,
-          },
-        ],
-      });
+      try {
+        await api.post("/showcase", {
+          selections: [
+            {
+              repo_id: repo.github_repo_id,
+              repo_name: repo.repo_name,
+              full_name: repo.repo_full_name,
+              tag: newTag,
+            },
+          ],
+        });
+      } catch (postError) {
+        // Rollback: re-add the repo with the original tag
+        try {
+          await api.post("/showcase", {
+            selections: [
+              {
+                repo_id: repo.github_repo_id,
+                repo_name: repo.repo_name,
+                full_name: repo.repo_full_name,
+                tag: repo.academic_tag,
+              },
+            ],
+          });
+        } catch {
+          // Rollback also failed - surface the original error
+        }
+        throw postError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["showcaseRepos"] });
@@ -68,6 +87,7 @@ export function ShowcaseGrid() {
       setEditingTagId(null);
     },
     onError: () => {
+      queryClient.invalidateQueries({ queryKey: ["showcaseRepos"] });
       toast("Failed to update tag", "error");
       setEditingTagId(null);
     },

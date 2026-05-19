@@ -21,7 +21,7 @@ export default function SettingsPage() {
           <ProfileEditForm />
         </section>
 
-        {user && (
+        {user && user.github_username && (
           <section>
             <h2 className="text-lg font-semibold text-gray-900 mb-3">
               GitHub Connection

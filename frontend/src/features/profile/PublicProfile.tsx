@@ -16,9 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogContent,
-  DialogClose,
 } from "@/components/ui/dialog";
-import { ExternalLink, MessageSquare } from "lucide-react";
+import { ExternalLink, MessageSquare, X } from "lucide-react";
 
 interface PublicProfileProps {
   alias: string;
@@ -227,7 +226,12 @@ export function PublicProfile({ alias }: PublicProfileProps) {
       )}
 
       <Dialog open={identityOpen} onOpenChange={setIdentityOpen}>
-        <DialogClose onClose={() => setIdentityOpen(false)} />
+        <button
+          onClick={() => setIdentityOpen(false)}
+          className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100"
+        >
+          <X className="h-4 w-4" />
+        </button>
         <DialogHeader>
           <DialogTitle>Real Identity</DialogTitle>
         </DialogHeader>
@@ -252,7 +256,9 @@ export function PublicProfile({ alias }: PublicProfileProps) {
               </p>
             </div>
           ) : (
-            <p className="text-gray-500">Unable to load identity information.</p>
+            <p className="text-gray-500">
+              Unable to load identity information.
+            </p>
           )}
         </DialogContent>
       </Dialog>
