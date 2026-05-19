@@ -23,16 +23,15 @@ function getMonthLabel(date: Date): string {
 
 export function ContributionHeatmap({ contributionDays }: ContributionHeatmapProps) {
   const weeks = 20;
-  const totalDays = weeks * 7;
 
   // Build date grid: last N weeks ending today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Find the start date (totalDays ago, aligned to start of week - Sunday)
+  // Find the start date aligned to Sunday
+  const endDate = new Date(today);
   const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - totalDays + 1);
-  // Align to Sunday
+  startDate.setDate(startDate.getDate() - (weeks * 7) + 1);
   const dayOfWeek = startDate.getDay();
   startDate.setDate(startDate.getDate() - dayOfWeek);
 
@@ -49,7 +48,7 @@ export function ContributionHeatmap({ contributionDays }: ContributionHeatmapPro
       const count = contributionDays?.[dateStr] ?? 0;
       week.push({ date: dateStr, count, level: getLevel(count) });
 
-      // Track month labels
+      // Track month labels (only on first day of each week)
       if (d === 0 && currentDate.getMonth() !== lastMonth) {
         lastMonth = currentDate.getMonth();
         monthLabels.push({ label: getMonthLabel(currentDate), weekIdx: w });
@@ -64,13 +63,13 @@ export function ContributionHeatmap({ contributionDays }: ContributionHeatmapPro
 
   return (
     <div className="overflow-x-auto">
-      {/* Month labels */}
-      <div className="flex gap-0.5 mb-1 ml-0">
+      {/* Month labels row */}
+      <div className="relative h-4 mb-1" style={{ width: `${weeks * 14}px` }}>
         {monthLabels.map((m, i) => (
           <span
             key={i}
-            className="text-[10px] text-gray-400"
-            style={{ marginLeft: `${m.weekIdx * 14}px`, position: i === 0 ? "relative" : "absolute", left: i > 0 ? `${m.weekIdx * 14}px` : undefined }}
+            className="absolute text-[10px] text-gray-400"
+            style={{ left: `${m.weekIdx * 14}px` }}
           >
             {m.label}
           </span>

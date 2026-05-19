@@ -18,6 +18,7 @@ type ShowcaseService interface {
 	GetShowcase(ctx context.Context, userID uuid.UUID) ([]domain.ShowcaseRepo, error)
 	UpdateShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error
 	RemoveFromShowcase(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error
+	UpdateRepoDescription(ctx context.Context, userID uuid.UUID, repoID uuid.UUID, description string) error
 }
 
 // showcaseService is the concrete implementation.
@@ -256,4 +257,28 @@ func (s *showcaseService) RemoveFromShowcase(ctx context.Context, userID uuid.UU
 	}
 
 	return s.showcaseRepo.SoftDeleteByUser(ctx, userID, repoID)
+}
+
+
+// UpdateRepoDescription updates the description of a specific showcase repo.
+func (s *showcaseService) UpdateRepoDescription(ctx context.Context, userID uuid.UUID, repoID uuid.UUID, description string) error {
+	repos, err := s.showcaseRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	var target *domain.ShowcaseRepo
+	for i := range repos {
+		if repos[i].ID == repoID {
+			target = &repos[i]
+			break
+		}
+	}
+	if target == nil {
+		return domain.ErrNotFound
+	}
+
+	target.Description = description
+	target.UpdatedAt = time.Now()
+	return s.showcaseRepo.UpdateDescription(ctx, repoID, description)
 }
