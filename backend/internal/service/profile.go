@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
 	"github.com/google/uuid"
 )
 
@@ -59,9 +60,11 @@ var aliasRegex = regexp.MustCompile(`^[a-zA-Z0-9_]{3,50}$`)
 
 // profileService is the concrete implementation.
 type profileService struct {
-	userRepo     domain.UserRepository
-	showcaseRepo domain.ShowcaseRepository
-	activityRepo domain.ActivityRepository
+	userRepo      domain.UserRepository
+	showcaseRepo  domain.ShowcaseRepository
+	activityRepo  domain.ActivityRepository
+	githubSvc     github.Service
+	encryptionKey []byte
 }
 
 // NewProfileService creates a new profile service.
@@ -69,11 +72,15 @@ func NewProfileService(
 	userRepo domain.UserRepository,
 	showcaseRepo domain.ShowcaseRepository,
 	activityRepo domain.ActivityRepository,
+	githubSvc github.Service,
+	encryptionKey []byte,
 ) ProfileService {
 	return &profileService{
-		userRepo:     userRepo,
-		showcaseRepo: showcaseRepo,
-		activityRepo: activityRepo,
+		userRepo:      userRepo,
+		showcaseRepo:  showcaseRepo,
+		activityRepo:  activityRepo,
+		githubSvc:     githubSvc,
+		encryptionKey: encryptionKey,
 	}
 }
 
@@ -165,25 +172,47 @@ func (s *profileService) GetRealIdentity(ctx context.Context, requesterID uuid.U
 }
 
 // GetUserStats computes activity statistics for a user.
+// It combines data from the local activity_logs with live GitHub repo data.
 func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*UserStats, error) {
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	repos, err := s.showcaseRepo.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Collect languages from showcase repos
+	// Collect languages from showcase repos (already stored in DB)
 	langSet := make(map[string]struct{})
 	for _, r := range repos {
 		if r.Language != "" {
 			langSet[r.Language] = struct{}{}
 		}
 	}
+
+	// If user has a GitHub token, also fetch languages from all their repos
+	if user.GitHubToken != "" {
+		token, decErr := Decrypt(user.GitHubToken, s.encryptionKey)
+		if decErr == nil && token != "" {
+			ghRepos, listErr := s.githubSvc.ListRepos(ctx, token)
+			if listErr == nil {
+				for _, r := range ghRepos {
+					if r.Language != "" {
+						langSet[r.Language] = struct{}{}
+					}
+				}
+			}
+		}
+	}
+
 	languages := make([]string, 0, len(langSet))
 	for l := range langSet {
 		languages = append(languages, l)
 	}
 
-	// Get activity feed to compute stats
+	// Get activity feed to compute commit stats
 	feed, err := s.activityRepo.GetUserFeed(ctx, userID, time.Now().Add(time.Second), 1000)
 	if err != nil {
 		return nil, err
@@ -197,6 +226,46 @@ func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*U
 		}
 		day := item.CreatedAt.Format("2006-01-02")
 		daySet[day] = struct{}{}
+	}
+
+	// If no activity in DB yet, try to get commit count from GitHub repos directly
+	if totalCommits == 0 && user.GitHubToken != "" {
+		token, decErr := Decrypt(user.GitHubToken, s.encryptionKey)
+		if decErr == nil && token != "" {
+			for _, repo := range repos {
+				parts := splitFullName(repo.RepoFullName)
+				if len(parts) != 2 {
+					continue
+				}
+				commits, cErr := s.githubSvc.GetRepoCommits(ctx, token, parts[0], parts[1], 100)
+				if cErr != nil {
+					continue
+				}
+				for _, c := range commits {
+					if c.Author.Login == user.GitHubUsername {
+						totalCommits++
+						if c.Commit.Author.Date != "" {
+							t, parseErr := time.Parse(time.RFC3339, c.Commit.Author.Date)
+							if parseErr == nil {
+								daySet[t.Format("2006-01-02")] = struct{}{}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Also count total repos from GitHub if available
+	totalRepos := len(repos)
+	if user.GitHubToken != "" {
+		token, decErr := Decrypt(user.GitHubToken, s.encryptionKey)
+		if decErr == nil && token != "" {
+			ghRepos, listErr := s.githubSvc.ListRepos(ctx, token)
+			if listErr == nil && len(ghRepos) > totalRepos {
+				totalRepos = len(ghRepos)
+			}
+		}
 	}
 
 	// Calculate streak
@@ -213,11 +282,25 @@ func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*U
 
 	return &UserStats{
 		TotalCommits:  totalCommits,
-		TotalRepos:    len(repos),
+		TotalRepos:    totalRepos,
 		Languages:     languages,
 		ActiveDays:    len(daySet),
 		CurrentStreak: streak,
 	}, nil
+}
+
+// splitFullName splits "owner/repo" into ["owner", "repo"]
+func splitFullName(fullName string) []string {
+	parts := make([]string, 0, 2)
+	idx := 0
+	for i, c := range fullName {
+		if c == '/' {
+			parts = append(parts, fullName[idx:i])
+			idx = i + 1
+		}
+	}
+	parts = append(parts, fullName[idx:])
+	return parts
 }
 
 

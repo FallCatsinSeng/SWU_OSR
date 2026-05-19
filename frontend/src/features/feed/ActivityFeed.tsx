@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
@@ -61,6 +62,18 @@ export function ActivityFeed() {
       toast("Failed to sync activity from GitHub", "error");
     },
   });
+
+  // Auto-sync on first load when feed is empty and user is logged in
+  const autoSyncRef = useRef(false);
+  useEffect(() => {
+    if (autoSyncRef.current) return;
+    if (isLoading || isError) return;
+    const items = data?.pages.flatMap((page) => page.items) ?? [];
+    if (items.length === 0 && user && !syncMutation.isPending) {
+      autoSyncRef.current = true;
+      syncMutation.mutate();
+    }
+  }, [data, user, isLoading, isError]);
 
   if (isLoading) {
     return (

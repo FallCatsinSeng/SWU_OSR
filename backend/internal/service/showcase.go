@@ -119,6 +119,13 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 	}
 
 	// Insert new selections and register webhooks
+	// First, fetch all repos from GitHub to get metadata (html_url, description, language)
+	ghRepos, _ := s.githubSvc.ListRepos(ctx, token)
+	repoMetaMap := make(map[string]github.Repository)
+	for _, r := range ghRepos {
+		repoMetaMap[r.FullName] = r
+	}
+
 	for _, sel := range selections {
 		parts := strings.SplitN(sel.FullName, "/", 2)
 		var webhookID *int64
@@ -129,12 +136,26 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 			}
 		}
 
+		// Get metadata from GitHub API response
+		var description, language, htmlURL string
+		if meta, ok := repoMetaMap[sel.FullName]; ok {
+			description = meta.Description
+			language = meta.Language
+			htmlURL = meta.HTMLURL
+		}
+		if htmlURL == "" {
+			htmlURL = fmt.Sprintf("https://github.com/%s", sel.FullName)
+		}
+
 		repo := &domain.ShowcaseRepo{
 			ID:           uuid.New(),
 			UserID:       userID,
 			GitHubRepoID: sel.RepoID,
 			RepoName:     sel.RepoName,
 			RepoFullName: sel.FullName,
+			Description:  description,
+			Language:     language,
+			HTMLURL:      htmlURL,
 			AcademicTag:  sel.Tag,
 			WebhookID:    webhookID,
 			CreatedAt:    time.Now(),
