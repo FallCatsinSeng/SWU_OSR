@@ -68,7 +68,7 @@ export function ThreadList({ repoId }: ThreadListProps) {
     return (
       <Card className="border-red-100">
         <CardContent className="p-8 text-center">
-          <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+          <div className="h-12 w-12 rounded-full bg-red-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
             <MessageSquare className="h-6 w-6 text-red-400" />
           </div>
           <p className="text-gray-600 dark:text-white">Failed to load threads.</p>
@@ -81,7 +81,7 @@ export function ThreadList({ repoId }: ThreadListProps) {
 
   if (threads.length === 0) {
     return (
-      <Card className="border-dashed border-2 border-gray-200">
+      <Card className="border-dashed border-2 border-gray-200 dark:border-neutral-800">
         <CardContent className="p-10 text-center">
           <div className="h-14 w-14 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
             <MessageCircle className="h-7 w-7 text-indigo-300" />
@@ -108,7 +108,7 @@ export function ThreadList({ repoId }: ThreadListProps) {
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 dark:text-white group-hover:text-primary-700 dark:hover:text-white dark:text-white transition-colors">
+                  <h3 className="font-medium text-gray-900 dark:text-white group-hover:text-primary-700 dark:hover:text-white transition-colors">
                     {thread.title}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-white mt-1 line-clamp-1">

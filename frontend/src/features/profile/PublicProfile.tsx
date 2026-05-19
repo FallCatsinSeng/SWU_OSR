@@ -91,9 +91,9 @@ export function PublicProfile({ alias }: PublicProfileProps) {
 
   if (isError || !profile) {
     return (
-      <Card className="border-gray-100">
+      <Card className="border-gray-100 dark:border-neutral-800">
         <CardContent className="p-12 text-center">
-          <div className="h-16 w-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+          <div className="h-16 w-16 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
             <Code2 className="h-8 w-8 text-gray-300" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
@@ -145,7 +145,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
                         href={`https://github.com/${profile.github_username}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white flex items-center gap-1 transition-colors"
+                        className="text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white flex items-center gap-1 transition-colors"
                       >
                         @{profile.github_username}
                         <ExternalLink className="h-3 w-3" />
@@ -257,7 +257,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
               {profile.stats.languages.map((lang) => (
                 <span
                   key={lang}
-                  className="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-50 text-gray-700 border border-gray-100 hover:border-primary-200 hover:bg-primary-50 transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-white border border-gray-100 dark:border-neutral-800 hover:border-primary-200 hover:bg-primary-50 transition-colors"
                 >
                   {lang}
                 </span>
@@ -309,7 +309,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
                     )}
                     <Link
                       href={`/repos/${repo.id}/discussions`}
-                      className="text-xs text-gray-400 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white flex items-center gap-1 ml-auto transition-colors"
+                      className="text-xs text-gray-400 dark:text-white hover:text-primary-600 dark:hover:text-white flex items-center gap-1 ml-auto transition-colors"
                     >
                       <MessageSquare className="h-3 w-3" />
                       Discussions
@@ -336,7 +336,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
         <DialogContent>
           {identity ? (
             <div className="space-y-3">
-              <div className="p-4 rounded-xl bg-gray-50 space-y-2">
+              <div className="p-4 rounded-xl bg-gray-50 dark:bg-neutral-800 space-y-2">
                 <InfoRow label="Full Name" value={identity.full_name} />
                 <InfoRow label="NIM" value={identity.nim} />
                 <InfoRow label="Major" value={identity.major} />

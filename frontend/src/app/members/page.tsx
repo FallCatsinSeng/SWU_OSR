@@ -62,7 +62,7 @@ export default function MembersPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="h-10 w-10 rounded-xl bg-purple-50 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-purple-50 dark:bg-neutral-800 flex items-center justify-center">
             <Users className="h-5 w-5 text-purple-600" />
           </div>
           <div>
@@ -95,7 +95,7 @@ export default function MembersPage() {
               className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
                 roleFilter === role
                   ? "bg-primary-600 text-white border-primary-600 shadow-sm"
-                  : "bg-white text-gray-600 dark:text-white border-gray-200 hover:border-primary-300 hover:bg-primary-50"
+                  : "bg-white text-gray-600 dark:text-white border-gray-200 dark:border-neutral-800 hover:border-primary-300 hover:bg-primary-50"
               }`}
             >
               {role === "all" ? "All" : role.charAt(0).toUpperCase() + role.slice(1)}
@@ -117,7 +117,7 @@ export default function MembersPage() {
       {isError && (
         <Card className="border-red-100">
           <CardContent className="p-8 text-center">
-            <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+            <div className="h-12 w-12 rounded-full bg-red-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
               <Users className="h-6 w-6 text-red-500" />
             </div>
             <p className="text-gray-600 dark:text-white mb-3">Failed to load members.</p>
@@ -132,7 +132,7 @@ export default function MembersPage() {
       {!isLoading && !isError && filtered.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
-            <div className="h-16 w-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+            <div className="h-16 w-16 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
               <UserCircle className="h-8 w-8 text-gray-300" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
@@ -173,7 +173,7 @@ function MemberCard({ member }: { member: PublicProfile }) {
               className="ring-2 ring-gray-100 group-hover:ring-primary-100 transition-all"
             />
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-primary-700 dark:hover:text-white dark:text-white transition-colors">
+              <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-primary-700 dark:hover:text-white transition-colors">
                 {member.alias}
               </h3>
               <div className="flex items-center gap-2 mt-0.5">
@@ -222,7 +222,7 @@ function MemberCard({ member }: { member: PublicProfile }) {
               {member.stats.languages.slice(0, 4).map((lang) => (
                 <span
                   key={lang}
-                  className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-gray-50 text-gray-600 dark:text-white border border-gray-100"
+                  className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-gray-50 dark:bg-neutral-800 text-gray-600 dark:text-white border border-gray-100 dark:border-neutral-800"
                 >
                   {lang}
                 </span>

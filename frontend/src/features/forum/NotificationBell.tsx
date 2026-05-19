@@ -34,7 +34,7 @@ export function NotificationBell() {
   return (
     <DropdownMenu
       trigger={
-        <button className="relative p-2 rounded-md hover:bg-gray-100 transition-colors">
+        <button className="relative p-2 rounded-md hover:bg-gray-100 dark:bg-neutral-800 transition-colors">
           <Bell className="h-5 w-5 text-gray-600 dark:text-white" />
           {unreadCount > 0 && (
             <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center">

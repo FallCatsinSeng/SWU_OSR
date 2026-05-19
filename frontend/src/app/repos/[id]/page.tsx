@@ -117,7 +117,7 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
       <div className="mx-auto max-w-4xl px-4 py-8">
         <Card>
           <CardContent className="p-12 text-center">
-            <div className="h-14 w-14 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+            <div className="h-14 w-14 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
               <FolderGit2 className="h-7 w-7 text-gray-300" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
@@ -144,7 +144,7 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
       {/* Back link */}
       <Link
         href="/showcase"
-        className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white mb-6 transition-colors"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white mb-6 transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to Showcase
@@ -215,11 +215,11 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                   {repoActivities.map((activity) => (
                     <div
                       key={activity.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-gray-50/50 border border-gray-100"
+                      className="flex items-start gap-3 p-3 rounded-lg bg-gray-50/50 border border-gray-100 dark:border-neutral-800"
                     >
                       <div className="mt-0.5">{getEventIcon(activity.event_type)}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-700 line-clamp-2">
+                        <p className="text-sm text-gray-700 dark:text-white line-clamp-2">
                           {activity.summary}
                         </p>
                         <span className="text-xs text-gray-400 dark:text-white flex items-center gap-1 mt-1">
@@ -232,7 +232,7 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
+                  <div className="h-12 w-12 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
                     <GitBranch className="h-6 w-6 text-gray-300" />
                   </div>
                   <p className="text-sm text-gray-500 dark:text-white">
@@ -269,12 +269,12 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-500 dark:text-white">Full Name</span>
-                <span className="text-xs font-medium text-gray-700">{repo.repo_full_name}</span>
+                <span className="text-xs font-medium text-gray-700 dark:text-white">{repo.repo_full_name}</span>
               </div>
               {repo.language && (
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500 dark:text-white">Language</span>
-                  <span className="text-xs font-medium text-gray-700">{repo.language}</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-white">{repo.language}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
@@ -285,7 +285,7 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-500 dark:text-white">Added</span>
-                <span className="text-xs text-gray-700">
+                <span className="text-xs text-gray-700 dark:text-white">
                   {new Date(repo.created_at).toLocaleDateString()}
                 </span>
               </div>
@@ -302,7 +302,7 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                 href={githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
                 Open on GitHub
@@ -311,7 +311,7 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                 href={`${githubUrl}/issues`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
               >
                 <MessageSquare className="h-4 w-4" />
                 GitHub Issues
@@ -320,14 +320,14 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                 href={`${githubUrl}/pulls`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
               >
                 <GitPullRequest className="h-4 w-4" />
                 Pull Requests
               </a>
               <Link
                 href={`/repos/${repo.id}/discussions`}
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
               >
                 <MessageSquare className="h-4 w-4" />
                 Forum Discussions

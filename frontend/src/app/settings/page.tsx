@@ -22,7 +22,7 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-2xl px-4 py-8">
       {/* Header */}
       <div className="mb-8 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center">
+        <div className="h-10 w-10 rounded-xl bg-gray-100 dark:bg-neutral-800 flex items-center justify-center">
           <Settings className="h-5 w-5 text-gray-600 dark:text-white" />
         </div>
         <div>
@@ -51,7 +51,7 @@ export default function SettingsPage() {
             <Card className="hover:border-green-200 transition-colors">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-green-50 flex items-center justify-center">
+                  <div className="h-9 w-9 rounded-lg bg-green-50 dark:bg-neutral-800 flex items-center justify-center">
                     <Github className="h-4 w-4 text-green-600" />
                   </div>
                   <div className="flex-1">
@@ -86,11 +86,11 @@ export default function SettingsPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary-50 flex items-center justify-center">
+                  <div className="h-9 w-9 rounded-lg bg-primary-50 dark:bg-neutral-800 flex items-center justify-center">
                     <GraduationCap className="h-4 w-4 text-primary-600 dark:text-white" />
                   </div>
                   <div>
-                    <span className="text-sm text-gray-700">Student ID</span>
+                    <span className="text-sm text-gray-700 dark:text-white">Student ID</span>
                     <div className="mt-0.5">
                       <Badge
                         variant="secondary"

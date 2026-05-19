@@ -66,7 +66,7 @@ export function ProfileEditForm() {
           className="space-y-4"
         >
           <div className="space-y-2">
-            <label htmlFor="alias" className="text-sm font-medium text-gray-700">
+            <label htmlFor="alias" className="text-sm font-medium text-gray-700 dark:text-white">
               Alias (Public Display Name)
             </label>
             <Input id="alias" {...register("alias")} />
@@ -75,7 +75,7 @@ export function ProfileEditForm() {
             )}
           </div>
           <div className="space-y-2">
-            <label htmlFor="bio" className="text-sm font-medium text-gray-700">
+            <label htmlFor="bio" className="text-sm font-medium text-gray-700 dark:text-white">
               Bio
             </label>
             <Textarea id="bio" {...register("bio")} placeholder="Tell others about yourself..." />
@@ -84,7 +84,7 @@ export function ProfileEditForm() {
             )}
           </div>
           <div className="space-y-2">
-            <label htmlFor="avatar_url" className="text-sm font-medium text-gray-700">
+            <label htmlFor="avatar_url" className="text-sm font-medium text-gray-700 dark:text-white">
               Avatar URL
             </label>
             <Input

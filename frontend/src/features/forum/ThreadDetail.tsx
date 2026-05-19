@@ -64,9 +64,9 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
 
   if (!thread) {
     return (
-      <Card className="border-dashed border-2 border-gray-200">
+      <Card className="border-dashed border-2 border-gray-200 dark:border-neutral-800">
         <CardContent className="p-10 text-center">
-          <div className="h-14 w-14 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+          <div className="h-14 w-14 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
             <MessageSquare className="h-7 w-7 text-gray-300" />
           </div>
           <h3 className="text-base font-medium text-gray-900 dark:text-white mb-1">
@@ -85,7 +85,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
       {/* Back link */}
       <Link
         href={`/repos/${repoId}/discussions`}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white transition-colors"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to Discussions
@@ -109,7 +109,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
         </CardHeader>
         <CardContent>
           <div className="prose prose-sm max-w-none">
-            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+            <p className="text-gray-700 dark:text-white whitespace-pre-wrap leading-relaxed">
               {thread.body}
             </p>
           </div>
@@ -127,7 +127,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
             {comments.map((comment, idx) => (
               <Card
                 key={comment.id}
-                className="hover:border-gray-200 transition-colors"
+                className="hover:border-gray-200 dark:border-neutral-800 transition-colors"
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -137,7 +137,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
                       </span>
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                      <p className="text-sm text-gray-700 dark:text-white whitespace-pre-wrap">
                         {comment.body}
                       </p>
                       <p className="text-xs text-gray-400 dark:text-white mt-2 flex items-center gap-1">
@@ -151,9 +151,9 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
             ))}
           </div>
         ) : (
-          <Card className="border-dashed border-2 border-gray-100">
+          <Card className="border-dashed border-2 border-gray-100 dark:border-neutral-800">
             <CardContent className="p-8 text-center">
-              <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
+              <div className="h-12 w-12 rounded-full bg-gray-50 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
                 <MessageCircle className="h-6 w-6 text-gray-300" />
               </div>
               <p className="text-sm text-gray-500 dark:text-white">

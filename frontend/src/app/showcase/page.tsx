@@ -10,7 +10,7 @@ export default function ShowcasePage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="h-10 w-10 rounded-xl bg-primary-50 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-primary-50 dark:bg-neutral-800 flex items-center justify-center">
             <FolderGit2 className="h-5 w-5 text-primary-600 dark:text-white" />
           </div>
           <div>

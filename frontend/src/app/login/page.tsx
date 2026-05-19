@@ -66,7 +66,7 @@ function Step({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="h-8 w-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+      <div className="h-8 w-8 rounded-lg bg-primary-50 dark:bg-neutral-800 flex items-center justify-center shrink-0">
         <Icon className="h-4 w-4 text-primary-600 dark:text-white" />
       </div>
       <div>

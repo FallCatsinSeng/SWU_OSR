@@ -16,7 +16,7 @@ export default function DiscussionsPage({ params }: DiscussionsPageProps) {
       <div className="mb-6">
         <Link
           href="/showcase"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white mb-3 transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white mb-3 transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Showcase
