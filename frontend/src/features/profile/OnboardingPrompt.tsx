@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 
 const DISMISS_KEY = "swu_osr_onboarding_dismissed";
 
@@ -26,22 +26,35 @@ export function OnboardingPrompt() {
   };
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 mb-6 relative">
+    <div className="rounded-2xl border border-secondary-200 bg-gradient-to-r from-secondary-50 to-primary-50 p-5 mb-6 relative animate-scale-in">
       <button
         onClick={handleDismiss}
-        className="absolute top-2 right-2 text-blue-400 hover:text-blue-600"
+        className="absolute top-3 right-3 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-white/50 transition-all"
         aria-label="Dismiss"
       >
         <X className="h-4 w-4" />
       </button>
-      <p className="text-sm text-blue-800">
-        Welcome! Customize your profile with a unique alias and bio.
-      </p>
-      <Link href="/settings" className="inline-block mt-2">
-        <Button variant="outline" size="sm">
-          Set up your profile
-        </Button>
-      </Link>
+      <div className="flex items-start gap-3">
+        <div className="h-9 w-9 rounded-xl bg-white/80 flex items-center justify-center shrink-0">
+          <Sparkles className="h-4 w-4 text-secondary-600" />
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 mb-0.5">
+            Complete your profile
+          </h3>
+          <p className="text-sm text-gray-600">
+            Set a unique alias and bio to stand out in the community.
+          </p>
+          <Link href="/settings" className="inline-block mt-3">
+            <Button
+              size="sm"
+              className="gradient-primary text-white border-0 shadow-sm"
+            >
+              Set up your profile
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
