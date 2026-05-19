@@ -3,33 +3,36 @@ import { Code2, Github, ExternalLink } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-white mt-auto">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="border-t border-geist-hairline bg-geist-canvas mt-auto">
+      <div className="mx-auto max-w-geist-page px-6">
+        {/* 4-column footer grid */}
+        <div className="py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
-                <Code2 className="h-4 w-4 text-white" />
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-geist-sm bg-geist-primary flex items-center justify-center">
+                <Code2 className="h-3.5 w-3.5 text-geist-on-primary" />
               </div>
-              <span className="text-lg font-bold text-gradient">SWU OSR</span>
+              <span className="text-body-sm-strong text-geist-ink">
+                SWU OSR
+              </span>
             </Link>
-            <p className="mt-3 text-sm text-gray-500 max-w-xs">
+            <p className="mt-3 text-body-sm text-geist-body max-w-xs">
               Open Source Repository — Platform mahasiswa untuk showcase karya,
               kolaborasi, dan membangun portofolio.
             </p>
           </div>
 
-          {/* Platform */}
+          {/* Platform — mono eyebrow label */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+            <h3 className="text-caption-mono text-geist-mute uppercase mb-3">
               Platform
             </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/"
-                  className="text-sm text-gray-500 hover:text-primary-600 transition-colors"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors"
                 >
                   Activity Feed
                 </Link>
@@ -37,7 +40,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/showcase"
-                  className="text-sm text-gray-500 hover:text-primary-600 transition-colors"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors"
                 >
                   Showcase
                 </Link>
@@ -45,7 +48,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/members"
-                  className="text-sm text-gray-500 hover:text-primary-600 transition-colors"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors"
                 >
                   Members
                 </Link>
@@ -53,9 +56,9 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Organization */}
+          {/* Organization — mono eyebrow */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+            <h3 className="text-caption-mono text-geist-mute uppercase mb-3">
               Organization
             </h3>
             <ul className="space-y-2">
@@ -64,28 +67,28 @@ export function Footer() {
                   href="https://www.stmikwidyautama.ac.id"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-gray-500 hover:text-primary-600 transition-colors flex items-center gap-1"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors inline-flex items-center gap-1"
                 >
                   STMIK Widya Utama
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </li>
               <li>
-                <span className="text-sm text-gray-500">
+                <span className="text-body-sm text-geist-body">
                   HMPSTI SWU
                 </span>
               </li>
               <li>
-                <span className="text-sm text-gray-500">
+                <span className="text-body-sm text-geist-body">
                   Teknik Informatika
                 </span>
               </li>
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Resources — mono eyebrow */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+            <h3 className="text-caption-mono text-geist-mute uppercase mb-3">
               Resources
             </h3>
             <ul className="space-y-2">
@@ -94,7 +97,7 @@ export function Footer() {
                   href="https://github.com/FallCatsinSeng/SWU_OSR"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-gray-500 hover:text-primary-600 transition-colors flex items-center gap-1"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors inline-flex items-center gap-1"
                 >
                   <Github className="h-3 w-3" />
                   Source Code
@@ -103,7 +106,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/login"
-                  className="text-sm text-gray-500 hover:text-primary-600 transition-colors"
+                  className="text-body-sm text-geist-body hover:text-geist-ink transition-colors"
                 >
                   Get Started
                 </Link>
@@ -112,17 +115,18 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-gray-100 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} HMPSTI SWU — STMIK Widya Utama Purwokerto. Built with open source.
+        {/* Bottom bar — hairline separator */}
+        <div className="border-t border-geist-hairline py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-caption text-geist-mute">
+            &copy; {new Date().getFullYear()} HMPSTI SWU — STMIK Widya Utama
+            Purwokerto. Built with open source.
           </p>
           <div className="flex items-center gap-4">
             <a
               href="https://github.com/FallCatsinSeng/SWU_OSR"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-geist-mute hover:text-geist-ink transition-colors"
               aria-label="GitHub"
             >
               <Github className="h-4 w-4" />

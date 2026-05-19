@@ -39,36 +39,36 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
+      {/* Geist nav-bar: sticky, 64px, white bg, bottom hairline */}
+      <nav className="sticky top-0 z-50 h-16 border-b border-geist-hairline bg-geist-canvas">
+        <div className="mx-auto max-w-geist-page px-6 h-full">
+          <div className="flex h-full items-center justify-between">
+            {/* Left: Logo + Nav links */}
             <div className="flex items-center gap-8">
-              <Link href="/" className="flex items-center gap-2 group">
-                <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <Code2 className="h-4 w-4 text-white" />
+              {/* Logo */}
+              <Link href="/" className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-geist-sm bg-geist-primary flex items-center justify-center">
+                  <Code2 className="h-3.5 w-3.5 text-geist-on-primary" />
                 </div>
-                <span className="text-lg font-bold text-gradient hidden sm:inline">
+                <span className="text-body-sm-strong text-geist-ink hidden sm:inline">
                   SWU OSR
                 </span>
               </Link>
 
-              {/* Desktop Navigation */}
+              {/* Desktop Navigation — centre link row */}
               <div className="hidden md:flex items-center gap-1">
                 {NAV_LINKS.map((link) => {
                   if (link.auth && !user) return null;
-                  const Icon = link.icon;
                   return (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`px-3 py-2 rounded-geist-full text-body-sm transition-colors ${
                         isActive(link.href)
-                          ? "bg-primary-50 text-primary-700"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          ? "text-geist-ink bg-geist-canvas-soft-2"
+                          : "text-geist-body hover:text-geist-ink"
                       }`}
                     >
-                      <Icon className="h-4 w-4" />
                       {link.label}
                     </Link>
                   );
@@ -76,14 +76,14 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Right side */}
+            {/* Right: CTAs */}
             <div className="flex items-center gap-3">
               {user ? (
                 <>
                   <NotificationBell />
                   <DropdownMenu
                     trigger={
-                      <div className="flex items-center gap-2 cursor-pointer p-1 rounded-full hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center cursor-pointer p-1 rounded-geist-full hover:bg-geist-canvas-soft transition-colors">
                         <Avatar
                           src={user.avatar_url}
                           alt={user.alias}
@@ -93,11 +93,13 @@ export function Navbar() {
                       </div>
                     }
                   >
-                    <div className="px-3 py-2 border-b border-gray-100 max-w-[200px]">
-                      <p className="text-sm font-medium text-gray-900 break-words">
+                    <div className="px-3 py-2 border-b border-geist-hairline max-w-[200px]">
+                      <p className="text-body-sm-strong text-geist-ink break-words">
                         {user.alias}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">{user.nim}</p>
+                      <p className="text-caption text-geist-mute truncate">
+                        {user.nim}
+                      </p>
                     </div>
                     <DropdownMenuItem>
                       <Link
@@ -119,7 +121,7 @@ export function Navbar() {
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => logout.mutate()}
-                      className="text-red-600"
+                      className="text-geist-error"
                     >
                       <div className="flex items-center gap-2">
                         <LogOut className="h-4 w-4" />
@@ -129,20 +131,24 @@ export function Navbar() {
                   </DropdownMenu>
                 </>
               ) : (
-                <Link href="/login">
-                  <Button
-                    size="sm"
-                    className="gradient-primary text-white border-0 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    Sign In
-                  </Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href="/login">
+                    <Button variant="nav-secondary" size="nav">
+                      Log In
+                    </Button>
+                  </Link>
+                  <Link href="/login">
+                    <Button variant="nav-primary" size="nav">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
               )}
 
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                className="md:hidden p-2 rounded-geist-sm text-geist-body hover:bg-geist-canvas-soft-2 transition-colors"
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? (
@@ -156,9 +162,9 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile slide-down menu */}
+      {/* Mobile menu — full overlay */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-white border-b border-gray-200 shadow-lg animate-slide-down">
+        <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-geist-canvas border-b border-geist-hairline geist-level-4 animate-slide-down">
           <div className="px-4 py-3 space-y-1">
             {NAV_LINKS.map((link) => {
               if (link.auth && !user) return null;
@@ -168,34 +174,34 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm transition-colors ${
                     isActive(link.href)
-                      ? "bg-primary-50 text-primary-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "text-geist-ink bg-geist-canvas-soft-2"
+                      : "text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft"
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4 w-4" />
                   {link.label}
                 </Link>
               );
             })}
             {user && (
               <>
-                <div className="border-t border-gray-100 my-2" />
+                <div className="border-t border-geist-hairline my-2" />
                 <Link
                   href={`/profiles/${user.alias}`}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft"
                 >
-                  <User className="h-5 w-5" />
+                  <User className="h-4 w-4" />
                   My Profile
                 </Link>
                 <Link
                   href="/settings"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                  className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft"
                 >
-                  <Settings className="h-5 w-5" />
+                  <Settings className="h-4 w-4" />
                   Settings
                 </Link>
               </>
@@ -204,10 +210,10 @@ export function Navbar() {
         </div>
       )}
 
-      {/* Overlay for mobile menu */}
+      {/* Overlay backdrop */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 top-16 z-30 bg-black/20 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 top-16 z-30 bg-geist-ink/20"
           onClick={() => setMobileOpen(false)}
         />
       )}

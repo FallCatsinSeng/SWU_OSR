@@ -3,21 +3,44 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geist-ink/20 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-blue-600 text-white hover:bg-blue-700",
-        destructive: "bg-red-600 text-white hover:bg-red-700",
-        outline: "border border-gray-300 bg-white hover:bg-gray-50",
-        secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
-        ghost: "hover:bg-gray-100",
-        link: "text-blue-600 underline-offset-4 hover:underline",
+        // Marketing-scale black pill CTA
+        default:
+          "bg-geist-primary text-geist-on-primary hover:bg-geist-ink/90 rounded-geist-pill text-button-lg",
+        // White pill paired with primary
+        secondary:
+          "bg-geist-canvas text-geist-ink hover:bg-geist-canvas-soft rounded-geist-pill text-button-lg geist-level-1",
+        // Destructive
+        destructive:
+          "bg-geist-error text-white hover:bg-geist-error-deep rounded-geist-pill text-button-lg",
+        // Outline — hairline border, white fill
+        outline:
+          "border border-geist-hairline bg-geist-canvas text-geist-ink hover:bg-geist-canvas-soft rounded-geist-sm text-button-md",
+        // Ghost — no border, no fill
+        ghost:
+          "text-geist-body hover:bg-geist-canvas-soft-2 hover:text-geist-ink rounded-geist-sm text-button-md",
+        // Link style
+        link: "text-geist-link underline-offset-4 hover:underline text-body-sm",
+        // Nav CTA — small black pill (6px radius)
+        "nav-primary":
+          "bg-geist-primary text-geist-on-primary hover:bg-geist-ink/90 rounded-geist-sm text-body-sm-strong",
+        // Nav secondary — white with hairline
+        "nav-secondary":
+          "bg-geist-canvas text-geist-ink border border-geist-hairline hover:bg-geist-canvas-soft rounded-geist-sm text-body-sm-strong",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        // Marketing scale — ~48px tall pill
+        default: "h-12 px-6 py-3",
+        // Standard — 40px
+        md: "h-10 px-4 py-2",
+        // Small — 32px (nav buttons, compact CTAs)
+        sm: "h-8 px-3 py-1.5",
+        // Nav CTA — 28px
+        nav: "h-7 px-2 py-1",
+        // Icon button
         icon: "h-10 w-10",
       },
     },

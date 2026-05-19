@@ -17,7 +17,6 @@ import {
   MessageSquare,
   FolderGit2,
   Webhook,
-  Check,
 } from "lucide-react";
 
 const ACADEMIC_TAGS: AcademicTag[] = [
@@ -27,14 +26,6 @@ const ACADEMIC_TAGS: AcademicTag[] = [
   "personal_research",
   "team_project",
 ];
-
-const TAG_COLORS: Record<string, string> = {
-  coursework: "bg-blue-50 text-blue-700 border-blue-200",
-  thesis: "bg-purple-50 text-purple-700 border-purple-200",
-  hackathon: "bg-orange-50 text-orange-700 border-orange-200",
-  personal_research: "bg-green-50 text-green-700 border-green-200",
-  team_project: "bg-teal-50 text-teal-700 border-teal-200",
-};
 
 export function ShowcaseGrid() {
   const queryClient = useQueryClient();
@@ -128,7 +119,13 @@ export function ShowcaseGrid() {
   };
 
   const updateDescMutation = useMutation({
-    mutationFn: async ({ id, description }: { id: string; description: string }) => {
+    mutationFn: async ({
+      id,
+      description,
+    }: {
+      id: string;
+      description: string;
+    }) => {
       await api.patch(`/showcase/${id}`, { description });
     },
     onSuccess: () => {
@@ -162,7 +159,7 @@ export function ShowcaseGrid() {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+          <Skeleton key={i} className="h-40 w-full rounded-geist-md" />
         ))}
       </div>
     );
@@ -170,16 +167,16 @@ export function ShowcaseGrid() {
 
   if (isError) {
     return (
-      <Card className="border-red-100">
+      <Card>
         <CardContent className="p-8 text-center">
-          <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
-            <FolderGit2 className="h-6 w-6 text-red-400" />
+          <div className="h-12 w-12 rounded-geist-full bg-geist-error-soft flex items-center justify-center mx-auto mb-3">
+            <FolderGit2 className="h-5 w-5 text-geist-error" />
           </div>
-          <p className="text-gray-600 mb-3">
+          <p className="text-body-sm text-geist-body mb-4">
             Failed to load showcase repositories.
           </p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
-            Try Again
+            Try again
           </Button>
         </CardContent>
       </Card>
@@ -188,15 +185,15 @@ export function ShowcaseGrid() {
 
   if (!repos || repos.length === 0) {
     return (
-      <Card className="border-dashed border-2 border-gray-200">
+      <Card className="border border-dashed border-geist-hairline">
         <CardContent className="p-10 text-center">
-          <div className="h-14 w-14 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
-            <FolderGit2 className="h-7 w-7 text-gray-300" />
+          <div className="h-12 w-12 rounded-geist-full bg-geist-canvas-soft-2 flex items-center justify-center mx-auto mb-4">
+            <FolderGit2 className="h-6 w-6 text-geist-mute" />
           </div>
-          <h3 className="text-base font-medium text-gray-900 mb-1">
-            No repositories yet
+          <h3 className="text-body-md-strong text-geist-ink mb-1">
+            No repositories yet.
           </h3>
-          <p className="text-sm text-gray-500 max-w-sm mx-auto">
+          <p className="text-body-sm text-geist-body max-w-sm mx-auto">
             Add your best GitHub repositories below to start building your
             showcase portfolio.
           </p>
@@ -210,15 +207,15 @@ export function ShowcaseGrid() {
       {repos.map((repo) => (
         <Card
           key={repo.id}
-          className="group hover:border-primary-200 hover:shadow-md transition-all duration-200 overflow-hidden"
+          className="group transition-shadow hover:shadow-geist-3 overflow-hidden"
         >
-          {/* Colored top accent */}
-          <div className="h-1 gradient-primary" />
+          {/* Top accent — ink-black bar */}
+          <div className="h-0.5 bg-geist-primary" />
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
               <Link
                 href={`/repos/${repo.id}`}
-                className="font-semibold text-primary-600 hover:text-primary-700 hover:underline flex items-center gap-1.5 transition-colors"
+                className="text-body-sm-strong text-geist-link hover:text-geist-link-deep transition-colors flex items-center gap-1.5"
               >
                 <FolderGit2 className="h-4 w-4" />
                 {repo.repo_name}
@@ -226,14 +223,14 @@ export function ShowcaseGrid() {
               <button
                 onClick={() => handleRemove(repo)}
                 disabled={deleteMutation.isPending}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                className="p-1.5 rounded-geist-sm text-geist-mute hover:text-geist-error hover:bg-geist-error-soft transition-all opacity-0 group-hover:opacity-100"
                 title="Remove from showcase"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
 
-            <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+            <div className="text-body-sm text-geist-body mb-3 line-clamp-2">
               {editingDescId === repo.id ? (
                 <span className="flex gap-1.5">
                   <input
@@ -244,20 +241,20 @@ export function ShowcaseGrid() {
                       if (e.key === "Enter") handleSaveDesc(repo.id);
                       if (e.key === "Escape") setEditingDescId(null);
                     }}
-                    className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-primary-400"
+                    className="flex-1 px-2 py-1 text-sm border border-geist-hairline rounded-geist-sm bg-geist-canvas focus:outline-none focus:border-geist-hairline-strong"
                     placeholder="Add a description..."
                     autoFocus
                   />
                   <button
                     onClick={() => handleSaveDesc(repo.id)}
-                    className="px-2 py-1 text-xs rounded bg-primary-600 text-white hover:bg-primary-700"
+                    className="px-2 py-1 text-xs rounded-geist-sm bg-geist-primary text-geist-on-primary hover:bg-geist-ink/90"
                     disabled={updateDescMutation.isPending}
                   >
                     Save
                   </button>
                   <button
                     onClick={() => setEditingDescId(null)}
-                    className="px-2 py-1 text-xs rounded border border-gray-200 text-gray-600 hover:bg-gray-50"
+                    className="px-2 py-1 text-xs rounded-geist-sm border border-geist-hairline text-geist-body hover:bg-geist-canvas-soft"
                   >
                     Cancel
                   </button>
@@ -265,13 +262,13 @@ export function ShowcaseGrid() {
               ) : (
                 <span
                   onClick={() => handleStartEditDesc(repo)}
-                  className="cursor-pointer hover:text-gray-700 transition-colors"
+                  className="cursor-pointer hover:text-geist-ink transition-colors"
                   title="Click to edit description"
                 >
                   {repo.description || "Click to add description..."}
                 </span>
               )}
-            </p>
+            </div>
 
             <div className="flex items-center gap-2 flex-wrap mb-3">
               {repo.language && (
@@ -285,10 +282,10 @@ export function ShowcaseGrid() {
                     <button
                       key={tag}
                       onClick={() => handleTagChange(repo, tag)}
-                      className={`px-2 py-0.5 text-[10px] rounded-full border transition-all ${
+                      className={`px-2 py-0.5 text-[10px] rounded-geist-full border transition-all ${
                         tag === repo.academic_tag
-                          ? "gradient-primary text-white border-transparent"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-primary-300"
+                          ? "bg-geist-primary text-geist-on-primary border-transparent"
+                          : "bg-geist-canvas text-geist-body border-geist-hairline hover:border-geist-hairline-strong"
                       }`}
                       disabled={updateTagMutation.isPending}
                     >
@@ -298,14 +295,12 @@ export function ShowcaseGrid() {
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5">
-                  <Badge
-                    className={`text-[10px] ${TAG_COLORS[repo.academic_tag] || "bg-gray-50 text-gray-700"}`}
-                  >
+                  <Badge variant="default" className="text-[10px]">
                     {repo.academic_tag.replace("_", " ")}
                   </Badge>
                   <button
                     onClick={() => setEditingTagId(repo.id)}
-                    className="p-0.5 rounded text-gray-300 hover:text-primary-600 transition-colors"
+                    className="p-0.5 rounded-geist-sm text-geist-mute hover:text-geist-ink transition-colors"
                     title="Edit tag"
                   >
                     <Pencil className="h-3 w-3" />
@@ -315,26 +310,29 @@ export function ShowcaseGrid() {
             </div>
 
             {/* Footer actions */}
-            <div className="flex items-center gap-3 pt-3 border-t border-gray-50">
+            <div className="flex items-center gap-3 pt-3 border-t border-geist-hairline">
               <Link
                 href={`/repos/${repo.id}/discussions`}
-                className="text-xs text-gray-400 hover:text-primary-600 flex items-center gap-1 transition-colors"
+                className="text-caption text-geist-mute hover:text-geist-ink flex items-center gap-1 transition-colors"
               >
                 <MessageSquare className="h-3 w-3" />
                 Discussions
               </Link>
               <a
-                href={repo.html_url || `https://github.com/${repo.repo_full_name}`}
+                href={
+                  repo.html_url ||
+                  `https://github.com/${repo.repo_full_name}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-gray-400 hover:text-primary-600 flex items-center gap-1 transition-colors"
+                className="text-caption text-geist-mute hover:text-geist-ink flex items-center gap-1 transition-colors"
               >
                 <ExternalLink className="h-3 w-3" />
                 GitHub
               </a>
-              <div className="flex items-center gap-1 text-xs text-gray-400 ml-auto">
+              <div className="flex items-center gap-1 text-caption text-geist-mute ml-auto">
                 <Webhook className="h-3 w-3" />
-                <span>Webhook active</span>
+                <span className="text-caption-mono">webhook active</span>
               </div>
             </div>
           </CardContent>

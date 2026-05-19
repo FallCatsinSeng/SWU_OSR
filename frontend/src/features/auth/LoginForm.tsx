@@ -37,15 +37,15 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md shadow-lg border-gray-100">
+    <Card className="w-full max-w-md geist-level-4">
       <CardHeader className="text-center pb-2">
-        <div className="lg:hidden flex justify-center mb-3">
-          <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center">
-            <LogIn className="h-6 w-6 text-white" />
+        <div className="lg:hidden flex justify-center mb-4">
+          <div className="h-12 w-12 rounded-geist-md bg-geist-primary flex items-center justify-center">
+            <LogIn className="h-5 w-5 text-geist-on-primary" />
           </div>
         </div>
-        <CardTitle className="text-xl">Sign In</CardTitle>
-        <CardDescription className="text-sm">
+        <CardTitle className="text-display-md">Sign in.</CardTitle>
+        <CardDescription className="mt-2">
           Use your SIAKAD credentials to authenticate, then link your GitHub
           account.
         </CardDescription>
@@ -55,7 +55,7 @@ export function LoginForm() {
           <div className="space-y-2">
             <label
               htmlFor="nim"
-              className="text-sm font-medium text-gray-700"
+              className="text-body-sm-strong text-geist-ink"
             >
               NIM (Student ID)
             </label>
@@ -63,11 +63,11 @@ export function LoginForm() {
               id="nim"
               placeholder="Enter your NIM"
               {...register("nim")}
-              className="h-11"
+              className="h-12"
             />
             {errors.nim && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-3.5 w-3.5" />
+              <p className="text-caption text-geist-error flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
                 {errors.nim.message}
               </p>
             )}
@@ -75,7 +75,7 @@ export function LoginForm() {
           <div className="space-y-2">
             <label
               htmlFor="password"
-              className="text-sm font-medium text-gray-700"
+              className="text-body-sm-strong text-geist-ink"
             >
               Password
             </label>
@@ -84,18 +84,18 @@ export function LoginForm() {
               type="password"
               placeholder="Enter your password"
               {...register("password")}
-              className="h-11"
+              className="h-12"
             />
             {errors.password && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-3.5 w-3.5" />
+              <p className="text-caption text-geist-error flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
                 {errors.password.message}
               </p>
             )}
           </div>
           {login.isError && (
-            <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-              <p className="text-sm text-red-700 flex items-center gap-1.5">
+            <div className="p-3 rounded-geist-sm bg-geist-error-soft">
+              <p className="text-body-sm text-geist-error-deep flex items-center gap-1.5">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 Authentication failed. Please check your credentials.
               </p>
@@ -103,12 +103,12 @@ export function LoginForm() {
           )}
           <Button
             type="submit"
-            className="w-full h-11 gradient-primary text-white border-0 shadow-sm hover:shadow-md transition-shadow"
+            className="w-full h-12"
             disabled={login.isPending}
           >
             {login.isPending ? "Authenticating..." : "Continue with SIAKAD"}
           </Button>
-          <p className="text-xs text-center text-gray-400 pt-2">
+          <p className="text-caption text-center text-geist-mute pt-2">
             By signing in, you agree to use this platform responsibly.
           </p>
         </form>

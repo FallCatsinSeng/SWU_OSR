@@ -3,14 +3,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2",
+  "inline-flex items-center rounded-geist-full px-2 py-0.5 text-xs font-normal transition-colors",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-blue-100 text-blue-800",
-        secondary: "border-transparent bg-gray-100 text-gray-800",
-        destructive: "border-transparent bg-red-100 text-red-800",
-        outline: "text-gray-700",
+        // Default — soft canvas background (badge-secondary from Geist)
+        default: "bg-geist-canvas-soft text-geist-body",
+        // Secondary — slightly deeper
+        secondary: "bg-geist-canvas-soft-2 text-geist-body",
+        // Destructive
+        destructive: "bg-geist-error-soft text-geist-error-deep",
+        // Outline — hairline border
+        outline: "border border-geist-hairline text-geist-body",
+        // Link / info
+        info: "bg-geist-link-bg-soft text-geist-link-deep",
+        // Warning
+        warning: "bg-geist-warning-soft text-geist-warning-deep",
+        // Success
+        success: "bg-emerald-50 text-emerald-700",
       },
     },
     defaultVariants: {
