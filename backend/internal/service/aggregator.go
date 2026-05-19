@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
 	"github.com/google/uuid"
 )
 
@@ -20,6 +21,7 @@ type AggregatorService interface {
 	ProcessWebhook(ctx context.Context, payload []byte, signature, eventType, deliveryID string) error
 	GetActivityFeed(ctx context.Context, params domain.FeedParams) (*domain.FeedResult, error)
 	GetUserActivity(ctx context.Context, userID uuid.UUID, params domain.FeedParams) (*domain.FeedResult, error)
+	SyncUserActivity(ctx context.Context, userID uuid.UUID) (int, error)
 }
 
 // aggregatorService is the concrete implementation.
@@ -27,6 +29,7 @@ type aggregatorService struct {
 	activityRepo  domain.ActivityRepository
 	userRepo      domain.UserRepository
 	showcaseRepo  domain.ShowcaseRepository
+	githubSvc     github.Service
 	webhookSecret []byte
 }
 
@@ -35,12 +38,14 @@ func NewAggregatorService(
 	activityRepo domain.ActivityRepository,
 	userRepo domain.UserRepository,
 	showcaseRepo domain.ShowcaseRepository,
+	githubSvc github.Service,
 	webhookSecret string,
 ) AggregatorService {
 	return &aggregatorService{
 		activityRepo:  activityRepo,
 		userRepo:      userRepo,
 		showcaseRepo:  showcaseRepo,
+		githubSvc:     githubSvc,
 		webhookSecret: []byte(webhookSecret),
 	}
 }
@@ -310,4 +315,190 @@ func decodeCursor(cursor string) time.Time {
 // encodeCursor encodes a time as a base64 RFC3339Nano string.
 func encodeCursor(t time.Time) string {
 	return base64.StdEncoding.EncodeToString([]byte(t.Format(time.RFC3339Nano)))
+}
+
+// SyncUserActivity fetches recent public events from GitHub for the user's
+// showcase repos and inserts any new activity into the feed.
+func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UUID) (int, error) {
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	if user.GitHubUsername == "" {
+		return 0, nil
+	}
+
+	// Decrypt token
+	token, err := Decrypt(user.GitHubToken, nil) // will use service-level key
+	_ = token
+	_ = err
+
+	// Fetch public events for the user (no auth needed for public events)
+	events, err := s.githubSvc.GetUserPublicEvents(ctx, "", user.GitHubUsername)
+	if err != nil {
+		return 0, fmt.Errorf("fetching user events: %w", err)
+	}
+
+	// Get user's showcase repos for matching
+	repos, err := s.showcaseRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	// Build repo lookup map
+	repoMap := make(map[string]*domain.ShowcaseRepo)
+	for i := range repos {
+		repoMap[repos[i].RepoFullName] = &repos[i]
+	}
+
+	inserted := 0
+	for _, event := range events {
+		// Map GitHub event types to our domain types
+		var eventType domain.EventType
+		var summary string
+
+		switch event.Type {
+		case "PushEvent":
+			eventType = domain.EventPush
+			summary = s.buildPushSummary(event.Payload, event.Repo.Name)
+		case "PullRequestEvent":
+			eventType = domain.EventPR
+			summary = s.buildPRSummary(event.Payload, event.Repo.Name)
+		case "ReleaseEvent":
+			eventType = domain.EventRelease
+			summary = s.buildReleaseSummary(event.Payload, event.Repo.Name)
+		case "CreateEvent":
+			eventType = domain.EventPush
+			summary = s.buildCreateSummary(event.Payload, event.Repo.Name)
+		case "IssuesEvent":
+			eventType = domain.EventPR // reuse PR type for issues
+			summary = s.buildIssueSummary(event.Payload, event.Repo.Name)
+		case "ForkEvent":
+			eventType = domain.EventPush
+			summary = fmt.Sprintf("Forked %s", event.Repo.Name)
+		case "WatchEvent":
+			eventType = domain.EventPush
+			summary = fmt.Sprintf("Starred %s", event.Repo.Name)
+		default:
+			continue // Skip unsupported event types
+		}
+
+		// Check if event already exists
+		existing, _ := s.activityRepo.GetByGitHubEventID(ctx, event.ID)
+		if existing != nil {
+			continue
+		}
+
+		// Find matching showcase repo (if any)
+		var showcaseRepoID uuid.UUID
+		showcaseRepo, found := repoMap[event.Repo.Name]
+		if found {
+			showcaseRepoID = showcaseRepo.ID
+		} else {
+			// Still log it — this is public activity not tied to a showcase repo
+			// Use a nil UUID for showcase_repo_id
+			showcaseRepoID = uuid.Nil
+		}
+
+		// Parse created_at
+		createdAt, err := time.Parse(time.RFC3339, event.CreatedAt)
+		if err != nil {
+			createdAt = time.Now()
+		}
+
+		log := &domain.ActivityLog{
+			ID:             uuid.New(),
+			UserID:         userID,
+			ShowcaseRepoID: showcaseRepoID,
+			EventType:      eventType,
+			Summary:        summary,
+			Metadata:       event.Payload,
+			GitHubEventID:  event.ID,
+			CreatedAt:      createdAt,
+		}
+
+		if err := s.activityRepo.Insert(ctx, log); err != nil {
+			// Skip duplicates, continue with others
+			continue
+		}
+		inserted++
+	}
+
+	return inserted, nil
+}
+
+// buildPushSummary extracts a summary from a PushEvent payload.
+func (s *aggregatorService) buildPushSummary(payload json.RawMessage, repoName string) string {
+	var p struct {
+		Size int    `json:"size"`
+		Ref  string `json:"ref"`
+	}
+	if err := json.Unmarshal(payload, &p); err != nil {
+		return fmt.Sprintf("Pushed to %s", repoName)
+	}
+	branch := p.Ref
+	if strings.HasPrefix(branch, "refs/heads/") {
+		branch = strings.TrimPrefix(branch, "refs/heads/")
+	}
+	return fmt.Sprintf("Pushed %d commit(s) to %s:%s", p.Size, repoName, branch)
+}
+
+// buildPRSummary extracts a summary from a PullRequestEvent payload.
+func (s *aggregatorService) buildPRSummary(payload json.RawMessage, repoName string) string {
+	var p struct {
+		Action      string `json:"action"`
+		Number      int    `json:"number"`
+		PullRequest struct {
+			Title string `json:"title"`
+		} `json:"pull_request"`
+	}
+	if err := json.Unmarshal(payload, &p); err != nil {
+		return fmt.Sprintf("PR activity on %s", repoName)
+	}
+	return fmt.Sprintf("PR #%d %s: %s", p.Number, p.Action, p.PullRequest.Title)
+}
+
+// buildReleaseSummary extracts a summary from a ReleaseEvent payload.
+func (s *aggregatorService) buildReleaseSummary(payload json.RawMessage, repoName string) string {
+	var p struct {
+		Release struct {
+			TagName string `json:"tag_name"`
+			Name    string `json:"name"`
+		} `json:"release"`
+	}
+	if err := json.Unmarshal(payload, &p); err != nil {
+		return fmt.Sprintf("Released on %s", repoName)
+	}
+	return fmt.Sprintf("Released %s (%s) on %s", p.Release.Name, p.Release.TagName, repoName)
+}
+
+// buildCreateSummary extracts a summary from a CreateEvent payload.
+func (s *aggregatorService) buildCreateSummary(payload json.RawMessage, repoName string) string {
+	var p struct {
+		RefType string `json:"ref_type"`
+		Ref     string `json:"ref"`
+	}
+	if err := json.Unmarshal(payload, &p); err != nil {
+		return fmt.Sprintf("Created on %s", repoName)
+	}
+	if p.RefType == "repository" {
+		return fmt.Sprintf("Created repository %s", repoName)
+	}
+	return fmt.Sprintf("Created %s '%s' on %s", p.RefType, p.Ref, repoName)
+}
+
+// buildIssueSummary extracts a summary from an IssuesEvent payload.
+func (s *aggregatorService) buildIssueSummary(payload json.RawMessage, repoName string) string {
+	var p struct {
+		Action string `json:"action"`
+		Issue  struct {
+			Number int    `json:"number"`
+			Title  string `json:"title"`
+		} `json:"issue"`
+	}
+	if err := json.Unmarshal(payload, &p); err != nil {
+		return fmt.Sprintf("Issue activity on %s", repoName)
+	}
+	return fmt.Sprintf("Issue #%d %s: %s", p.Issue.Number, p.Action, p.Issue.Title)
 }

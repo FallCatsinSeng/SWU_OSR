@@ -263,7 +263,7 @@ export function ShowcaseGrid() {
                 Discussions
               </Link>
               <a
-                href={repo.html_url}
+                href={repo.html_url || `https://github.com/${repo.repo_full_name}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-gray-400 hover:text-primary-600 flex items-center gap-1 transition-colors"

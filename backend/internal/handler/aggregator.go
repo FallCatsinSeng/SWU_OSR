@@ -72,6 +72,26 @@ func (h *AggregatorHandler) HandleGetFeed(w http.ResponseWriter, r *http.Request
 	RespondJSON(w, http.StatusOK, result)
 }
 
+// HandleSyncActivity handles POST /api/activity/sync (auth required).
+// It fetches recent public GitHub events for the current user and inserts new ones into the feed.
+func (h *AggregatorHandler) HandleSyncActivity(w http.ResponseWriter, r *http.Request) {
+	claims, ok := domain.GetUserClaims(r.Context())
+	if !ok {
+		RespondError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	inserted, err := h.aggregatorService.SyncUserActivity(r.Context(), claims.UserID)
+	if err != nil {
+		RespondError(w, http.StatusInternalServerError, "failed to sync activity")
+		return
+	}
+
+	RespondJSON(w, http.StatusOK, map[string]interface{}{
+		"synced": inserted,
+	})
+}
+
 // HandleGetUserActivity handles GET /api/users/{id}/activity.
 func (h *AggregatorHandler) HandleGetUserActivity(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")

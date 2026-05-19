@@ -1,16 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { FeedResponse } from "@/types/activity";
+import { useCurrentUser } from "@/hooks/useAuth";
 import { ActivityCard } from "./ActivityCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FolderGit2, RefreshCw, Inbox } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
+import { FolderGit2, RefreshCw, Inbox, Zap } from "lucide-react";
 
 export function ActivityFeed() {
+  const { data: user } = useCurrentUser();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
   const {
     data,
     fetchNextPage,
@@ -34,6 +40,26 @@ export function ActivityFeed() {
     initialPageParam: "",
     getNextPageParam: (lastPage) =>
       lastPage.has_more ? lastPage.next_cursor : undefined,
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post<{ ok: boolean; data: { synced: number } }>(
+        "/activity/sync"
+      );
+      return data.data;
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["activityFeed"] });
+      if (result.synced > 0) {
+        toast(`Synced ${result.synced} new activities from GitHub`, "success");
+      } else {
+        toast("Already up to date — no new activities found", "success");
+      }
+    },
+    onError: () => {
+      toast("Failed to sync activity from GitHub", "error");
+    },
   });
 
   if (isLoading) {
@@ -75,15 +101,34 @@ export function ActivityFeed() {
             No activity yet
           </h3>
           <p className="text-sm text-gray-500 max-w-sm mx-auto mb-4">
-            Add repos to your showcase to start tracking your open source
-            contributions.
+            {user
+              ? "Sync your GitHub activity or add repos to your showcase to start tracking contributions."
+              : "Sign in and add repos to your showcase to start tracking open source contributions."}
           </p>
-          <Link href="/showcase">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <FolderGit2 className="h-3.5 w-3.5" />
-              Go to Showcase
-            </Button>
-          </Link>
+          <div className="flex items-center justify-center gap-3">
+            {user && (
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-1.5 gradient-primary text-white border-0"
+                onClick={() => syncMutation.mutate()}
+                disabled={syncMutation.isPending}
+              >
+                {syncMutation.isPending ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Zap className="h-3.5 w-3.5" />
+                )}
+                {syncMutation.isPending ? "Syncing..." : "Sync GitHub Activity"}
+              </Button>
+            )}
+            <Link href={user ? "/showcase" : "/login"}>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <FolderGit2 className="h-3.5 w-3.5" />
+                {user ? "Go to Showcase" : "Sign In"}
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
     );
@@ -91,6 +136,26 @@ export function ActivityFeed() {
 
   return (
     <div className="space-y-3">
+      {/* Sync button at top when there are items */}
+      {user && (
+        <div className="flex justify-end mb-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs"
+            onClick={() => syncMutation.mutate()}
+            disabled={syncMutation.isPending}
+          >
+            {syncMutation.isPending ? (
+              <RefreshCw className="h-3 w-3 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3 w-3" />
+            )}
+            {syncMutation.isPending ? "Syncing..." : "Sync from GitHub"}
+          </Button>
+        </div>
+      )}
+
       {items.map((item) => (
         <ActivityCard key={item.id} item={item} />
       ))}

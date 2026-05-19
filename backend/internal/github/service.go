@@ -47,6 +47,8 @@ type Service interface {
 	ListRepos(ctx context.Context, token string) ([]Repository, error)
 	RegisterWebhook(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error)
 	RemoveWebhook(ctx context.Context, token, owner, repo string, hookID int64) error
+	GetRepoEvents(ctx context.Context, token, owner, repo string) ([]RepoEvent, error)
+	GetUserPublicEvents(ctx context.Context, token, username string) ([]RepoEvent, error)
 }
 
 // service is the concrete implementation.
@@ -262,4 +264,80 @@ func (s *service) RemoveWebhook(ctx context.Context, token, owner, repo string, 
 	}
 
 	return nil
+}
+
+
+// RepoEvent represents a GitHub repository event from the Events API.
+type RepoEvent struct {
+	ID        string `json:"id"`
+	Type      string `json:"type"`
+	CreatedAt string `json:"created_at"`
+	Actor     struct {
+		Login     string `json:"login"`
+		AvatarURL string `json:"avatar_url"`
+	} `json:"actor"`
+	Repo struct {
+		Name string `json:"name"`
+	} `json:"repo"`
+	Payload json.RawMessage `json:"payload"`
+}
+
+// GetRepoEvents fetches recent events for a specific repository.
+func (s *service) GetRepoEvents(ctx context.Context, token, owner, repo string) ([]RepoEvent, error) {
+	reqURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/events?per_page=30", owner, repo)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating events request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("fetching repo events: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("get repo events failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var events []RepoEvent
+	if err := json.NewDecoder(resp.Body).Decode(&events); err != nil {
+		return nil, fmt.Errorf("decoding events response: %w", err)
+	}
+
+	return events, nil
+}
+
+// GetUserPublicEvents fetches recent public events for a GitHub user.
+func (s *service) GetUserPublicEvents(ctx context.Context, token, username string) ([]RepoEvent, error) {
+	reqURL := fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=30", username)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating user events request: %w", err)
+	}
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("fetching user events: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("get user events failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var events []RepoEvent
+	if err := json.NewDecoder(resp.Body).Decode(&events); err != nil {
+		return nil, fmt.Errorf("decoding user events response: %w", err)
+	}
+
+	return events, nil
 }
