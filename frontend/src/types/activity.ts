@@ -6,6 +6,7 @@ export interface ActivityItem {
   user_alias: string;
   avatar_url: string;
   event_type: EventType;
+  repo_id: string;
   repo_name: string;
   summary: string;
   metadata: Record<string, unknown>;

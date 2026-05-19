@@ -98,9 +98,11 @@ export function ActivityCard({ item }: ActivityCardProps) {
               <span className="text-caption text-geist-mute dark:text-white">
                 {config.label}
               </span>
-              <Badge variant="secondary" className="text-[10px]">
-                {repoShort}
-              </Badge>
+              <Link href={`/repos/${item.repo_id}`}>
+                <Badge variant="secondary" className="text-[10px] cursor-pointer hover:bg-geist-canvas-soft-2 dark:hover:bg-neutral-700 transition-colors">
+                  {repoShort}
+                </Badge>
+              </Link>
             </div>
             <p className="text-body-sm text-geist-body dark:text-white mt-1 line-clamp-2">
               {item.summary}

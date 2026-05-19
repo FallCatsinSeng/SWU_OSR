@@ -48,6 +48,7 @@ type ActivityItem struct {
 	UserAlias string          `json:"user_alias"`
 	AvatarURL string          `json:"avatar_url"`
 	EventType EventType       `json:"event_type"`
+	RepoID    uuid.UUID       `json:"repo_id"`
 	RepoName  string          `json:"repo_name"`
 	Summary   string          `json:"summary"`
 	Metadata  json.RawMessage `json:"metadata"`
