@@ -18,6 +18,7 @@ export interface UserStats {
   languages: string[];
   active_days: number;
   current_streak: number;
+  contribution_days: Record<string, number>;
 }
 
 export interface PublicProfile {

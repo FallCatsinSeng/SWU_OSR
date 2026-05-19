@@ -33,11 +33,12 @@ type AcademicIdentity struct {
 
 // UserStats holds computed activity statistics for a user.
 type UserStats struct {
-	TotalCommits  int      `json:"total_commits"`
-	TotalRepos    int      `json:"total_repos"`
-	Languages     []string `json:"languages"`
-	ActiveDays    int      `json:"active_days"`
-	CurrentStreak int      `json:"current_streak"`
+	TotalCommits    int            `json:"total_commits"`
+	TotalRepos      int            `json:"total_repos"`
+	Languages       []string       `json:"languages"`
+	ActiveDays      int            `json:"active_days"`
+	CurrentStreak   int            `json:"current_streak"`
+	ContributionDays map[string]int `json:"contribution_days"`
 }
 
 // ProfileService defines the profile service interface.
@@ -220,12 +221,14 @@ func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*U
 
 	totalCommits := 0
 	daySet := make(map[string]struct{})
+	dayCount := make(map[string]int)
 	for _, item := range feed {
 		if item.EventType == domain.EventPush {
 			totalCommits++
 		}
 		day := item.CreatedAt.Format("2006-01-02")
 		daySet[day] = struct{}{}
+		dayCount[day]++
 	}
 
 	// If no activity in DB yet, try to get commit count from GitHub repos directly
@@ -247,7 +250,9 @@ func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*U
 						if c.Commit.Author.Date != "" {
 							t, parseErr := time.Parse(time.RFC3339, c.Commit.Author.Date)
 							if parseErr == nil {
-								daySet[t.Format("2006-01-02")] = struct{}{}
+								d := t.Format("2006-01-02")
+								daySet[d] = struct{}{}
+								dayCount[d]++
 							}
 						}
 					}
@@ -281,11 +286,12 @@ func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*U
 	}
 
 	return &UserStats{
-		TotalCommits:  totalCommits,
-		TotalRepos:    totalRepos,
-		Languages:     languages,
-		ActiveDays:    len(daySet),
-		CurrentStreak: streak,
+		TotalCommits:     totalCommits,
+		TotalRepos:       totalRepos,
+		Languages:        languages,
+		ActiveDays:       len(daySet),
+		CurrentStreak:    streak,
+		ContributionDays: dayCount,
 	}, nil
 }
 
