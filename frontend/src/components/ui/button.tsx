@@ -21,7 +21,7 @@ const buttonVariants = cva(
           "border border-geist-hairline bg-geist-canvas text-geist-ink hover:bg-geist-canvas-soft dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800 rounded-geist-sm text-button-md",
         // Ghost — no border, no fill
         ghost:
-          "text-geist-body hover:bg-geist-canvas-soft-2 hover:text-geist-ink dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white rounded-geist-sm text-button-md",
+          "text-geist-body hover:bg-geist-canvas-soft-2 hover:text-geist-ink dark:text-white dark:hover:bg-neutral-800 dark:hover:text-white rounded-geist-sm text-button-md",
         // Link style
         link: "text-geist-link underline-offset-4 hover:underline dark:text-white text-body-sm",
         // Nav CTA — small black pill (6px radius) — inverts in dark

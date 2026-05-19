@@ -170,9 +170,9 @@ export function ShowcaseGrid() {
       <Card>
         <CardContent className="p-8 text-center">
           <div className="h-12 w-12 rounded-geist-full bg-geist-error-soft dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-            <FolderGit2 className="h-5 w-5 text-geist-error dark:text-neutral-300" />
+            <FolderGit2 className="h-5 w-5 text-geist-error dark:text-white" />
           </div>
-          <p className="text-body-sm text-geist-body dark:text-neutral-300 mb-4">
+          <p className="text-body-sm text-geist-body dark:text-white mb-4">
             Failed to load showcase repositories.
           </p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -188,12 +188,12 @@ export function ShowcaseGrid() {
       <Card className="border border-dashed border-geist-hairline dark:border-neutral-700">
         <CardContent className="p-10 text-center">
           <div className="h-12 w-12 rounded-geist-full bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
-            <FolderGit2 className="h-6 w-6 text-geist-mute dark:text-neutral-300" />
+            <FolderGit2 className="h-6 w-6 text-geist-mute dark:text-white" />
           </div>
           <h3 className="text-body-md-strong text-geist-ink dark:text-white mb-1">
             No repositories yet.
           </h3>
-          <p className="text-body-sm text-geist-body dark:text-neutral-300 max-w-sm mx-auto">
+          <p className="text-body-sm text-geist-body dark:text-white max-w-sm mx-auto">
             Add your best GitHub repositories below to start building your
             showcase portfolio.
           </p>
@@ -223,14 +223,14 @@ export function ShowcaseGrid() {
               <button
                 onClick={() => handleRemove(repo)}
                 disabled={deleteMutation.isPending}
-                className="p-1.5 rounded-geist-sm text-geist-mute hover:text-geist-error hover:bg-geist-error-soft dark:text-neutral-300 dark:hover:text-white dark:hover:bg-neutral-800 transition-all opacity-0 group-hover:opacity-100"
+                className="p-1.5 rounded-geist-sm text-geist-mute hover:text-geist-error hover:bg-geist-error-soft dark:text-white dark:hover:text-white dark:hover:bg-neutral-800 transition-all opacity-0 group-hover:opacity-100"
                 title="Remove from showcase"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
 
-            <div className="text-body-sm text-geist-body dark:text-neutral-300 mb-3 line-clamp-2">
+            <div className="text-body-sm text-geist-body dark:text-white mb-3 line-clamp-2">
               {editingDescId === repo.id ? (
                 <span className="flex gap-1.5">
                   <input
@@ -254,7 +254,7 @@ export function ShowcaseGrid() {
                   </button>
                   <button
                     onClick={() => setEditingDescId(null)}
-                    className="px-2 py-1 text-xs rounded-geist-sm border border-geist-hairline dark:border-neutral-700 text-geist-body dark:text-neutral-300 hover:bg-geist-canvas-soft dark:hover:bg-neutral-800"
+                    className="px-2 py-1 text-xs rounded-geist-sm border border-geist-hairline dark:border-neutral-700 text-geist-body dark:text-white hover:bg-geist-canvas-soft dark:hover:bg-neutral-800"
                   >
                     Cancel
                   </button>
@@ -285,7 +285,7 @@ export function ShowcaseGrid() {
                       className={`px-2 py-0.5 text-[10px] rounded-geist-full border transition-all ${
                         tag === repo.academic_tag
                           ? "bg-geist-primary text-geist-on-primary border-transparent dark:bg-white dark:text-black"
-                          : "bg-geist-canvas text-geist-body border-geist-hairline hover:border-geist-hairline-strong dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600"
+                          : "bg-geist-canvas text-geist-body border-geist-hairline hover:border-geist-hairline-strong dark:bg-neutral-900 dark:text-white dark:border-neutral-700 dark:hover:border-neutral-600"
                       }`}
                       disabled={updateTagMutation.isPending}
                     >
@@ -300,7 +300,7 @@ export function ShowcaseGrid() {
                   </Badge>
                   <button
                     onClick={() => setEditingTagId(repo.id)}
-                    className="p-0.5 rounded-geist-sm text-geist-mute dark:text-neutral-300 hover:text-geist-ink dark:hover:text-white transition-colors"
+                    className="p-0.5 rounded-geist-sm text-geist-mute dark:text-white hover:text-geist-ink dark:hover:text-white transition-colors"
                     title="Edit tag"
                   >
                     <Pencil className="h-3 w-3" />
@@ -313,7 +313,7 @@ export function ShowcaseGrid() {
             <div className="flex items-center gap-3 pt-3 border-t border-geist-hairline dark:border-neutral-800">
               <Link
                 href={`/repos/${repo.id}/discussions`}
-                className="text-caption text-geist-mute dark:text-neutral-300 hover:text-geist-ink dark:hover:text-white flex items-center gap-1 transition-colors"
+                className="text-caption text-geist-mute dark:text-white hover:text-geist-ink dark:hover:text-white flex items-center gap-1 transition-colors"
               >
                 <MessageSquare className="h-3 w-3" />
                 Discussions
@@ -325,12 +325,12 @@ export function ShowcaseGrid() {
                 }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-caption text-geist-mute dark:text-neutral-300 hover:text-geist-ink dark:hover:text-white flex items-center gap-1 transition-colors"
+                className="text-caption text-geist-mute dark:text-white hover:text-geist-ink dark:hover:text-white flex items-center gap-1 transition-colors"
               >
                 <ExternalLink className="h-3 w-3" />
                 GitHub
               </a>
-              <div className="flex items-center gap-1 text-caption text-geist-mute dark:text-neutral-300 ml-auto">
+              <div className="flex items-center gap-1 text-caption text-geist-mute dark:text-white ml-auto">
                 <Webhook className="h-3 w-3" />
                 <span className="text-caption-mono">webhook active</span>
               </div>

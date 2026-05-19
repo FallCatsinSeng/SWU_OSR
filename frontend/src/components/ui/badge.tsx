@@ -8,19 +8,19 @@ const badgeVariants = cva(
     variants: {
       variant: {
         // Default — soft canvas background (badge-secondary from Geist)
-        default: "bg-geist-canvas-soft text-geist-body dark:bg-neutral-800 dark:text-neutral-300",
+        default: "bg-geist-canvas-soft text-geist-body dark:bg-neutral-800 dark:text-white",
         // Secondary — slightly deeper
-        secondary: "bg-geist-canvas-soft-2 text-geist-body dark:bg-neutral-800 dark:text-neutral-300",
+        secondary: "bg-geist-canvas-soft-2 text-geist-body dark:bg-neutral-800 dark:text-white",
         // Destructive
-        destructive: "bg-geist-error-soft text-geist-error-deep dark:bg-neutral-800 dark:text-neutral-300",
+        destructive: "bg-geist-error-soft text-geist-error-deep dark:bg-neutral-800 dark:text-white",
         // Outline — hairline border
-        outline: "border border-geist-hairline text-geist-body dark:border-neutral-700 dark:text-neutral-300",
+        outline: "border border-geist-hairline text-geist-body dark:border-neutral-700 dark:text-white",
         // Link / info
-        info: "bg-geist-link-bg-soft text-geist-link-deep dark:bg-neutral-800 dark:text-neutral-300",
+        info: "bg-geist-link-bg-soft text-geist-link-deep dark:bg-neutral-800 dark:text-white",
         // Warning
-        warning: "bg-geist-warning-soft text-geist-warning-deep dark:bg-neutral-800 dark:text-neutral-300",
+        warning: "bg-geist-warning-soft text-geist-warning-deep dark:bg-neutral-800 dark:text-white",
         // Success
-        success: "bg-emerald-50 text-emerald-700 dark:bg-neutral-800 dark:text-neutral-300",
+        success: "bg-emerald-50 text-emerald-700 dark:bg-neutral-800 dark:text-white",
       },
     },
     defaultVariants: {
