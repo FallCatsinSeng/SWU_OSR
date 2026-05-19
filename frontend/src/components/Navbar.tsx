@@ -93,11 +93,11 @@ export function Navbar() {
                       </div>
                     }
                   >
-                    <div className="px-3 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">
+                    <div className="px-3 py-2 border-b border-gray-100 max-w-[200px]">
+                      <p className="text-sm font-medium text-gray-900 truncate">
                         {user.alias}
                       </p>
-                      <p className="text-xs text-gray-500">{user.nim}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.nim}</p>
                     </div>
                     <DropdownMenuItem>
                       <Link

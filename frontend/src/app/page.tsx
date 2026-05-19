@@ -389,12 +389,12 @@ export default function HomePage() {
         {/* Welcome + Quick Actions */}
         <div className="mb-6 p-5 rounded-2xl gradient-primary-subtle border border-primary-100">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center shrink-0">
                 <Code2 className="h-5 w-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-gray-900 truncate">
                   Welcome back, {user.alias}!
                 </h1>
                 <p className="text-sm text-gray-600">
