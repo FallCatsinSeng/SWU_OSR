@@ -4,11 +4,11 @@
 
 @layer base {
   * {
-    @apply border-geist-hairline;
+    @apply border-geist-hairline dark:border-neutral-800;
   }
 
   body {
-    @apply bg-geist-canvas-soft text-geist-ink antialiased;
+    @apply bg-geist-canvas-soft text-geist-ink antialiased dark:bg-[#0A0A0A] dark:text-neutral-50;
     font-feature-settings: "ss01", "ss02";
   }
 }
@@ -43,7 +43,36 @@
       );
   }
 
-  /* Geist Elevation Levels */
+  /* Dark mode mesh gradient — more vibrant against dark bg */
+  :is(.dark) .geist-mesh-gradient {
+    background: radial-gradient(
+        ellipse 80% 60% at 30% 40%,
+        rgba(0, 124, 240, 0.2) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 60% 30%,
+        rgba(0, 223, 216, 0.15) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 50% 60% at 70% 60%,
+        rgba(121, 40, 202, 0.15) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 50% 70%,
+        rgba(255, 0, 128, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 40% 40% at 80% 80%,
+        rgba(249, 203, 40, 0.08) 0%,
+        transparent 40%
+      );
+  }
+
+  /* Geist Elevation Levels — Light Mode */
   .geist-level-0 {
     box-shadow: none;
   }
@@ -74,6 +103,35 @@
       0px 8px 16px -4px rgba(0, 0, 0, 0.04),
       0px 24px 32px -8px rgba(0, 0, 0, 0.06),
       inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Geist Elevation Levels — Dark Mode (border-based, minimal shadow) */
+  :is(.dark) .geist-level-0 {
+    box-shadow: none;
+  }
+
+  :is(.dark) .geist-level-1 {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  :is(.dark) .geist-level-2 {
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  :is(.dark) .geist-level-3 {
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  :is(.dark) .geist-level-4 {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.4),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  :is(.dark) .geist-level-5 {
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.5),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -152,23 +210,23 @@
 }
 
 .heatmap-level-0 {
-  @apply bg-geist-canvas-soft-2;
+  @apply bg-geist-canvas-soft-2 dark:bg-neutral-800;
 }
 
 .heatmap-level-1 {
-  @apply bg-emerald-200;
+  @apply bg-emerald-200 dark:bg-emerald-900;
 }
 
 .heatmap-level-2 {
-  @apply bg-emerald-400;
+  @apply bg-emerald-400 dark:bg-emerald-700;
 }
 
 .heatmap-level-3 {
-  @apply bg-emerald-600;
+  @apply bg-emerald-600 dark:bg-emerald-500;
 }
 
 .heatmap-level-4 {
-  @apply bg-emerald-800;
+  @apply bg-emerald-800 dark:bg-emerald-400;
 }
 
 /* Custom scrollbar — subtle */
@@ -177,13 +235,13 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-geist-canvas-soft;
+  @apply bg-geist-canvas-soft dark:bg-neutral-950;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-geist-hairline rounded-full;
+  @apply bg-geist-hairline rounded-full dark:bg-neutral-700;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-geist-hairline-strong;
+  @apply bg-geist-hairline-strong dark:bg-neutral-600;
 }

@@ -94,10 +94,10 @@ export function ActivityFeed() {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <div className="h-12 w-12 rounded-geist-full bg-geist-error-soft flex items-center justify-center mx-auto mb-3">
-            <RefreshCw className="h-5 w-5 text-geist-error" />
+          <div className="h-12 w-12 rounded-geist-full bg-geist-error-soft dark:bg-red-950 flex items-center justify-center mx-auto mb-3">
+            <RefreshCw className="h-5 w-5 text-geist-error dark:text-red-400" />
           </div>
-          <p className="text-body-sm text-geist-body mb-4">
+          <p className="text-body-sm text-geist-body dark:text-neutral-400 mb-4">
             Failed to load activity feed.
           </p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -112,15 +112,15 @@ export function ActivityFeed() {
 
   if (items.length === 0) {
     return (
-      <Card className="border border-dashed border-geist-hairline">
+      <Card className="border border-dashed border-geist-hairline dark:border-neutral-700">
         <CardContent className="p-10 text-center">
-          <div className="h-12 w-12 rounded-geist-full bg-geist-canvas-soft-2 flex items-center justify-center mx-auto mb-4">
-            <Inbox className="h-6 w-6 text-geist-mute" />
+          <div className="h-12 w-12 rounded-geist-full bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+            <Inbox className="h-6 w-6 text-geist-mute dark:text-neutral-500" />
           </div>
-          <h3 className="text-body-md-strong text-geist-ink mb-1">
+          <h3 className="text-body-md-strong text-geist-ink dark:text-neutral-50 mb-1">
             No activity yet.
           </h3>
-          <p className="text-body-sm text-geist-body max-w-sm mx-auto mb-6">
+          <p className="text-body-sm text-geist-body dark:text-neutral-400 max-w-sm mx-auto mb-6">
             {user
               ? "Sync your GitHub activity or add repos to your showcase to start tracking contributions."
               : "Sign in and add repos to your showcase to start tracking open source contributions."}

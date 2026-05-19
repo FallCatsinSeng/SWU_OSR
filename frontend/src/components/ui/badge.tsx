@@ -8,19 +8,19 @@ const badgeVariants = cva(
     variants: {
       variant: {
         // Default — soft canvas background (badge-secondary from Geist)
-        default: "bg-geist-canvas-soft text-geist-body",
+        default: "bg-geist-canvas-soft text-geist-body dark:bg-neutral-800 dark:text-neutral-300",
         // Secondary — slightly deeper
-        secondary: "bg-geist-canvas-soft-2 text-geist-body",
+        secondary: "bg-geist-canvas-soft-2 text-geist-body dark:bg-neutral-800 dark:text-neutral-400",
         // Destructive
-        destructive: "bg-geist-error-soft text-geist-error-deep",
+        destructive: "bg-geist-error-soft text-geist-error-deep dark:bg-red-950 dark:text-red-400",
         // Outline — hairline border
-        outline: "border border-geist-hairline text-geist-body",
+        outline: "border border-geist-hairline text-geist-body dark:border-neutral-700 dark:text-neutral-400",
         // Link / info
-        info: "bg-geist-link-bg-soft text-geist-link-deep",
+        info: "bg-geist-link-bg-soft text-geist-link-deep dark:bg-cyan-950 dark:text-cyan-400",
         // Warning
-        warning: "bg-geist-warning-soft text-geist-warning-deep",
+        warning: "bg-geist-warning-soft text-geist-warning-deep dark:bg-amber-950 dark:text-amber-400",
         // Success
-        success: "bg-emerald-50 text-emerald-700",
+        success: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400",
       },
     },
     defaultVariants: {

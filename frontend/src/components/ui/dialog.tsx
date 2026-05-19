@@ -16,11 +16,11 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
   return (
     <div className="fixed inset-0 z-50">
       <div
-        className="fixed inset-0 bg-geist-ink/50 backdrop-blur-sm"
+        className="fixed inset-0 bg-geist-ink/50 backdrop-blur-sm dark:bg-black/70"
         onClick={() => onOpenChange(false)}
       />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <div className="relative bg-geist-canvas rounded-geist-lg geist-level-5 max-w-lg w-full max-h-[85vh] overflow-auto animate-scale-in">
+        <div className="relative bg-geist-canvas dark:bg-neutral-900 rounded-geist-lg geist-level-5 max-w-lg w-full max-h-[85vh] overflow-auto animate-scale-in">
           {children}
         </div>
       </div>
@@ -46,7 +46,7 @@ function DialogTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      className={cn("text-display-sm text-geist-ink", className)}
+      className={cn("text-display-sm text-geist-ink dark:text-neutral-50", className)}
       {...props}
     />
   );
@@ -68,7 +68,7 @@ function DialogClose({ onClose }: { onClose: () => void }) {
   return (
     <button
       onClick={onClose}
-      className="absolute right-4 top-4 rounded-geist-sm p-1 text-geist-mute hover:text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors"
+      className="absolute right-4 top-4 rounded-geist-sm p-1 text-geist-mute hover:text-geist-ink hover:bg-geist-canvas-soft-2 transition-colors dark:text-neutral-500 dark:hover:text-neutral-50 dark:hover:bg-neutral-800"
     >
       <X className="h-4 w-4" />
     </button>

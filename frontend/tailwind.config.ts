@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -54,7 +55,6 @@ const config: Config = {
         },
       },
       spacing: {
-        // Geist spacing tokens (base 4px)
         "geist-xxs": "4px",
         "geist-xs": "8px",
         "geist-sm": "12px",
@@ -69,7 +69,6 @@ const config: Config = {
         "geist-section": "192px",
       },
       borderRadius: {
-        // Geist border radius tokens
         "geist-none": "0px",
         "geist-xs": "4px",
         "geist-sm": "6px",
@@ -81,7 +80,6 @@ const config: Config = {
         "geist-full": "9999px",
       },
       boxShadow: {
-        // Geist stacked elevation shadows
         "geist-1": "inset 0 0 0 1px rgba(0,0,0,0.08)",
         "geist-2":
           "0px 1px 1px rgba(0,0,0,0.02), 0px 2px 2px rgba(0,0,0,0.04), inset 0 0 0 1px rgba(0,0,0,0.08)",
@@ -91,6 +89,16 @@ const config: Config = {
           "0px 2px 2px rgba(0,0,0,0.04), 0px 8px 16px -4px rgba(0,0,0,0.04), inset 0 0 0 1px rgba(0,0,0,0.08)",
         "geist-5":
           "0px 1px 1px rgba(0,0,0,0.02), 0px 8px 16px -4px rgba(0,0,0,0.04), 0px 24px 32px -8px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(0,0,0,0.08)",
+        // Dark mode equivalents — border-based, very subtle
+        "geist-dark-1": "inset 0 0 0 1px rgba(255,255,255,0.08)",
+        "geist-dark-2":
+          "0px 1px 1px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.08)",
+        "geist-dark-3":
+          "0px 2px 4px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.08)",
+        "geist-dark-4":
+          "0px 4px 8px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.08)",
+        "geist-dark-5":
+          "0px 8px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.1)",
       },
       letterSpacing: {
         "geist-display-xl": "-0.05em",

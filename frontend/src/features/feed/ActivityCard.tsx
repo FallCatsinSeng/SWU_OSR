@@ -83,32 +83,32 @@ export function ActivityCard({ item }: ActivityCardProps) {
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* Event icon — neutral canvas-soft-2 background */}
-          <div className="h-8 w-8 rounded-geist-sm bg-geist-canvas-soft-2 flex items-center justify-center shrink-0">
-            <Icon className="h-4 w-4 text-geist-ink" />
+          <div className="h-8 w-8 rounded-geist-sm bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+            <Icon className="h-4 w-4 text-geist-ink dark:text-neutral-50" />
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Link
                 href={`/profiles/${item.user_alias}`}
-                className="text-body-sm-strong text-geist-ink hover:text-geist-link transition-colors"
+                className="text-body-sm-strong text-geist-ink dark:text-neutral-50 hover:text-geist-link dark:hover:text-cyan-400 transition-colors"
               >
                 {item.user_alias}
               </Link>
-              <span className="text-caption text-geist-mute">
+              <span className="text-caption text-geist-mute dark:text-neutral-500">
                 {config.label}
               </span>
               <Badge variant="secondary" className="text-[10px]">
                 {repoShort}
               </Badge>
             </div>
-            <p className="text-body-sm text-geist-body mt-1 line-clamp-2">
+            <p className="text-body-sm text-geist-body dark:text-neutral-400 mt-1 line-clamp-2">
               {item.summary}
             </p>
           </div>
 
           {/* Timestamp — mono caption */}
-          <span className="text-caption-mono text-geist-mute shrink-0 pt-0.5">
+          <span className="text-caption-mono text-geist-mute dark:text-neutral-500 shrink-0 pt-0.5">
             {getRelativeTime(item.created_at)}
           </span>
         </div>

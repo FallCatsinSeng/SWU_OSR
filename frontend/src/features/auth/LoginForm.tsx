@@ -40,8 +40,8 @@ export function LoginForm() {
     <Card className="w-full max-w-md geist-level-4">
       <CardHeader className="text-center pb-2">
         <div className="lg:hidden flex justify-center mb-4">
-          <div className="h-12 w-12 rounded-geist-md bg-geist-primary flex items-center justify-center">
-            <LogIn className="h-5 w-5 text-geist-on-primary" />
+          <div className="h-12 w-12 rounded-geist-md bg-geist-primary dark:bg-white flex items-center justify-center">
+            <LogIn className="h-5 w-5 text-geist-on-primary dark:text-black" />
           </div>
         </div>
         <CardTitle className="text-display-md">Sign in.</CardTitle>
@@ -55,7 +55,7 @@ export function LoginForm() {
           <div className="space-y-2">
             <label
               htmlFor="nim"
-              className="text-body-sm-strong text-geist-ink"
+              className="text-body-sm-strong text-geist-ink dark:text-neutral-50"
             >
               NIM (Student ID)
             </label>
@@ -66,7 +66,7 @@ export function LoginForm() {
               className="h-12"
             />
             {errors.nim && (
-              <p className="text-caption text-geist-error flex items-center gap-1">
+              <p className="text-caption text-geist-error dark:text-red-400 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {errors.nim.message}
               </p>
@@ -75,7 +75,7 @@ export function LoginForm() {
           <div className="space-y-2">
             <label
               htmlFor="password"
-              className="text-body-sm-strong text-geist-ink"
+              className="text-body-sm-strong text-geist-ink dark:text-neutral-50"
             >
               Password
             </label>
@@ -87,15 +87,15 @@ export function LoginForm() {
               className="h-12"
             />
             {errors.password && (
-              <p className="text-caption text-geist-error flex items-center gap-1">
+              <p className="text-caption text-geist-error dark:text-red-400 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {errors.password.message}
               </p>
             )}
           </div>
           {login.isError && (
-            <div className="p-3 rounded-geist-sm bg-geist-error-soft">
-              <p className="text-body-sm text-geist-error-deep flex items-center gap-1.5">
+            <div className="p-3 rounded-geist-sm bg-geist-error-soft dark:bg-red-950">
+              <p className="text-body-sm text-geist-error-deep dark:text-red-400 flex items-center gap-1.5">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 Authentication failed. Please check your credentials.
               </p>
@@ -108,7 +108,7 @@ export function LoginForm() {
           >
             {login.isPending ? "Authenticating..." : "Continue with SIAKAD"}
           </Button>
-          <p className="text-caption text-center text-geist-mute pt-2">
+          <p className="text-caption text-center text-geist-mute dark:text-neutral-500 pt-2">
             By signing in, you agree to use this platform responsibly.
           </p>
         </form>

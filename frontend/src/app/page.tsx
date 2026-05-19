@@ -52,26 +52,26 @@ interface PopularRepo {
 // --- Landing Page (visitors) ---
 function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-geist-canvas">
+    <section className="relative overflow-hidden bg-geist-canvas dark:bg-black">
       {/* Mesh gradient — hero scale atmospheric backdrop */}
       <div className="absolute inset-0 geist-mesh-gradient" />
 
       <div className="relative mx-auto max-w-geist-page px-6 py-24 sm:py-32 lg:py-40">
         <div className="text-center max-w-3xl mx-auto">
           {/* Mono eyebrow badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-geist-full bg-geist-canvas-soft border border-geist-hairline mb-8 animate-fade-in">
-            <span className="text-caption-mono text-geist-body">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-geist-full bg-geist-canvas-soft border border-geist-hairline dark:bg-neutral-900 dark:border-neutral-800 mb-8 animate-fade-in">
+            <span className="text-caption-mono text-geist-body dark:text-neutral-400">
               Open source platform for students
             </span>
           </div>
 
           {/* Hero headline — display-xl, sentence-case, period-terminated */}
-          <h1 className="text-display-xl text-geist-ink animate-slide-up">
+          <h1 className="text-display-xl text-geist-ink dark:text-neutral-50 animate-slide-up">
             Showcase your code, build your future.
           </h1>
 
           {/* Lead paragraph — body-lg */}
-          <p className="mt-6 text-body-lg text-geist-body max-w-2xl mx-auto animate-slide-up">
+          <p className="mt-6 text-body-lg text-geist-body dark:text-neutral-400 max-w-2xl mx-auto animate-slide-up">
             Platform mahasiswa STMIK Widya Utama untuk menampilkan proyek open
             source, berkolaborasi dengan peers, dan membangun portofolio
             profesional.
@@ -138,18 +138,18 @@ function FeaturesSection() {
   ];
 
   return (
-    <section className="py-24 bg-geist-canvas-soft">
+    <section className="py-24 bg-geist-canvas-soft dark:bg-[#0A0A0A]">
       <div className="mx-auto max-w-geist-page px-6">
         <div className="text-center mb-16">
           {/* Mono eyebrow */}
-          <p className="text-caption-mono text-geist-mute uppercase mb-4">
+          <p className="text-caption-mono text-geist-mute dark:text-neutral-500 uppercase mb-4">
             Features
           </p>
           {/* Section headline — display-lg, sentence-case, period-terminated */}
-          <h2 className="text-display-lg text-geist-ink">
+          <h2 className="text-display-lg text-geist-ink dark:text-neutral-50">
             Everything you need to stand out.
           </h2>
-          <p className="mt-4 text-body-lg text-geist-body max-w-xl mx-auto">
+          <p className="mt-4 text-body-lg text-geist-body dark:text-neutral-400 max-w-xl mx-auto">
             Satu platform untuk semua kebutuhan portofolio open source
             mahasiswa.
           </p>
@@ -162,16 +162,16 @@ function FeaturesSection() {
             return (
               <div
                 key={feature.title}
-                className="p-6 rounded-geist-md bg-geist-canvas geist-level-3 transition-shadow hover:shadow-geist-4"
+                className="p-6 rounded-geist-md bg-geist-canvas dark:bg-black geist-level-3 transition-shadow hover:shadow-geist-4"
               >
-                <div className="h-10 w-10 rounded-geist-sm bg-geist-canvas-soft-2 flex items-center justify-center mb-4">
-                  <Icon className="h-5 w-5 text-geist-ink" />
+                <div className="h-10 w-10 rounded-geist-sm bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                  <Icon className="h-5 w-5 text-geist-ink dark:text-neutral-50" />
                 </div>
                 {/* Card headline — display-sm, sentence-case */}
-                <h3 className="text-display-sm text-geist-ink mb-2">
+                <h3 className="text-display-sm text-geist-ink dark:text-neutral-50 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-body-sm text-geist-body">
+                <p className="text-body-sm text-geist-body dark:text-neutral-400">
                   {feature.description}
                 </p>
               </div>
@@ -185,20 +185,20 @@ function FeaturesSection() {
 
 function CTASection() {
   return (
-    <section className="py-24 bg-geist-canvas-soft">
+    <section className="py-24 bg-geist-canvas-soft dark:bg-[#0A0A0A]">
       <div className="mx-auto max-w-geist-page px-6">
-        {/* Polarity-flipped dark band — showcase-band-dark */}
-        <div className="rounded-geist-lg bg-geist-primary p-12 sm:p-16 text-center">
-          <h2 className="text-display-lg text-geist-on-primary mb-4">
+        {/* Polarity-flipped dark band — in dark mode it flips to white */}
+        <div className="rounded-geist-lg bg-geist-primary dark:bg-white p-12 sm:p-16 text-center">
+          <h2 className="text-display-lg text-geist-on-primary dark:text-black mb-4">
             Ready to build your portfolio?
           </h2>
-          <p className="text-body-lg text-geist-on-primary/70 max-w-xl mx-auto mb-10">
+          <p className="text-body-lg text-geist-on-primary/70 dark:text-black/60 max-w-xl mx-auto mb-10">
             Mulai showcase karya open source kamu hari ini. Login dengan akun
             SIAKAD dan hubungkan GitHub.
           </p>
           <Link href="/login">
-            {/* Inverted CTA — white pill on dark surface */}
-            <Button variant="secondary" size="default">
+            {/* Inverted CTA — white pill on dark surface / black pill on white surface in dark mode */}
+            <Button variant="secondary" size="default" className="dark:bg-black dark:text-white dark:hover:bg-neutral-900">
               Start now — it&apos;s free
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -239,15 +239,15 @@ function CommunityStatsBar({
         return (
           <div
             key={item.label}
-            className="rounded-geist-md bg-geist-canvas geist-level-2 p-4"
+            className="rounded-geist-md bg-geist-canvas dark:bg-black geist-level-2 p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-geist-sm bg-geist-canvas-soft-2 flex items-center justify-center">
-                <Icon className="h-4 w-4 text-geist-ink" />
+              <div className="h-9 w-9 rounded-geist-sm bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center">
+                <Icon className="h-4 w-4 text-geist-ink dark:text-neutral-50" />
               </div>
               <div>
-                <p className="text-display-sm text-geist-ink">{item.value}</p>
-                <p className="text-caption text-geist-mute">{item.label}</p>
+                <p className="text-display-sm text-geist-ink dark:text-neutral-50">{item.value}</p>
+                <p className="text-caption text-geist-mute dark:text-neutral-500">{item.label}</p>
               </div>
             </div>
           </div>
@@ -269,13 +269,13 @@ function PopularReposSection({
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-body-sm-strong text-geist-ink flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-geist-mute" />
+        <h2 className="text-body-sm-strong text-geist-ink dark:text-neutral-50 flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-geist-mute dark:text-neutral-500" />
           Popular repositories
         </h2>
         <Link
           href="/showcase"
-          className="text-caption text-geist-link hover:text-geist-link-deep transition-colors"
+          className="text-caption text-geist-link hover:text-geist-link-deep transition-colors dark:text-cyan-400 dark:hover:text-cyan-300"
         >
           View all
         </Link>
@@ -293,11 +293,11 @@ function PopularReposSection({
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <FolderGit2 className="h-4 w-4 text-geist-mute shrink-0" />
-                    <span className="text-body-sm-strong text-geist-ink truncate group-hover:text-geist-link transition-colors">
+                    <FolderGit2 className="h-4 w-4 text-geist-mute dark:text-neutral-500 shrink-0" />
+                    <span className="text-body-sm-strong text-geist-ink dark:text-neutral-50 truncate group-hover:text-geist-link dark:group-hover:text-cyan-400 transition-colors">
                       {repo.repo_name}
                     </span>
-                    <ExternalLink className="h-3 w-3 text-geist-hairline-strong opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    <ExternalLink className="h-3 w-3 text-geist-hairline-strong dark:text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </div>
                   {repo.activity_count > 0 && (
                     <Badge variant="success" className="text-[10px] shrink-0">
@@ -305,7 +305,7 @@ function PopularReposSection({
                     </Badge>
                   )}
                 </div>
-                <p className="text-caption text-geist-mute line-clamp-2 mb-3">
+                <p className="text-caption text-geist-mute dark:text-neutral-500 line-clamp-2 mb-3">
                   {repo.description || "No description"}
                 </p>
                 <div className="flex items-center justify-between">
@@ -327,7 +327,7 @@ function PopularReposSection({
                       size="sm"
                       className="h-5 w-5"
                     />
-                    <span className="text-caption text-geist-mute">
+                    <span className="text-caption text-geist-mute dark:text-neutral-500">
                       {repo.owner_alias}
                     </span>
                   </div>
@@ -345,9 +345,9 @@ function TrendingLanguages({ languages }: { languages: string[] }) {
   if (!languages || languages.length === 0) return null;
 
   return (
-    <div className="rounded-geist-md bg-geist-canvas geist-level-2 p-5">
-      <h3 className="text-body-sm-strong text-geist-ink mb-3 flex items-center gap-2">
-        <Code2 className="h-4 w-4 text-geist-mute" />
+    <div className="rounded-geist-md bg-geist-canvas dark:bg-black geist-level-2 p-5">
+      <h3 className="text-body-sm-strong text-geist-ink dark:text-neutral-50 mb-3 flex items-center gap-2">
+        <Code2 className="h-4 w-4 text-geist-mute dark:text-neutral-500" />
         Trending languages
       </h3>
       <div className="flex flex-wrap gap-2">
@@ -392,15 +392,15 @@ function ActiveMembersSection() {
   if (members.length === 0) return null;
 
   return (
-    <div className="rounded-geist-md bg-geist-canvas geist-level-2 p-5">
+    <div className="rounded-geist-md bg-geist-canvas dark:bg-black geist-level-2 p-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-body-sm-strong text-geist-ink flex items-center gap-2">
-          <Users className="h-4 w-4 text-geist-mute" />
+        <h3 className="text-body-sm-strong text-geist-ink dark:text-neutral-50 flex items-center gap-2">
+          <Users className="h-4 w-4 text-geist-mute dark:text-neutral-500" />
           Community members
         </h3>
         <Link
           href="/members"
-          className="text-caption text-geist-link hover:text-geist-link-deep transition-colors"
+          className="text-caption text-geist-link hover:text-geist-link-deep transition-colors dark:text-cyan-400 dark:hover:text-cyan-300"
         >
           View all
         </Link>
@@ -417,14 +417,14 @@ function ActiveMembersSection() {
               alt={member.alias}
               fallback={member.alias.charAt(0).toUpperCase()}
               size="sm"
-              className="h-8 w-8 ring-2 ring-geist-canvas hover:ring-geist-hairline transition-all"
+              className="h-8 w-8 ring-2 ring-geist-canvas dark:ring-black hover:ring-geist-hairline dark:hover:ring-neutral-700 transition-all"
             />
           </Link>
         ))}
         {members.length > 12 && (
           <Link
             href="/members"
-            className="h-8 w-8 rounded-full bg-geist-canvas-soft-2 flex items-center justify-center text-caption text-geist-mute hover:bg-geist-canvas-soft hover:text-geist-ink transition-colors"
+            className="h-8 w-8 rounded-full bg-geist-canvas-soft-2 dark:bg-neutral-800 flex items-center justify-center text-caption text-geist-mute dark:text-neutral-500 hover:bg-geist-canvas-soft dark:hover:bg-neutral-700 hover:text-geist-ink dark:hover:text-neutral-50 transition-colors"
           >
             +{members.length - 12}
           </Link>
@@ -465,17 +465,17 @@ export default function HomePage() {
     return (
       <div className="mx-auto max-w-geist-page px-6 py-8">
         {/* Welcome header */}
-        <div className="mb-8 p-6 rounded-geist-md bg-geist-canvas geist-level-2">
+        <div className="mb-8 p-6 rounded-geist-md bg-geist-canvas dark:bg-black geist-level-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="h-10 w-10 rounded-geist-sm bg-geist-primary flex items-center justify-center shrink-0">
-                <Code2 className="h-5 w-5 text-geist-on-primary" />
+              <div className="h-10 w-10 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center shrink-0">
+                <Code2 className="h-5 w-5 text-geist-on-primary dark:text-black" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-display-sm text-geist-ink break-words">
+                <h1 className="text-display-sm text-geist-ink dark:text-neutral-50 break-words">
                   Welcome back, {user.alias}.
                 </h1>
-                <p className="text-body-sm text-geist-body">
+                <p className="text-body-sm text-geist-body dark:text-neutral-400">
                   Here&apos;s what&apos;s happening in the community.
                 </p>
               </div>
@@ -512,8 +512,8 @@ export default function HomePage() {
 
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-body-sm-strong text-geist-ink flex items-center gap-2">
-                  <GitBranch className="h-4 w-4 text-geist-mute" />
+                <h2 className="text-body-sm-strong text-geist-ink dark:text-neutral-50 flex items-center gap-2">
+                  <GitBranch className="h-4 w-4 text-geist-mute dark:text-neutral-500" />
                   Recent activity
                 </h2>
               </div>
@@ -530,28 +530,28 @@ export default function HomePage() {
             <ActiveMembersSection />
 
             {/* Quick Links */}
-            <div className="rounded-geist-md bg-geist-canvas geist-level-2 p-5">
-              <h3 className="text-body-sm-strong text-geist-ink mb-3">
+            <div className="rounded-geist-md bg-geist-canvas dark:bg-black geist-level-2 p-5">
+              <h3 className="text-body-sm-strong text-geist-ink dark:text-neutral-50 mb-3">
                 Quick links
               </h3>
               <div className="space-y-2">
                 <Link
                   href="/showcase"
-                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors"
+                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-neutral-50"
                 >
                   <FolderGit2 className="h-4 w-4" />
                   Manage Showcase
                 </Link>
                 <Link
                   href="/members"
-                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors"
+                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-neutral-50"
                 >
                   <Users className="h-4 w-4" />
                   Discover Members
                 </Link>
                 <Link
                   href="/settings"
-                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors"
+                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-neutral-50"
                 >
                   <Activity className="h-4 w-4" />
                   Settings
@@ -560,7 +560,7 @@ export default function HomePage() {
                   href="https://github.com/FallCatsinSeng/SWU_OSR"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors"
+                  className="flex items-center gap-2 text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-neutral-400 dark:hover:text-neutral-50"
                 >
                   <Globe className="h-4 w-4" />
                   Source Code

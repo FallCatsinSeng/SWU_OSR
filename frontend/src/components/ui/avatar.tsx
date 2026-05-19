@@ -38,7 +38,7 @@ function Avatar({
           className="aspect-square h-full w-full object-cover"
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-geist-canvas-soft-2 text-geist-body font-medium">
+        <div className="flex h-full w-full items-center justify-center bg-geist-canvas-soft-2 text-geist-body font-medium dark:bg-neutral-800 dark:text-neutral-400">
           {fallback || "?"}
         </div>
       )}
