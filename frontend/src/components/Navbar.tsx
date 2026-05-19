@@ -94,7 +94,7 @@ export function Navbar() {
                     }
                   >
                     <div className="px-3 py-2 border-b border-gray-100 max-w-[200px]">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-gray-900 break-words">
                         {user.alias}
                       </p>
                       <p className="text-xs text-gray-500 truncate">{user.nim}</p>

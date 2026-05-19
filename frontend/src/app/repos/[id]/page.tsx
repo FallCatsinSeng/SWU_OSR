@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import api from "@/lib/api";
 import type { ShowcaseRepo } from "@/types/showcase";
@@ -20,6 +21,7 @@ import {
   Tag,
   Code2,
   Clock,
+  RefreshCw,
 } from "lucide-react";
 
 interface RepoPageProps {
@@ -54,6 +56,10 @@ function getEventIcon(eventType: string) {
 }
 
 export default function RepoDetailPage({ params }: RepoPageProps) {
+  const queryClient = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+
   // Fetch showcase repo details from the user's showcase list
   const { data: repos, isLoading } = useQuery<ShowcaseRepo[]>({
     queryKey: ["showcaseRepos"],
@@ -76,6 +82,22 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
       return data.data;
     },
   });
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const { data } = await api.post<{ ok: boolean; data: { synced: number } }>("/activity/sync");
+      const count = data.data.synced;
+      setSyncResult(count > 0 ? `Synced ${count} activities!` : "Already up to date.");
+      // Refetch activity after sync
+      queryClient.invalidateQueries({ queryKey: ["repoActivity", params.id] });
+    } catch {
+      setSyncResult("Failed to sync. Please try again.");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const repo = repos?.find((r) => r.id === params.id);
   const repoActivities = feedData?.items ?? [];
@@ -216,9 +238,22 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                   <p className="text-sm text-gray-500">
                     No recent activity recorded for this repository.
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Try syncing your GitHub activity from the Feed page.
+                  <p className="text-xs text-gray-400 mt-1 mb-3">
+                    Sync your GitHub activity to see commits and events here.
                   </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSync}
+                    disabled={syncing}
+                    className="gap-1.5"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
+                    {syncing ? "Syncing..." : "Sync GitHub Activity"}
+                  </Button>
+                  {syncResult && (
+                    <p className="text-xs text-gray-500 mt-2">{syncResult}</p>
+                  )}
                 </div>
               )}
             </CardContent>
