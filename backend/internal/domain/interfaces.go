@@ -30,6 +30,7 @@ type ShowcaseRepository interface {
 	SoftDelete(ctx context.Context, id uuid.UUID) error
 	SoftDeleteByUser(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error
 	Restore(ctx context.Context, repo *ShowcaseRepo) error
+	UpdateDescription(ctx context.Context, repoID uuid.UUID, description string) error
 }
 
 // ActivityRepository defines data access methods for activity logs.

@@ -124,3 +124,37 @@ func (h *ShowcaseHandler) handleShowcaseError(w http.ResponseWriter, err error) 
 		RespondError(w, http.StatusInternalServerError, "internal server error")
 	}
 }
+
+// updateShowcaseRepoRequest is the request body for updating a showcase repo.
+type updateShowcaseRepoRequest struct {
+	Description string `json:"description"`
+}
+
+// HandleUpdateShowcaseRepo handles PATCH /api/showcase/{id} (auth required).
+func (h *ShowcaseHandler) HandleUpdateShowcaseRepo(w http.ResponseWriter, r *http.Request) {
+	claims, ok := domain.GetUserClaims(r.Context())
+	if !ok {
+		RespondError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	idStr := chi.URLParam(r, "id")
+	repoID, err := uuid.Parse(idStr)
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "invalid repo id")
+		return
+	}
+
+	var req updateShowcaseRepoRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		RespondError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := h.showcaseService.UpdateRepoDescription(r.Context(), claims.UserID, repoID, req.Description); err != nil {
+		h.handleShowcaseError(w, err)
+		return
+	}
+
+	RespondJSON(w, http.StatusOK, map[string]string{"message": "repo updated"})
+}

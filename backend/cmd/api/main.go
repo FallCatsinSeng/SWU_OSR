@@ -167,6 +167,7 @@ func main() {
 			r.Post("/showcase", showcaseHandler.HandleSetShowcase)
 			r.Get("/showcase", showcaseHandler.HandleGetShowcase)
 			r.Delete("/showcase/{id}", showcaseHandler.HandleRemoveFromShowcase)
+			r.Patch("/showcase/{id}", showcaseHandler.HandleUpdateShowcaseRepo)
 			r.Post("/activity/sync", aggregatorHandler.HandleSyncActivity)
 			r.Post("/repos/{id}/threads", forumHandler.HandleCreateThread)
 			r.Post("/threads/{id}/comments", forumHandler.HandleCreateComment)

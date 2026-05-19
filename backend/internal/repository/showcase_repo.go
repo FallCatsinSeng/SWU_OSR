@@ -204,3 +204,12 @@ func (r *ShowcaseRepo) GetByUserAndGitHubRepoIDIncludeDeleted(ctx context.Contex
 	repo.AcademicTag = domain.AcademicTag(tag)
 	return &repo, nil
 }
+
+
+
+// UpdateDescription updates the description of a showcase repo.
+func (r *ShowcaseRepo) UpdateDescription(ctx context.Context, repoID uuid.UUID, description string) error {
+	query := `UPDATE showcase_repos SET description = $2, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL`
+	_, err := r.pool.Exec(ctx, query, repoID, description)
+	return err
+}

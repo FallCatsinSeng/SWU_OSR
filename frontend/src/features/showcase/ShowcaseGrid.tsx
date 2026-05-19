@@ -40,6 +40,8 @@ export function ShowcaseGrid() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [editingDescId, setEditingDescId] = useState<string | null>(null);
+  const [editDescValue, setEditDescValue] = useState("");
 
   const {
     data: repos,
@@ -125,6 +127,29 @@ export function ShowcaseGrid() {
     }
   };
 
+  const updateDescMutation = useMutation({
+    mutationFn: async ({ id, description }: { id: string; description: string }) => {
+      await api.patch(`/showcase/${id}`, { description });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["showcaseRepos"] });
+      toast("Description updated", "success");
+      setEditingDescId(null);
+    },
+    onError: () => {
+      toast("Failed to update description", "error");
+    },
+  });
+
+  const handleStartEditDesc = (repo: ShowcaseRepo) => {
+    setEditingDescId(repo.id);
+    setEditDescValue(repo.description || "");
+  };
+
+  const handleSaveDesc = (repoId: string) => {
+    updateDescMutation.mutate({ id: repoId, description: editDescValue });
+  };
+
   const handleTagChange = (repo: ShowcaseRepo, newTag: AcademicTag) => {
     if (newTag !== repo.academic_tag) {
       updateTagMutation.mutate({ repo, newTag });
@@ -192,7 +217,7 @@ export function ShowcaseGrid() {
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
               <Link
-                href={`/repos/${repo.id}/discussions`}
+                href={`/repos/${repo.id}`}
                 className="font-semibold text-primary-600 hover:text-primary-700 hover:underline flex items-center gap-1.5 transition-colors"
               >
                 <FolderGit2 className="h-4 w-4" />
@@ -209,7 +234,43 @@ export function ShowcaseGrid() {
             </div>
 
             <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-              {repo.description || "No description"}
+              {editingDescId === repo.id ? (
+                <span className="flex gap-1.5">
+                  <input
+                    type="text"
+                    value={editDescValue}
+                    onChange={(e) => setEditDescValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveDesc(repo.id);
+                      if (e.key === "Escape") setEditingDescId(null);
+                    }}
+                    className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-primary-400"
+                    placeholder="Add a description..."
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => handleSaveDesc(repo.id)}
+                    className="px-2 py-1 text-xs rounded bg-primary-600 text-white hover:bg-primary-700"
+                    disabled={updateDescMutation.isPending}
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditingDescId(null)}
+                    className="px-2 py-1 text-xs rounded border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                </span>
+              ) : (
+                <span
+                  onClick={() => handleStartEditDesc(repo)}
+                  className="cursor-pointer hover:text-gray-700 transition-colors"
+                  title="Click to edit description"
+                >
+                  {repo.description || "Click to add description..."}
+                </span>
+              )}
             </p>
 
             <div className="flex items-center gap-2 flex-wrap mb-3">
