@@ -124,7 +124,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
               size="lg"
               className="ring-4 ring-white shadow-lg shrink-0"
             />
-            <div className="flex-1 min-w-0 pt-2 sm:pt-8">
+            <div className="flex-1 min-w-0 pt-2 sm:pt-14">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <h1 className="text-2xl font-bold text-gray-900 break-words">
