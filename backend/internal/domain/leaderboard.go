@@ -20,6 +20,14 @@ const (
 	// Anti-gaming: maximum points a user can earn per day.
 	MaxPointsPerDay = 30
 
+	// Anti-gaming: maximum scoreable push events per repo per week.
+	// If someone makes more than this many pushes to a single repo in a week,
+	// the excess won't count toward points.
+	MaxPushPerRepoPerWeek = 15
+
+	// Anti-gaming: maximum scoreable PR events per repo per week.
+	MaxPRPerRepoPerWeek = 5
+
 	// Streak threshold: consecutive days needed for bonus.
 	StreakThresholdDays = 7
 )
@@ -69,6 +77,12 @@ type UserPointsSummary struct {
 	Rank        int       `json:"rank"`
 }
 
+// RepoEventCount holds event counts for a single repository.
+type RepoEventCount struct {
+	RepoID uuid.UUID
+	Count  int
+}
+
 // LeaderboardRepository defines data access methods for leaderboard.
 type LeaderboardRepository interface {
 	// GetLeaderboard retrieves ranked users for a given time window.
@@ -86,6 +100,10 @@ type LeaderboardRepository interface {
 	CountUserThreads(ctx context.Context, userID uuid.UUID, from, to time.Time) (int, error)
 	CountUserComments(ctx context.Context, userID uuid.UUID, from, to time.Time) (int, error)
 	CountUserShowcaseRepos(ctx context.Context, userID uuid.UUID, from, to time.Time) (int, error)
+
+	// Per-repo count methods for anti-gaming caps.
+	CountUserPushEventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]RepoEventCount, error)
+	CountUserPREventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]RepoEventCount, error)
 
 	// GetAllActiveUserIDs returns user IDs with activity in the given time range.
 	GetAllActiveUserIDs(ctx context.Context, from, to time.Time) ([]uuid.UUID, error)

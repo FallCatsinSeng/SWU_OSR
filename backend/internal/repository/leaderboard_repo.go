@@ -204,6 +204,64 @@ func (r *LeaderboardRepo) CountUserPREvents(ctx context.Context, userID uuid.UUI
 	return count, err
 }
 
+// CountUserPushEventsPerRepo returns push event counts grouped by showcase_repo_id for a user within a time range.
+// This is used to apply per-repo weekly caps to prevent gaming.
+func (r *LeaderboardRepo) CountUserPushEventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]domain.RepoEventCount, error) {
+	query := `
+		SELECT showcase_repo_id, COUNT(*) AS cnt
+		FROM activity_logs
+		WHERE user_id = $1 AND event_type = 'push' AND created_at >= $2 AND created_at < $3
+		GROUP BY showcase_repo_id`
+
+	rows, err := r.pool.Query(ctx, query, userID, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []domain.RepoEventCount
+	for rows.Next() {
+		var rc domain.RepoEventCount
+		if err := rows.Scan(&rc.RepoID, &rc.Count); err != nil {
+			return nil, err
+		}
+		results = append(results, rc)
+	}
+	if results == nil {
+		results = []domain.RepoEventCount{}
+	}
+	return results, rows.Err()
+}
+
+// CountUserPREventsPerRepo returns PR event counts grouped by showcase_repo_id for a user within a time range.
+// This is used to apply per-repo weekly caps to prevent gaming.
+func (r *LeaderboardRepo) CountUserPREventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]domain.RepoEventCount, error) {
+	query := `
+		SELECT showcase_repo_id, COUNT(*) AS cnt
+		FROM activity_logs
+		WHERE user_id = $1 AND event_type = 'pull_request' AND created_at >= $2 AND created_at < $3
+		GROUP BY showcase_repo_id`
+
+	rows, err := r.pool.Query(ctx, query, userID, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []domain.RepoEventCount
+	for rows.Next() {
+		var rc domain.RepoEventCount
+		if err := rows.Scan(&rc.RepoID, &rc.Count); err != nil {
+			return nil, err
+		}
+		results = append(results, rc)
+	}
+	if results == nil {
+		results = []domain.RepoEventCount{}
+	}
+	return results, rows.Err()
+}
+
 // CountUserThreads counts threads created by a user within a time range.
 func (r *LeaderboardRepo) CountUserThreads(ctx context.Context, userID uuid.UUID, from, to time.Time) (int, error) {
 	var count int

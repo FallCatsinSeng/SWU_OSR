@@ -97,16 +97,19 @@ func (s *leaderboardService) RefreshLeaderboard(ctx context.Context, period doma
 
 // computeAndStoreUserPoints calculates and persists a user's points.
 func (s *leaderboardService) computeAndStoreUserPoints(ctx context.Context, userID uuid.UUID, period domain.LeaderboardPeriod, from, to time.Time) error {
-	// Count activities
-	pushCount, err := s.repo.CountUserPushEvents(ctx, userID, from, to)
+	// --- Per-repo capped push count ---
+	pushPerRepo, err := s.repo.CountUserPushEventsPerRepo(ctx, userID, from, to)
 	if err != nil {
 		return err
 	}
+	pushCount := s.applyCappedCount(pushPerRepo, domain.MaxPushPerRepoPerWeek, from, to)
 
-	prCount, err := s.repo.CountUserPREvents(ctx, userID, from, to)
+	// --- Per-repo capped PR count ---
+	prPerRepo, err := s.repo.CountUserPREventsPerRepo(ctx, userID, from, to)
 	if err != nil {
 		return err
 	}
+	prCount := s.applyCappedCount(prPerRepo, domain.MaxPRPerRepoPerWeek, from, to)
 
 	threadCount, err := s.repo.CountUserThreads(ctx, userID, from, to)
 	if err != nil {
@@ -144,6 +147,28 @@ func (s *leaderboardService) computeAndStoreUserPoints(ctx context.Context, user
 
 	// Persist
 	return s.repo.UpsertPoints(ctx, userID, period, from, to, pushPts, prPts, forumPts, otherPts, totalPts, streak)
+}
+
+// applyCappedCount applies a per-repo weekly cap to event counts.
+// For each repo, only up to maxPerRepoPerWeek events count per week within the period.
+// For periods longer than a week, the cap scales proportionally.
+func (s *leaderboardService) applyCappedCount(perRepo []domain.RepoEventCount, maxPerRepoPerWeek int, from, to time.Time) int {
+	// Calculate how many weeks this period spans (minimum 1)
+	weeks := int(to.Sub(from).Hours()/(24*7)) + 1
+	if weeks < 1 {
+		weeks = 1
+	}
+	maxPerRepo := maxPerRepoPerWeek * weeks
+
+	total := 0
+	for _, rc := range perRepo {
+		capped := rc.Count
+		if capped > maxPerRepo {
+			capped = maxPerRepo
+		}
+		total += capped
+	}
+	return total
 }
 
 // capDailyPoints applies the daily point cap for push events.
@@ -198,9 +223,10 @@ func (s *leaderboardService) periodWindow(period domain.LeaderboardPeriod) (time
 		return from, to
 
 	case domain.PeriodAllTime:
-		// Use a very early date as start
+		// Use fixed sentinel dates so writes and reads always match.
+		// The scheduler and reader must produce the same (from, to) pair.
 		from := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-		to := now.AddDate(0, 0, 1) // tomorrow
+		to := time.Date(2099, 12, 31, 23, 59, 59, 0, time.UTC)
 		return from, to
 
 	default:
