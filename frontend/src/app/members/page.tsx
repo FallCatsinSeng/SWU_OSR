@@ -95,7 +95,7 @@ export default function MembersPage() {
               className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
                 roleFilter === role
                   ? "bg-primary-600 text-white border-primary-600 shadow-sm"
-                  : "bg-white text-gray-600 dark:text-white border-gray-200 dark:border-neutral-800 hover:border-primary-300 hover:bg-primary-50"
+                  : "bg-white dark:bg-neutral-900 text-gray-600 dark:text-white border-gray-200 dark:border-neutral-800 hover:border-primary-300 hover:bg-primary-50 dark:hover:bg-neutral-800"
               }`}
             >
               {role === "all" ? "All" : role.charAt(0).toUpperCase() + role.slice(1)}
