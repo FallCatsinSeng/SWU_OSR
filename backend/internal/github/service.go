@@ -49,6 +49,7 @@ type Service interface {
 	RemoveWebhook(ctx context.Context, token, owner, repo string, hookID int64) error
 	GetRepoEvents(ctx context.Context, token, owner, repo string) ([]RepoEvent, error)
 	GetUserPublicEvents(ctx context.Context, token, username string) ([]RepoEvent, error)
+	GetRepoCommits(ctx context.Context, token, owner, repo string, perPage int) ([]Commit, error)
 }
 
 // service is the concrete implementation.
@@ -340,4 +341,56 @@ func (s *service) GetUserPublicEvents(ctx context.Context, token, username strin
 	}
 
 	return events, nil
+}
+
+
+// Commit represents a GitHub commit from the Commits API.
+type Commit struct {
+	SHA    string `json:"sha"`
+	Commit struct {
+		Message string `json:"message"`
+		Author  struct {
+			Name  string `json:"name"`
+			Email string `json:"email"`
+			Date  string `json:"date"`
+		} `json:"author"`
+	} `json:"commit"`
+	Author struct {
+		Login string `json:"login"`
+	} `json:"author"`
+	HTMLURL string `json:"html_url"`
+}
+
+// GetRepoCommits fetches recent commits for a repository.
+func (s *service) GetRepoCommits(ctx context.Context, token, owner, repo string, perPage int) ([]Commit, error) {
+	if perPage <= 0 || perPage > 100 {
+		perPage = 30
+	}
+	reqURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/commits?per_page=%d", owner, repo, perPage)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating commits request: %w", err)
+	}
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("fetching commits: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("get commits failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var commits []Commit
+	if err := json.NewDecoder(resp.Body).Decode(&commits); err != nil {
+		return nil, fmt.Errorf("decoding commits response: %w", err)
+	}
+
+	return commits, nil
 }

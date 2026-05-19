@@ -95,9 +95,9 @@ func main() {
 	webhookURL := fmt.Sprintf("https://api.example.com/api/webhooks/github") // configured via env in production
 
 	authSvc := service.NewAuthService(siakadSvc, githubSvc, userRepo, refreshTokenRepo, rdb, cfg)
-	profileSvc := service.NewProfileService(userRepo, showcaseRepo, activityRepo)
+	profileSvc := service.NewProfileService(userRepo, showcaseRepo, activityRepo, githubSvc, encryptionKey)
 	showcaseSvc := service.NewShowcaseService(showcaseRepo, userRepo, githubSvc, encryptionKey, webhookURL, cfg.WebhookSecret)
-	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, githubSvc, cfg.WebhookSecret)
+	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, githubSvc, encryptionKey, cfg.WebhookSecret)
 	forumSvc := service.NewForumService(threadRepo, commentRepo, notifRepo, showcaseRepo, userRepo, logger)
 
 	// Initialize handlers

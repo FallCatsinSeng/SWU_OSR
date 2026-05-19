@@ -30,6 +30,7 @@ type aggregatorService struct {
 	userRepo      domain.UserRepository
 	showcaseRepo  domain.ShowcaseRepository
 	githubSvc     github.Service
+	encryptionKey []byte
 	webhookSecret []byte
 }
 
@@ -39,6 +40,7 @@ func NewAggregatorService(
 	userRepo domain.UserRepository,
 	showcaseRepo domain.ShowcaseRepository,
 	githubSvc github.Service,
+	encryptionKey []byte,
 	webhookSecret string,
 ) AggregatorService {
 	return &aggregatorService{
@@ -46,6 +48,7 @@ func NewAggregatorService(
 		userRepo:      userRepo,
 		showcaseRepo:  showcaseRepo,
 		githubSvc:     githubSvc,
+		encryptionKey: encryptionKey,
 		webhookSecret: []byte(webhookSecret),
 	}
 }
@@ -329,13 +332,17 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 		return 0, nil
 	}
 
-	// Decrypt token
-	token, err := Decrypt(user.GitHubToken, nil) // will use service-level key
-	_ = token
-	_ = err
+	// Decrypt the user's GitHub token to get authenticated API access (higher rate limits)
+	var token string
+	if user.GitHubToken != "" {
+		decrypted, err := Decrypt(user.GitHubToken, s.encryptionKey)
+		if err == nil {
+			token = decrypted
+		}
+	}
 
-	// Fetch public events for the user (no auth needed for public events)
-	events, err := s.githubSvc.GetUserPublicEvents(ctx, "", user.GitHubUsername)
+	// Fetch public events for the user
+	events, err := s.githubSvc.GetUserPublicEvents(ctx, token, user.GitHubUsername)
 	if err != nil {
 		return 0, fmt.Errorf("fetching user events: %w", err)
 	}
@@ -372,7 +379,7 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 			eventType = domain.EventPush
 			summary = s.buildCreateSummary(event.Payload, event.Repo.Name)
 		case "IssuesEvent":
-			eventType = domain.EventPR // reuse PR type for issues
+			eventType = domain.EventPR
 			summary = s.buildIssueSummary(event.Payload, event.Repo.Name)
 		case "ForkEvent":
 			eventType = domain.EventPush
@@ -381,10 +388,10 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 			eventType = domain.EventPush
 			summary = fmt.Sprintf("Starred %s", event.Repo.Name)
 		default:
-			continue // Skip unsupported event types
+			continue
 		}
 
-		// Check if event already exists
+		// Check if event already exists (dedup by GitHub event ID)
 		existing, _ := s.activityRepo.GetByGitHubEventID(ctx, event.ID)
 		if existing != nil {
 			continue
@@ -396,14 +403,13 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 		if found {
 			showcaseRepoID = showcaseRepo.ID
 		} else {
-			// Still log it — this is public activity not tied to a showcase repo
-			// Use a nil UUID for showcase_repo_id
+			// Still log public activity not tied to a showcase repo
 			showcaseRepoID = uuid.Nil
 		}
 
 		// Parse created_at
-		createdAt, err := time.Parse(time.RFC3339, event.CreatedAt)
-		if err != nil {
+		createdAt, parseErr := time.Parse(time.RFC3339, event.CreatedAt)
+		if parseErr != nil {
 			createdAt = time.Now()
 		}
 
@@ -418,11 +424,72 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 			CreatedAt:      createdAt,
 		}
 
-		if err := s.activityRepo.Insert(ctx, log); err != nil {
-			// Skip duplicates, continue with others
+		if insertErr := s.activityRepo.Insert(ctx, log); insertErr != nil {
 			continue
 		}
 		inserted++
+	}
+
+	// Phase 2: Backfill commits from showcase repos
+	// This catches commits that the Events API might not include (older than 90 days)
+	for _, repo := range repos {
+		parts := strings.SplitN(repo.RepoFullName, "/", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		commits, err := s.githubSvc.GetRepoCommits(ctx, token, parts[0], parts[1], 30)
+		if err != nil {
+			continue // Skip repos we can't access
+		}
+
+		for _, commit := range commits {
+			// Only include commits by this user
+			if commit.Author.Login != "" && commit.Author.Login != user.GitHubUsername {
+				continue
+			}
+
+			// Use commit SHA as event ID for dedup
+			eventID := "commit:" + commit.SHA
+			existing, _ := s.activityRepo.GetByGitHubEventID(ctx, eventID)
+			if existing != nil {
+				continue
+			}
+
+			// Parse commit date
+			commitTime, parseErr := time.Parse(time.RFC3339, commit.Commit.Author.Date)
+			if parseErr != nil {
+				continue
+			}
+
+			// Truncate long commit messages
+			msg := commit.Commit.Message
+			if len(msg) > 100 {
+				msg = msg[:100] + "..."
+			}
+
+			summary := fmt.Sprintf("Committed to %s: %s", repo.RepoName, msg)
+			meta, _ := json.Marshal(map[string]string{
+				"sha":     commit.SHA[:7],
+				"message": commit.Commit.Message,
+			})
+
+			log := &domain.ActivityLog{
+				ID:             uuid.New(),
+				UserID:         userID,
+				ShowcaseRepoID: repo.ID,
+				EventType:      domain.EventPush,
+				Summary:        summary,
+				Metadata:       meta,
+				GitHubEventID:  eventID,
+				CreatedAt:      commitTime,
+			}
+
+			if insertErr := s.activityRepo.Insert(ctx, log); insertErr != nil {
+				continue
+			}
+			inserted++
+		}
 	}
 
 	return inserted, nil
