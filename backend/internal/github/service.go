@@ -312,9 +312,18 @@ func (s *service) GetRepoEvents(ctx context.Context, token, owner, repo string) 
 	return events, nil
 }
 
-// GetUserPublicEvents fetches recent public events for a GitHub user.
+// GetUserPublicEvents fetches recent events for a GitHub user.
+// When called with a valid token, it uses the authenticated endpoint which
+// returns BOTH private and public events. Without a token, it falls back to public-only.
 func (s *service) GetUserPublicEvents(ctx context.Context, token, username string) ([]RepoEvent, error) {
-	reqURL := fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=30", username)
+	// Use authenticated endpoint (includes private activity) when token is available
+	var reqURL string
+	if token != "" {
+		reqURL = fmt.Sprintf("https://api.github.com/users/%s/events?per_page=100", username)
+	} else {
+		reqURL = fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=30", username)
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating user events request: %w", err)
