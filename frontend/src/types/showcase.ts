@@ -26,6 +26,7 @@ export interface Repository {
   description: string;
   language: string;
   html_url: string;
+  private: boolean;
 }
 
 export interface ShowcaseSelection {

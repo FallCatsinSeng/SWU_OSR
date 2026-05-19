@@ -73,7 +73,7 @@ func (s *showcaseService) GetAvailableRepos(ctx context.Context, userID uuid.UUI
 	return s.githubSvc.ListRepos(ctx, token)
 }
 
-// SetShowcase validates selections and atomically replaces the user's showcase repos.
+// SetShowcase validates selections and adds them to the user's showcase (appending, not replacing).
 func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error {
 	if len(selections) > 20 {
 		return fmt.Errorf("maximum 20 showcase repos allowed")
@@ -95,31 +95,23 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 		return fmt.Errorf("decrypting github token: %w", err)
 	}
 
-	// Get existing repos to remove their webhooks
+	// Get existing repos to check total count and avoid duplicates
 	existing, err := s.showcaseRepo.GetByUserID(ctx, userID)
 	if err != nil {
 		return err
 	}
 
-	// Remove webhooks for existing repos
-	for _, repo := range existing {
-		if repo.WebhookID != nil {
-			parts := strings.SplitN(repo.RepoFullName, "/", 2)
-			if len(parts) == 2 {
-				_ = s.githubSvc.RemoveWebhook(ctx, token, parts[0], parts[1], *repo.WebhookID)
-			}
-		}
+	if len(existing)+len(selections) > 20 {
+		return fmt.Errorf("maximum 20 showcase repos allowed (currently %d)", len(existing))
 	}
 
-	// Soft-delete all existing showcase repos for this user
+	// Build set of already-showcased full names to skip duplicates
+	existingFullNames := make(map[string]bool)
 	for _, repo := range existing {
-		if err := s.showcaseRepo.SoftDelete(ctx, repo.ID); err != nil {
-			return err
-		}
+		existingFullNames[repo.RepoFullName] = true
 	}
 
-	// Insert new selections and register webhooks
-	// First, fetch all repos from GitHub to get metadata (html_url, description, language)
+	// Fetch all repos from GitHub to get metadata (html_url, description, language)
 	ghRepos, _ := s.githubSvc.ListRepos(ctx, token)
 	repoMetaMap := make(map[string]github.Repository)
 	for _, r := range ghRepos {
@@ -127,6 +119,11 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 	}
 
 	for _, sel := range selections {
+		// Skip if already in showcase
+		if existingFullNames[sel.FullName] {
+			continue
+		}
+
 		parts := strings.SplitN(sel.FullName, "/", 2)
 		var webhookID *int64
 		if len(parts) == 2 {

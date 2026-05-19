@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
-import { Check } from "lucide-react";
+import { Check, Lock, Globe } from "lucide-react";
 
 const ACADEMIC_TAGS: AcademicTag[] = [
   "coursework",
@@ -142,7 +142,20 @@ export function RepoSelector() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">{repo.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-gray-900">{repo.name}</h3>
+                      {repo.private ? (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded bg-yellow-50 text-yellow-700 border border-yellow-200">
+                          <Lock className="h-2.5 w-2.5" />
+                          Private
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded bg-green-50 text-green-700 border border-green-200">
+                          <Globe className="h-2.5 w-2.5" />
+                          Public
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-500 mt-1">
                       {repo.description || "No description"}
                     </p>
