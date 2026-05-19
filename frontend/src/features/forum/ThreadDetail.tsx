@@ -69,10 +69,10 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
           <div className="h-14 w-14 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
             <MessageSquare className="h-7 w-7 text-gray-300" />
           </div>
-          <h3 className="text-base font-medium text-gray-900 mb-1">
+          <h3 className="text-base font-medium text-gray-900 dark:text-white mb-1">
             Thread not found
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-white">
             This thread may have been deleted.
           </p>
         </CardContent>
@@ -85,7 +85,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
       {/* Back link */}
       <Link
         href={`/repos/${repoId}/discussions`}
-        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 transition-colors"
+        className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white dark:text-white transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to Discussions
@@ -96,7 +96,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
         <div className="h-1 gradient-primary" />
         <CardHeader className="pb-3">
           <CardTitle className="text-xl">{thread.title}</CardTitle>
-          <div className="flex items-center gap-3 text-sm text-gray-400">
+          <div className="flex items-center gap-3 text-sm text-gray-400 dark:text-white">
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
               {getRelativeTime(thread.created_at)}
@@ -118,7 +118,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
 
       {/* Comments */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <MessageCircle className="h-5 w-5 text-indigo-600" />
           Comments ({thread.comment_count})
         </h3>
@@ -132,7 +132,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center shrink-0">
-                      <span className="text-xs font-medium text-primary-700">
+                      <span className="text-xs font-medium text-primary-700 dark:text-white">
                         {String(idx + 1).padStart(2, "0")}
                       </span>
                     </div>
@@ -140,7 +140,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
                       <p className="text-sm text-gray-700 whitespace-pre-wrap">
                         {comment.body}
                       </p>
-                      <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                      <p className="text-xs text-gray-400 dark:text-white mt-2 flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {getRelativeTime(comment.created_at)}
                       </p>
@@ -156,7 +156,7 @@ export function ThreadDetail({ repoId, threadId }: ThreadDetailProps) {
               <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
                 <MessageCircle className="h-6 w-6 text-gray-300" />
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-white">
                 No comments yet. Be the first to reply!
               </p>
             </CardContent>

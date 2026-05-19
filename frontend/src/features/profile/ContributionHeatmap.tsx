@@ -68,7 +68,7 @@ export function ContributionHeatmap({ contributionDays }: ContributionHeatmapPro
         {monthLabels.map((m, i) => (
           <span
             key={i}
-            className="absolute text-[10px] text-gray-400"
+            className="absolute text-[10px] text-gray-400 dark:text-white"
             style={{ left: `${m.weekIdx * 14}px` }}
           >
             {m.label}
@@ -94,19 +94,19 @@ export function ContributionHeatmap({ contributionDays }: ContributionHeatmapPro
       {/* Legend */}
       <div className="flex items-center justify-between mt-2">
         {!hasAnyData && (
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-gray-400 dark:text-white">
             Click &quot;Sync from GitHub&quot; to populate activity data
           </span>
         )}
         <div className="flex items-center gap-1 ml-auto">
-          <span className="text-[10px] text-gray-400 mr-1">Less</span>
+          <span className="text-[10px] text-gray-400 dark:text-white mr-1">Less</span>
           {[0, 1, 2, 3, 4].map((level) => (
             <div
               key={level}
               className={`w-3 h-3 rounded-sm heatmap-level-${level}`}
             />
           ))}
-          <span className="text-[10px] text-gray-400 ml-1">More</span>
+          <span className="text-[10px] text-gray-400 dark:text-white ml-1">More</span>
         </div>
       </div>
     </div>
