@@ -119,16 +119,50 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 	}
 
 	for _, sel := range selections {
-		// Skip if already in showcase
+		// Skip if already in showcase (active)
 		if existingFullNames[sel.FullName] {
 			continue
 		}
 
+		// Check if this repo was previously soft-deleted — if so, restore it
+		existingDeleted, _ := s.showcaseRepo.GetByUserAndRepoFullNameIncludeDeleted(ctx, userID, sel.FullName)
+		if existingDeleted != nil {
+			// Restore the soft-deleted entry
+			existingDeleted.DeletedAt = nil
+			existingDeleted.AcademicTag = sel.Tag
+			existingDeleted.UpdatedAt = time.Now()
+
+			// Update metadata
+			if meta, ok := repoMetaMap[sel.FullName]; ok {
+				existingDeleted.Description = meta.Description
+				existingDeleted.Language = meta.Language
+				existingDeleted.HTMLURL = meta.HTMLURL
+			}
+			if existingDeleted.HTMLURL == "" {
+				existingDeleted.HTMLURL = fmt.Sprintf("https://github.com/%s", sel.FullName)
+			}
+
+			// Re-register webhook
+			parts := strings.SplitN(sel.FullName, "/", 2)
+			if len(parts) == 2 {
+				id, whErr := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
+				if whErr == nil {
+					existingDeleted.WebhookID = &id
+				}
+			}
+
+			if err := s.showcaseRepo.Restore(ctx, existingDeleted); err != nil {
+				return err
+			}
+			continue
+		}
+
+		// New repo — register webhook and create
 		parts := strings.SplitN(sel.FullName, "/", 2)
 		var webhookID *int64
 		if len(parts) == 2 {
-			id, err := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
-			if err == nil {
+			id, whErr := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
+			if whErr == nil {
 				webhookID = &id
 			}
 		}
@@ -159,7 +193,8 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 			UpdatedAt:    time.Now(),
 		}
 		if err := s.showcaseRepo.Create(ctx, repo); err != nil {
-			return err
+			// If it fails (e.g. constraint), skip this repo but don't abort
+			continue
 		}
 	}
 

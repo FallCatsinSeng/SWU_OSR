@@ -25,8 +25,10 @@ type ShowcaseRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*ShowcaseRepo, error)
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]ShowcaseRepo, error)
 	GetByUserAndRepoFullName(ctx context.Context, userID uuid.UUID, repoFullName string) (*ShowcaseRepo, error)
+	GetByUserAndRepoFullNameIncludeDeleted(ctx context.Context, userID uuid.UUID, repoFullName string) (*ShowcaseRepo, error)
 	SoftDelete(ctx context.Context, id uuid.UUID) error
 	SoftDeleteByUser(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error
+	Restore(ctx context.Context, repo *ShowcaseRepo) error
 }
 
 // ActivityRepository defines data access methods for activity logs.

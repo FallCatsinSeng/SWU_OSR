@@ -134,3 +134,46 @@ func (r *ShowcaseRepo) SoftDeleteByUser(ctx context.Context, userID uuid.UUID, r
 	_, err := r.pool.Exec(ctx, query, repoID, userID)
 	return err
 }
+
+
+// GetByUserAndRepoFullNameIncludeDeleted retrieves a showcase repo including soft-deleted ones.
+func (r *ShowcaseRepo) GetByUserAndRepoFullNameIncludeDeleted(ctx context.Context, userID uuid.UUID, repoFullName string) (*domain.ShowcaseRepo, error) {
+	query := `
+		SELECT id, user_id, github_repo_id, repo_name, repo_full_name, description, language,
+			html_url, academic_tag, webhook_id, created_at, updated_at
+		FROM showcase_repos
+		WHERE user_id = $1 AND repo_full_name = $2 AND deleted_at IS NOT NULL
+		ORDER BY deleted_at DESC
+		LIMIT 1`
+
+	var repo domain.ShowcaseRepo
+	var tag string
+	err := r.pool.QueryRow(ctx, query, userID, repoFullName).Scan(
+		&repo.ID, &repo.UserID, &repo.GitHubRepoID, &repo.RepoName, &repo.RepoFullName,
+		&repo.Description, &repo.Language, &repo.HTMLURL, &tag,
+		&repo.WebhookID, &repo.CreatedAt, &repo.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	repo.AcademicTag = domain.AcademicTag(tag)
+	return &repo, nil
+}
+
+// Restore un-deletes a soft-deleted showcase repo and updates its fields.
+func (r *ShowcaseRepo) Restore(ctx context.Context, repo *domain.ShowcaseRepo) error {
+	query := `
+		UPDATE showcase_repos
+		SET deleted_at = NULL, academic_tag = $2, description = $3, language = $4,
+			html_url = $5, webhook_id = $6, updated_at = $7
+		WHERE id = $1`
+
+	_, err := r.pool.Exec(ctx, query,
+		repo.ID, string(repo.AcademicTag), repo.Description, repo.Language,
+		repo.HTMLURL, repo.WebhookID, repo.UpdatedAt,
+	)
+	return err
+}
