@@ -107,6 +107,40 @@ func (r *UserRepo) MarkTokenInvalid(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+// ListAll returns all active users.
+func (r *UserRepo) ListAll(ctx context.Context) ([]*domain.User, error) {
+	query := `
+		SELECT id, nim, full_name, major, semester, alias, bio, avatar_url,
+			github_username, github_id, github_token, role, is_active, created_at, updated_at
+		FROM users
+		WHERE deleted_at IS NULL AND is_active = true
+		ORDER BY created_at DESC`
+
+	rows, err := r.pool.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*domain.User
+	for rows.Next() {
+		var user domain.User
+		var role string
+		if err := rows.Scan(
+			&user.ID, &user.NIM, &user.FullName, &user.Major, &user.Semester,
+			&user.Alias, &user.Bio, &user.AvatarURL,
+			&user.GitHubUsername, &user.GitHubID, &user.GitHubToken,
+			&role, &user.IsActive, &user.CreatedAt, &user.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		user.Role = domain.Role(role)
+		users = append(users, &user)
+	}
+
+	return users, rows.Err()
+}
+
 // scanUser scans a single user row from a query result.
 func (r *UserRepo) scanUser(ctx context.Context, query string, args ...interface{}) (*domain.User, error) {
 	var user domain.User

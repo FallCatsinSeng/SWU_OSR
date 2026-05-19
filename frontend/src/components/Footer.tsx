@@ -61,18 +61,18 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="https://walisongo.ac.id"
+                  href="https://www.stmikwidyautama.ac.id"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-gray-500 hover:text-primary-600 transition-colors flex items-center gap-1"
                 >
-                  UIN Walisongo
+                  STMIK Widya Utama
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </li>
               <li>
                 <span className="text-sm text-gray-500">
-                  HMPSTI FST
+                  HMPSTI SWU
                 </span>
               </li>
               <li>
@@ -115,7 +115,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-gray-100 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} HMPSTI — UIN Walisongo Semarang. Built with open source.
+            &copy; {new Date().getFullYear()} HMPSTI SWU — STMIK Widya Utama Purwokerto. Built with open source.
           </p>
           <div className="flex items-center gap-4">
             <a

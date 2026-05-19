@@ -191,16 +191,13 @@ export function ShowcaseGrid() {
           <div className="h-1 gradient-primary" />
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-3">
-              <a
-                href={repo.html_url}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href={`/repos/${repo.id}/discussions`}
                 className="font-semibold text-primary-600 hover:text-primary-700 hover:underline flex items-center gap-1.5 transition-colors"
               >
                 <FolderGit2 className="h-4 w-4" />
                 {repo.repo_name}
-                <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </a>
+              </Link>
               <button
                 onClick={() => handleRemove(repo)}
                 disabled={deleteMutation.isPending}
@@ -265,6 +262,15 @@ export function ShowcaseGrid() {
                 <MessageSquare className="h-3 w-3" />
                 Discussions
               </Link>
+              <a
+                href={repo.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-gray-400 hover:text-primary-600 flex items-center gap-1 transition-colors"
+              >
+                <ExternalLink className="h-3 w-3" />
+                GitHub
+              </a>
               <div className="flex items-center gap-1 text-xs text-gray-400 ml-auto">
                 <Webhook className="h-3 w-3" />
                 <span>Webhook active</span>

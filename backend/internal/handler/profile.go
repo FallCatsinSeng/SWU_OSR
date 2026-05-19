@@ -77,6 +77,20 @@ func (h *ProfileHandler) HandleUpdateProfile(w http.ResponseWriter, r *http.Requ
 	RespondJSON(w, http.StatusOK, map[string]string{"message": "profile updated"})
 }
 
+// HandleListMembers handles GET /api/members.
+func (h *ProfileHandler) HandleListMembers(w http.ResponseWriter, r *http.Request) {
+	members, err := h.profileService.ListMembers(r.Context())
+	if err != nil {
+		RespondError(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+
+	RespondJSON(w, http.StatusOK, map[string]interface{}{
+		"members": members,
+		"total":   len(members),
+	})
+}
+
 // HandleGetRealIdentity handles GET /api/profiles/{alias}/identity (auth required).
 func (h *ProfileHandler) HandleGetRealIdentity(w http.ResponseWriter, r *http.Request) {
 	claims, ok := domain.GetUserClaims(r.Context())

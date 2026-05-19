@@ -40,6 +40,7 @@ export default function MembersPage() {
       }>("/members");
       return data.data;
     },
+    retry: 1,
   });
 
   const members = data?.members ?? [];
