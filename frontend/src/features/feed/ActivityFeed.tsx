@@ -8,6 +8,7 @@ import { ActivityCard } from "./ActivityCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FolderGit2, RefreshCw, Inbox } from "lucide-react";
 
 export function ActivityFeed() {
   const {
@@ -21,7 +22,9 @@ export function ActivityFeed() {
   } = useInfiniteQuery<FeedResponse>({
     queryKey: ["activityFeed"],
     queryFn: async ({ pageParam }) => {
-      const params = pageParam ? { cursor: pageParam, limit: 20 } : { limit: 20 };
+      const params = pageParam
+        ? { cursor: pageParam, limit: 20 }
+        : { limit: 20 };
       const { data } = await api.get<{ ok: boolean; data: FeedResponse }>(
         "/feed",
         { params }
@@ -35,9 +38,9 @@ export function ActivityFeed() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 w-full" />
+          <Skeleton key={i} className="h-20 w-full rounded-xl" />
         ))}
       </div>
     );
@@ -45,8 +48,11 @@ export function ActivityFeed() {
 
   if (isError) {
     return (
-      <Card>
-        <CardContent className="p-6 text-center">
+      <Card className="border-red-100">
+        <CardContent className="p-8 text-center">
+          <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+            <RefreshCw className="h-6 w-6 text-red-400" />
+          </div>
           <p className="text-gray-600 mb-3">Failed to load activity feed.</p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             Try Again
@@ -60,11 +66,23 @@ export function ActivityFeed() {
 
   if (items.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-gray-600 mb-3">No activity yet. Add repos to your showcase to start tracking activity.</p>
+      <Card className="border-dashed border-2 border-gray-200">
+        <CardContent className="p-10 text-center">
+          <div className="h-14 w-14 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+            <Inbox className="h-7 w-7 text-gray-300" />
+          </div>
+          <h3 className="text-base font-medium text-gray-900 mb-1">
+            No activity yet
+          </h3>
+          <p className="text-sm text-gray-500 max-w-sm mx-auto mb-4">
+            Add repos to your showcase to start tracking your open source
+            contributions.
+          </p>
           <Link href="/showcase">
-            <Button variant="outline" size="sm">Go to Showcase</Button>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <FolderGit2 className="h-3.5 w-3.5" />
+              Go to Showcase
+            </Button>
           </Link>
         </CardContent>
       </Card>
@@ -72,7 +90,7 @@ export function ActivityFeed() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {items.map((item) => (
         <ActivityCard key={item.id} item={item} />
       ))}
@@ -82,8 +100,16 @@ export function ActivityFeed() {
             variant="outline"
             onClick={() => fetchNextPage()}
             disabled={isFetchingNextPage}
+            className="gap-1.5"
           >
-            {isFetchingNextPage ? "Loading..." : "Load More"}
+            {isFetchingNextPage ? (
+              <>
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              "Load More"
+            )}
           </Button>
         </div>
       )}
