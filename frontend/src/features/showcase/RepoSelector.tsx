@@ -135,7 +135,7 @@ export function RepoSelector() {
                 alreadyShowcased
                   ? "opacity-60"
                   : selections.has(repo.id)
-                    ? "border-blue-300 bg-blue-50"
+                    ? "border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950"
                     : ""
               }
             >
@@ -145,12 +145,12 @@ export function RepoSelector() {
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium text-gray-900 dark:text-white">{repo.name}</h3>
                       {repo.private ? (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded bg-yellow-50 text-yellow-700 border border-yellow-200">
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded bg-yellow-50 dark:bg-neutral-800 text-yellow-700 dark:text-white border border-yellow-200 dark:border-neutral-700">
                           <Lock className="h-2.5 w-2.5" />
                           Private
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded bg-green-50 text-green-700 border border-green-200">
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded bg-green-50 dark:bg-neutral-800 text-green-700 dark:text-white border border-green-200 dark:border-neutral-700">
                           <Globe className="h-2.5 w-2.5" />
                           Public
                         </span>
@@ -164,7 +164,7 @@ export function RepoSelector() {
                         <Badge variant="secondary">{repo.language}</Badge>
                       )}
                       {alreadyShowcased && (
-                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                        <Badge className="bg-green-100 dark:bg-neutral-800 text-green-800 dark:text-white border-green-200 dark:border-neutral-700">
                           Already in showcase
                         </Badge>
                       )}
@@ -183,7 +183,7 @@ export function RepoSelector() {
                         className={`px-2 py-1 text-xs rounded-full border transition-colors ${
                           selections.get(repo.id) === tag
                             ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-gray-600 dark:text-white border-gray-300 hover:border-blue-300"
+                            : "bg-white dark:bg-neutral-800 text-gray-600 dark:text-white border-gray-300 dark:border-neutral-700 hover:border-blue-300"
                         }`}
                       >
                         {tag.replace("_", " ")}
