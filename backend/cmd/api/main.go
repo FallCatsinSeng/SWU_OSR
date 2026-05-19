@@ -97,7 +97,7 @@ func main() {
 	authSvc := service.NewAuthService(siakadSvc, githubSvc, userRepo, refreshTokenRepo, rdb, cfg)
 	profileSvc := service.NewProfileService(userRepo, showcaseRepo, activityRepo)
 	showcaseSvc := service.NewShowcaseService(showcaseRepo, userRepo, githubSvc, encryptionKey, webhookURL, cfg.WebhookSecret)
-	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, cfg.WebhookSecret)
+	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, githubSvc, cfg.WebhookSecret)
 	forumSvc := service.NewForumService(threadRepo, commentRepo, notifRepo, showcaseRepo, userRepo, logger)
 
 	// Initialize handlers
@@ -164,6 +164,7 @@ func main() {
 			r.Post("/showcase", showcaseHandler.HandleSetShowcase)
 			r.Get("/showcase", showcaseHandler.HandleGetShowcase)
 			r.Delete("/showcase/{id}", showcaseHandler.HandleRemoveFromShowcase)
+			r.Post("/activity/sync", aggregatorHandler.HandleSyncActivity)
 			r.Post("/repos/{id}/threads", forumHandler.HandleCreateThread)
 			r.Post("/threads/{id}/comments", forumHandler.HandleCreateComment)
 			r.Get("/notifications", forumHandler.HandleListNotifications)

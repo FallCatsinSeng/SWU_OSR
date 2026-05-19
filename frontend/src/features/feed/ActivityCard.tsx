@@ -1,15 +1,65 @@
 import Link from "next/link";
 import type { ActivityItem } from "@/types/activity";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { GitBranch, GitPullRequest, Tag, GitCommit } from "lucide-react";
+import {
+  GitBranch,
+  GitPullRequest,
+  Tag,
+  GitCommit,
+  GitFork,
+  Star,
+  CircleDot,
+  Plus,
+} from "lucide-react";
 
 interface ActivityCardProps {
   item: ActivityItem;
 }
 
-function getEventConfig(eventType: string) {
+function getEventConfig(eventType: string, summary: string) {
+  // Detect sub-types from the summary text
+  if (summary.startsWith("Forked")) {
+    return {
+      icon: GitFork,
+      color: "text-teal-600",
+      bg: "bg-teal-50",
+      label: "forked",
+    };
+  }
+  if (summary.startsWith("Starred")) {
+    return {
+      icon: Star,
+      color: "text-yellow-600",
+      bg: "bg-yellow-50",
+      label: "starred",
+    };
+  }
+  if (summary.startsWith("Created repository")) {
+    return {
+      icon: Plus,
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+      label: "created",
+    };
+  }
+  if (summary.startsWith("Created branch") || summary.startsWith("Created tag")) {
+    return {
+      icon: GitBranch,
+      color: "text-cyan-600",
+      bg: "bg-cyan-50",
+      label: "created",
+    };
+  }
+  if (summary.startsWith("Issue")) {
+    return {
+      icon: CircleDot,
+      color: "text-orange-600",
+      bg: "bg-orange-50",
+      label: "issue on",
+    };
+  }
+
   switch (eventType) {
     case "push":
       return {
@@ -23,7 +73,7 @@ function getEventConfig(eventType: string) {
         icon: GitPullRequest,
         color: "text-purple-600",
         bg: "bg-purple-50",
-        label: "opened PR in",
+        label: "PR on",
       };
     case "release":
       return {
@@ -50,16 +100,27 @@ function getRelativeTime(dateString: string): string {
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
+  const weeks = Math.floor(days / 7);
 
+  if (weeks > 0) return `${weeks}w ago`;
   if (days > 0) return `${days}d ago`;
   if (hours > 0) return `${hours}h ago`;
   if (minutes > 0) return `${minutes}m ago`;
   return "just now";
 }
 
+// Extract repo short name from full name (e.g. "owner/repo" -> "repo")
+function getRepoShortName(repoName: string): string {
+  if (repoName.includes("/")) {
+    return repoName.split("/").pop() || repoName;
+  }
+  return repoName;
+}
+
 export function ActivityCard({ item }: ActivityCardProps) {
-  const config = getEventConfig(item.event_type);
+  const config = getEventConfig(item.event_type, item.summary);
   const Icon = config.icon;
+  const repoShort = getRepoShortName(item.repo_name);
 
   return (
     <Card className="hover:border-gray-200 hover:shadow-sm transition-all duration-200 group">
@@ -85,10 +146,10 @@ export function ActivityCard({ item }: ActivityCardProps) {
                 variant="secondary"
                 className="text-[10px] bg-gray-50 text-gray-600 border-gray-100"
               >
-                {item.repo_name}
+                {repoShort}
               </Badge>
             </div>
-            <p className="text-sm text-gray-600 mt-1 line-clamp-1">
+            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
               {item.summary}
             </p>
           </div>
