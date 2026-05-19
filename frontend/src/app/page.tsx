@@ -282,11 +282,9 @@ function PopularReposSection({
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {repos.map((repo) => (
-          <a
+          <Link
             key={repo.id}
-            href={repo.html_url}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/repos/${repo.id}`}
             className="group"
           >
             <Card className="h-full transition-shadow hover:shadow-geist-3">
@@ -297,7 +295,6 @@ function PopularReposSection({
                     <span className="text-body-sm-strong text-geist-ink dark:text-white truncate group-hover:text-geist-link dark:group-hover:text-white transition-colors">
                       {repo.repo_name}
                     </span>
-                    <ExternalLink className="h-3 w-3 text-geist-hairline-strong dark:text-white opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </div>
                   {repo.activity_count > 0 && (
                     <Badge variant="success" className="text-[10px] shrink-0">
@@ -334,7 +331,7 @@ function PopularReposSection({
                 </div>
               </CardContent>
             </Card>
-          </a>
+          </Link>
         ))}
       </div>
     </section>

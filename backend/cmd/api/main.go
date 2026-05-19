@@ -9,11 +9,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/cache"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/config"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/handler"
 	mw "github.com/FallCatsinSeng/SWU_OSR/backend/internal/middleware"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/repository"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/scheduler"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/siakad"
 	"github.com/go-chi/chi/v5"
@@ -85,6 +87,7 @@ func main() {
 	threadRepo := repository.NewThreadRepo(pool)
 	commentRepo := repository.NewCommentRepo(pool)
 	notifRepo := repository.NewNotificationRepo(pool)
+	leaderboardRepo := repository.NewLeaderboardRepo(pool)
 
 	// Initialize external services
 	githubSvc := github.NewService(cfg.GitHubClientID, cfg.GitHubClientSecret, cfg.GitHubRedirectURI)
@@ -99,6 +102,8 @@ func main() {
 	showcaseSvc := service.NewShowcaseService(showcaseRepo, userRepo, githubSvc, encryptionKey, webhookURL, cfg.WebhookSecret)
 	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, githubSvc, encryptionKey, cfg.WebhookSecret)
 	forumSvc := service.NewForumService(threadRepo, commentRepo, notifRepo, showcaseRepo, userRepo, logger)
+	leaderboardSvc := service.NewLeaderboardService(leaderboardRepo, logger)
+	cachedLeaderboardSvc := cache.NewCachedLeaderboardService(leaderboardSvc, rdb, logger)
 
 	// Wire aggregator into showcase for auto-sync on repo add
 	showcaseSvc.SetAggregatorService(aggregatorSvc)
@@ -110,6 +115,7 @@ func main() {
 	aggregatorHandler := handler.NewAggregatorHandler(aggregatorSvc)
 	forumHandler := handler.NewForumHandler(forumSvc)
 	communityHandler := handler.NewCommunityHandler(pool)
+	leaderboardHandler := handler.NewLeaderboardHandler(cachedLeaderboardSvc)
 
 	// Set up router
 	r := chi.NewRouter()
@@ -143,6 +149,8 @@ func main() {
 			r.Get("/repos/{id}/activity", aggregatorHandler.HandleGetRepoActivity)
 			r.Get("/repos/{id}/threads", forumHandler.HandleListThreads)
 			r.Get("/threads/{id}", forumHandler.HandleGetThread)
+			r.Get("/leaderboard", leaderboardHandler.HandleGetLeaderboard)
+			r.Get("/leaderboard/users/{id}", leaderboardHandler.HandleGetUserSummary)
 		})
 
 		// Webhook endpoint (no auth, signature verified internally)
@@ -177,8 +185,13 @@ func main() {
 			r.Post("/threads/{id}/comments", forumHandler.HandleCreateComment)
 			r.Get("/notifications", forumHandler.HandleListNotifications)
 			r.Put("/notifications/{id}/read", forumHandler.HandleMarkNotificationRead)
+			r.Get("/leaderboard/me", leaderboardHandler.HandleGetMyPoints)
 		})
 	})
+
+	// Start leaderboard refresh scheduler (every 15 minutes)
+	leaderboardScheduler := scheduler.New(leaderboardSvc, logger, 15*time.Minute)
+	leaderboardScheduler.Start()
 
 	// Start HTTP server
 	srv := &http.Server{
@@ -202,6 +215,9 @@ func main() {
 
 	<-done
 	logger.Info("server shutting down")
+
+	// Stop background scheduler
+	leaderboardScheduler.Stop()
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

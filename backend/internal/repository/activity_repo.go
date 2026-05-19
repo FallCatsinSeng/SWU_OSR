@@ -39,7 +39,7 @@ func (r *ActivityRepo) Insert(ctx context.Context, log *domain.ActivityLog) erro
 func (r *ActivityRepo) GetFeed(ctx context.Context, cursor time.Time, limit int) ([]domain.ActivityItem, error) {
 	query := `
 		SELECT a.id, a.user_id, u.alias, u.avatar_url, a.event_type,
-			s.repo_full_name, a.summary, a.metadata, a.created_at
+			a.showcase_repo_id, s.repo_full_name, a.summary, a.metadata, a.created_at
 		FROM activity_logs a
 		JOIN users u ON a.user_id = u.id
 		JOIN showcase_repos s ON a.showcase_repo_id = s.id
@@ -59,7 +59,7 @@ func (r *ActivityRepo) GetFeed(ctx context.Context, cursor time.Time, limit int)
 		var eventType string
 		if err := rows.Scan(
 			&item.ID, &item.UserID, &item.UserAlias, &item.AvatarURL,
-			&eventType, &item.RepoName, &item.Summary, &item.Metadata, &item.CreatedAt,
+			&eventType, &item.RepoID, &item.RepoName, &item.Summary, &item.Metadata, &item.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -77,7 +77,7 @@ func (r *ActivityRepo) GetFeed(ctx context.Context, cursor time.Time, limit int)
 func (r *ActivityRepo) GetUserFeed(ctx context.Context, userID uuid.UUID, cursor time.Time, limit int) ([]domain.ActivityItem, error) {
 	query := `
 		SELECT a.id, a.user_id, u.alias, u.avatar_url, a.event_type,
-			s.repo_full_name, a.summary, a.metadata, a.created_at
+			a.showcase_repo_id, s.repo_full_name, a.summary, a.metadata, a.created_at
 		FROM activity_logs a
 		JOIN users u ON a.user_id = u.id
 		JOIN showcase_repos s ON a.showcase_repo_id = s.id
@@ -97,7 +97,7 @@ func (r *ActivityRepo) GetUserFeed(ctx context.Context, userID uuid.UUID, cursor
 		var eventType string
 		if err := rows.Scan(
 			&item.ID, &item.UserID, &item.UserAlias, &item.AvatarURL,
-			&eventType, &item.RepoName, &item.Summary, &item.Metadata, &item.CreatedAt,
+			&eventType, &item.RepoID, &item.RepoName, &item.Summary, &item.Metadata, &item.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -115,7 +115,7 @@ func (r *ActivityRepo) GetUserFeed(ctx context.Context, userID uuid.UUID, cursor
 func (r *ActivityRepo) GetRepoFeed(ctx context.Context, showcaseRepoID uuid.UUID, cursor time.Time, limit int) ([]domain.ActivityItem, error) {
 	query := `
 		SELECT a.id, a.user_id, u.alias, u.avatar_url, a.event_type,
-			s.repo_full_name, a.summary, a.metadata, a.created_at
+			a.showcase_repo_id, s.repo_full_name, a.summary, a.metadata, a.created_at
 		FROM activity_logs a
 		JOIN users u ON a.user_id = u.id
 		JOIN showcase_repos s ON a.showcase_repo_id = s.id
@@ -135,7 +135,7 @@ func (r *ActivityRepo) GetRepoFeed(ctx context.Context, showcaseRepoID uuid.UUID
 		var eventType string
 		if err := rows.Scan(
 			&item.ID, &item.UserID, &item.UserAlias, &item.AvatarURL,
-			&eventType, &item.RepoName, &item.Summary, &item.Metadata, &item.CreatedAt,
+			&eventType, &item.RepoID, &item.RepoName, &item.Summary, &item.Metadata, &item.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

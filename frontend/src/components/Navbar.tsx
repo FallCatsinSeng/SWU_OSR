@@ -18,11 +18,13 @@ import {
   FolderGit2,
   Users,
   Code2,
+  Trophy,
 } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/", label: "Feed", icon: Home },
   { href: "/showcase", label: "Showcase", icon: FolderGit2, auth: true },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/members", label: "Members", icon: Users, auth: true },
 ];
 
