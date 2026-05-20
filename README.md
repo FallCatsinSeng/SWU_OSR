@@ -1,6 +1,6 @@
 # SWU OSR Platform
 
-**Open Source Repository** — Platform komunitas open-source untuk mahasiswa dan dosen Universitas Srinakharinwirot (SWU).
+**Open Source Repository** — Platform komunitas open-source untuk mahasiswa STMIK WIDYA UTAMA (SWU).
 
 SWU OSR adalah platform yang memungkinkan civitas akademika untuk menghubungkan akun GitHub mereka, memamerkan repository, berdiskusi melalui forum, melacak aktivitas kontribusi, dan berkompetisi di leaderboard berbasis poin.
 
