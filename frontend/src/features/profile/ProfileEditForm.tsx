@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { resolveUploadUrl } from "@/lib/url";
 
 const MAX_BANNER_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = [
@@ -96,8 +97,9 @@ export function ProfileEditForm() {
 
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       toast("Banner uploaded successfully", "success");
-      // Update preview to server URL
-      setBannerPreview(data.data?.banner_url || data.banner_url || previewUrl);
+      // Update preview to server URL (resolve to full URL for direct access)
+      const serverUrl = data.data?.banner_url || data.banner_url;
+      setBannerPreview(serverUrl ? resolveUploadUrl(serverUrl) : previewUrl);
     } catch (err: any) {
       toast(err?.response?.data?.error || "Failed to upload banner", "error");
       setBannerPreview(null);
@@ -127,7 +129,7 @@ export function ProfileEditForm() {
   }
 
   // Determine what to show as banner preview
-  const currentBanner = bannerPreview || user?.banner_url || "";
+  const currentBanner = bannerPreview || resolveUploadUrl(user?.banner_url) || "";
   const isVideo = currentBanner && (currentBanner.endsWith(".mp4") || currentBanner.endsWith(".webm"));
 
   return (
