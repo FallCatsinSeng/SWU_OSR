@@ -37,10 +37,25 @@ type Storage struct {
 
 // NewStorage creates a new file storage instance and ensures the directory exists.
 func NewStorage(basePath, urlPrefix string) (*Storage, error) {
-	// Security: create directory with restricted permissions (owner read/write/exec only)
-	if err := os.MkdirAll(basePath, 0750); err != nil {
-		return nil, fmt.Errorf("creating upload directory: %w", err)
+	// Check if directory already exists (e.g., pre-created in Docker image or volume mount)
+	if _, err := os.Stat(basePath); os.IsNotExist(err) {
+		// Try to create it — may fail in read-only containers without volume mounts
+		if mkErr := os.MkdirAll(basePath, 0750); mkErr != nil {
+			return nil, fmt.Errorf("creating upload directory: %w", mkErr)
+		}
+	} else if err != nil {
+		return nil, fmt.Errorf("checking upload directory: %w", err)
 	}
+
+	// Verify we can actually write to the directory
+	testFile := filepath.Join(basePath, ".write-test")
+	f, err := os.Create(testFile)
+	if err != nil {
+		return nil, fmt.Errorf("upload directory is not writable: %w", err)
+	}
+	f.Close()
+	os.Remove(testFile)
+
 	return &Storage{
 		BasePath:  basePath,
 		URLPrefix: urlPrefix,
