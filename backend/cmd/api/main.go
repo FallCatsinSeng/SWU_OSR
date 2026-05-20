@@ -18,6 +18,7 @@ import (
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/scheduler"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/siakad"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-migrate/migrate/v4"
@@ -120,6 +121,13 @@ func main() {
 	// Wire aggregator into showcase for auto-sync on repo add
 	showcaseSvc.SetAggregatorService(aggregatorSvc)
 
+	// Initialize banner file storage
+	// Files are stored in /data/uploads/banners/ and served at /uploads/banners/
+	bannerStorage, err := upload.NewStorage("/data/uploads/banners", "/uploads/banners/")
+	if err != nil {
+		logger.Fatal("failed to initialize banner storage", zap.Error(err))
+	}
+
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authSvc, cfg.CookieSecure)
 	profileHandler := handler.NewProfileHandler(profileSvc, rdb)
@@ -128,6 +136,7 @@ func main() {
 	forumHandler := handler.NewForumHandler(forumSvc)
 	communityHandler := handler.NewCommunityHandler(pool, rdb)
 	leaderboardHandler := handler.NewLeaderboardHandler(cachedLeaderboardSvc)
+	bannerHandler := handler.NewBannerHandler(userRepo, bannerStorage)
 
 	// Set up router
 	r := chi.NewRouter()
@@ -147,6 +156,22 @@ func main() {
 	// Health check
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		handler.RespondJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	})
+
+	// Serve uploaded banner files (public, no auth required)
+	// Security: Only serves from the specific uploads directory; chi.URLParam-based path
+	// prevents directory traversal. Content-Type is set by http.FileServer from file content.
+	fileServer := http.StripPrefix("/uploads/banners/", http.FileServer(http.Dir("/data/uploads/banners")))
+	r.Get("/uploads/banners/*", func(w http.ResponseWriter, r *http.Request) {
+		// Security: Prevent directory listing
+		if r.URL.Path == "/uploads/banners/" {
+			http.NotFound(w, r)
+			return
+		}
+		// Security: Set headers to prevent sniffing and ensure caching
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		fileServer.ServeHTTP(w, r)
 	})
 
 	// API route groups
@@ -189,6 +214,8 @@ func main() {
 			r.Use(rateLimiter.UserMiddleware)
 
 			r.Put("/profile", profileHandler.HandleUpdateProfile)
+			r.Post("/profile/banner", bannerHandler.HandleUploadBanner)
+			r.Delete("/profile/banner", bannerHandler.HandleDeleteBanner)
 			r.Get("/profiles/{alias}/identity", profileHandler.HandleGetRealIdentity)
 			r.Get("/repos/available", showcaseHandler.HandleGetAvailableRepos)
 			r.Post("/showcase", showcaseHandler.HandleSetShowcase)
