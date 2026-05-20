@@ -9,6 +9,7 @@ import (
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 // AuthHandler handles authentication HTTP requests.
@@ -99,7 +100,17 @@ func (h *AuthHandler) HandleGitHubCallback(w http.ResponseWriter, r *http.Reques
 	})
 
 	RespondJSON(w, http.StatusOK, map[string]interface{}{
-		"user":         result.User,
+		"user": MeResponse{
+			ID:             result.User.ID,
+			NIM:            result.User.NIM,
+			Alias:          result.User.Alias,
+			Bio:            result.User.Bio,
+			AvatarURL:      result.User.AvatarURL,
+			GitHubUsername: result.User.GitHubUsername,
+			Role:           result.User.Role,
+			CreatedAt:      result.User.CreatedAt,
+			UpdatedAt:      result.User.UpdatedAt,
+		},
 		"access_token": result.AccessToken,
 	})
 }
@@ -171,6 +182,20 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// MeResponse is the DTO returned by GET /api/auth/me.
+// It exposes only safe fields — never tokens, NIM, or full name.
+type MeResponse struct {
+	ID             uuid.UUID   `json:"id"`
+	NIM            string      `json:"nim"`
+	Alias          string      `json:"alias"`
+	Bio            string      `json:"bio"`
+	AvatarURL      string      `json:"avatar_url"`
+	GitHubUsername string      `json:"github_username"`
+	Role           domain.Role `json:"role"`
+	CreatedAt      time.Time   `json:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at"`
+}
+
 // HandleGetMe handles GET /api/auth/me.
 func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
 	claims, ok := domain.GetUserClaims(r.Context())
@@ -185,7 +210,19 @@ func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondJSON(w, http.StatusOK, user)
+	resp := MeResponse{
+		ID:             user.ID,
+		NIM:            user.NIM,
+		Alias:          user.Alias,
+		Bio:            user.Bio,
+		AvatarURL:      user.AvatarURL,
+		GitHubUsername: user.GitHubUsername,
+		Role:           user.Role,
+		CreatedAt:      user.CreatedAt,
+		UpdatedAt:      user.UpdatedAt,
+	}
+
+	RespondJSON(w, http.StatusOK, resp)
 }
 
 // handleAuthError maps domain errors to HTTP responses.

@@ -4,27 +4,67 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/handler"
 	"github.com/redis/go-redis/v9"
 )
 
-// RateLimiter provides Redis-based sliding window rate limiting.
+// localLimiter implements a simple token-bucket rate limiter for a single key.
+type localLimiter struct {
+	tokens     float64
+	maxTokens  float64
+	refillRate float64 // tokens per second
+	lastRefill time.Time
+}
+
+func newLocalLimiter(maxTokens float64, refillRate float64) *localLimiter {
+	return &localLimiter{
+		tokens:     maxTokens,
+		maxTokens:  maxTokens,
+		refillRate: refillRate,
+		lastRefill: time.Now(),
+	}
+}
+
+func (l *localLimiter) allow() bool {
+	now := time.Now()
+	elapsed := now.Sub(l.lastRefill).Seconds()
+	l.tokens += elapsed * l.refillRate
+	if l.tokens > l.maxTokens {
+		l.tokens = l.maxTokens
+	}
+	l.lastRefill = now
+
+	if l.tokens >= 1 {
+		l.tokens--
+		return true
+	}
+	return false
+}
+
+// RateLimiter provides Redis-based sliding window rate limiting with an
+// in-memory fallback when Redis is unavailable.
 type RateLimiter struct {
 	client       *redis.Client
 	ipLimit      int
 	userLimit    int
 	windowPeriod time.Duration
+
+	// In-memory fallback limiters (used when Redis is down)
+	mu            sync.Mutex
+	localLimiters map[string]*localLimiter
 }
 
 // NewRateLimiter creates a new rate limiter with the given per-IP and per-user limits.
 func NewRateLimiter(client *redis.Client, ipLimit, userLimit int) *RateLimiter {
 	return &RateLimiter{
-		client:       client,
-		ipLimit:      ipLimit,
-		userLimit:    userLimit,
-		windowPeriod: time.Minute,
+		client:        client,
+		ipLimit:       ipLimit,
+		userLimit:     userLimit,
+		windowPeriod:  time.Minute,
+		localLimiters: make(map[string]*localLimiter),
 	}
 }
 
@@ -76,10 +116,42 @@ func (rl *RateLimiter) allow(ctx context.Context, key string, limit int) bool {
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
-		// If Redis is unavailable, allow the request
-		return true
+		// Redis unavailable — fall back to local in-memory rate limiter
+		return rl.allowLocal(key, limit)
 	}
 
 	count := cmds[2].(*redis.IntCmd).Val()
 	return count <= int64(limit)
+}
+
+// allowLocal uses an in-memory token-bucket limiter as a fallback when Redis is down.
+// It applies a stricter limit (1/5 of the configured limit) to be conservative.
+func (rl *RateLimiter) allowLocal(key string, limit int) bool {
+	rl.mu.Lock()
+	limiter, exists := rl.localLimiters[key]
+	if !exists {
+		// Conservative burst: 1/5 of the normal limit
+		burst := float64(limit) / 5
+		if burst < 1 {
+			burst = 1
+		}
+		// Refill rate: limit tokens per minute → limit/60 tokens per second
+		refillRate := float64(limit) / 60.0
+		limiter = newLocalLimiter(burst, refillRate)
+		rl.localLimiters[key] = limiter
+	}
+	allowed := limiter.allow()
+	rl.mu.Unlock()
+
+	return allowed
+}
+
+// MaxBodySize returns middleware that limits the request body to maxBytes.
+func MaxBodySize(maxBytes int64) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+			next.ServeHTTP(w, r)
+		})
+	}
 }

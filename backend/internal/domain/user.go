@@ -16,9 +16,11 @@ const (
 )
 
 // User is the central identity binding entity.
+// Fields marked json:"-" are never serialized in API responses to prevent
+// leaking sensitive data (tokens, PII). Use dedicated DTOs for responses.
 type User struct {
 	ID             uuid.UUID  `json:"id"`
-	NIM            string     `json:"nim"`
+	NIM            string     `json:"-"`
 	FullName       string     `json:"-"`
 	Major          string     `json:"-"`
 	Semester       int        `json:"-"`

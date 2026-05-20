@@ -61,6 +61,17 @@ func Load() (*Config, error) {
 	cfg.RateLimitIP = viper.GetInt("RATE_LIMIT_IP")
 	cfg.RateLimitUser = viper.GetInt("RATE_LIMIT_USER")
 
+	// Validate JWT_SECRET strength
+	if cfg.JWTSecret == "" {
+		return nil, fmt.Errorf("JWT_SECRET must be set")
+	}
+	if len(cfg.JWTSecret) < 32 {
+		return nil, fmt.Errorf("JWT_SECRET must be at least 32 characters, got %d", len(cfg.JWTSecret))
+	}
+	if cfg.JWTSecret == "change-me-to-a-strong-random-secret" {
+		return nil, fmt.Errorf("JWT_SECRET must be changed from the example default value")
+	}
+
 	// Hex-decode the encryption key (must be 64 hex characters representing 32 bytes)
 	encKeyHex := viper.GetString("ENCRYPTION_KEY")
 	if encKeyHex != "" {

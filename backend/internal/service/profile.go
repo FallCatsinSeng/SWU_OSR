@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	neturl "net/url"
 	"regexp"
 	"time"
 
@@ -130,6 +132,22 @@ func (s *profileService) UpdateProfile(ctx context.Context, userID uuid.UUID, in
 		}
 		if err != nil && err != domain.ErrNotFound {
 			return err
+		}
+	}
+
+	// Validate bio length
+	if len(input.Bio) > 500 {
+		return fmt.Errorf("bio must not exceed 500 characters")
+	}
+
+	// Validate avatar_url length and scheme
+	if input.AvatarURL != "" {
+		if len(input.AvatarURL) > 2048 {
+			return fmt.Errorf("avatar_url must not exceed 2048 characters")
+		}
+		parsed, err := neturl.Parse(input.AvatarURL)
+		if err != nil || parsed.Scheme != "https" {
+			return fmt.Errorf("avatar_url must be a valid HTTPS URL")
 		}
 	}
 
