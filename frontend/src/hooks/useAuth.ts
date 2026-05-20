@@ -24,6 +24,8 @@ export function useSIAKADLogin() {
 }
 
 export function useGitHubCallback() {
+  const { setAuthenticated } = useAuthContext();
+
   return useMutation({
     mutationFn: async (params: { code: string; state: string }) => {
       const { data } = await api.post<{ ok: boolean; data: AuthResult }>(
@@ -34,12 +36,14 @@ export function useGitHubCallback() {
     },
     onSuccess: (data) => {
       setAccessToken(data.access_token);
+      setAuthenticated(true);
     },
   });
 }
 
 export function useLogout() {
   const queryClient = useQueryClient();
+  const { setAuthenticated } = useAuthContext();
 
   return useMutation({
     mutationFn: async () => {
@@ -47,6 +51,7 @@ export function useLogout() {
     },
     onSuccess: () => {
       clearTokens();
+      setAuthenticated(false);
       queryClient.clear();
       window.location.href = "/";
     },
