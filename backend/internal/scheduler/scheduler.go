@@ -67,6 +67,8 @@ func (s *Scheduler) run() {
 }
 
 // refreshAll refreshes all leaderboard periods.
+// Performance: Runs all 4 periods in parallel since they are independent,
+// cutting total refresh cycle time by ~4×.
 func (s *Scheduler) refreshAll() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
@@ -78,18 +80,24 @@ func (s *Scheduler) refreshAll() {
 		domain.PeriodAllTime,
 	}
 
+	var refreshWg sync.WaitGroup
 	for _, period := range periods {
-		start := time.Now()
-		if err := s.refresher.RefreshLeaderboard(ctx, period); err != nil {
-			s.logger.Error("leaderboard refresh failed",
-				zap.String("period", string(period)),
-				zap.Error(err),
-			)
-		} else {
-			s.logger.Info("leaderboard refresh completed",
-				zap.String("period", string(period)),
-				zap.Duration("duration", time.Since(start)),
-			)
-		}
+		refreshWg.Add(1)
+		go func(p domain.LeaderboardPeriod) {
+			defer refreshWg.Done()
+			start := time.Now()
+			if err := s.refresher.RefreshLeaderboard(ctx, p); err != nil {
+				s.logger.Error("leaderboard refresh failed",
+					zap.String("period", string(p)),
+					zap.Error(err),
+				)
+			} else {
+				s.logger.Info("leaderboard refresh completed",
+					zap.String("period", string(p)),
+					zap.Duration("duration", time.Since(start)),
+				)
+			}
+		}(period)
 	}
+	refreshWg.Wait()
 }

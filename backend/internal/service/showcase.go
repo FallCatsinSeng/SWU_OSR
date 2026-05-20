@@ -248,36 +248,29 @@ func (s *showcaseService) UpdateShowcase(ctx context.Context, userID uuid.UUID, 
 }
 
 // RemoveFromShowcase soft-deletes a specific repo and removes its webhook.
+// Performance: Uses GetByID + ownership check instead of fetching ALL user repos.
 func (s *showcaseService) RemoveFromShowcase(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error {
-	user, err := s.userRepo.GetByID(ctx, userID)
+	// Direct lookup by ID instead of fetching all user repos
+	target, err := s.showcaseRepo.GetByID(ctx, repoID)
 	if err != nil {
 		return err
 	}
 
-	// Find the repo in user's showcase
-	repos, err := s.showcaseRepo.GetByUserID(ctx, userID)
-	if err != nil {
-		return err
-	}
-
-	var target *domain.ShowcaseRepo
-	for i := range repos {
-		if repos[i].ID == repoID {
-			target = &repos[i]
-			break
-		}
-	}
-	if target == nil {
+	// Verify ownership
+	if target.UserID != userID {
 		return domain.ErrNotFound
 	}
 
 	// Remove webhook if it exists
 	if target.WebhookID != nil {
-		token, err := Decrypt(user.GitHubToken, s.encryptionKey)
-		if err == nil {
-			parts := strings.SplitN(target.RepoFullName, "/", 2)
-			if len(parts) == 2 {
-				_ = s.githubSvc.RemoveWebhook(ctx, token, parts[0], parts[1], *target.WebhookID)
+		user, userErr := s.userRepo.GetByID(ctx, userID)
+		if userErr == nil {
+			token, decErr := Decrypt(user.GitHubToken, s.encryptionKey)
+			if decErr == nil {
+				parts := strings.SplitN(target.RepoFullName, "/", 2)
+				if len(parts) == 2 {
+					_ = s.githubSvc.RemoveWebhook(ctx, token, parts[0], parts[1], *target.WebhookID)
+				}
 			}
 		}
 	}
@@ -287,24 +280,18 @@ func (s *showcaseService) RemoveFromShowcase(ctx context.Context, userID uuid.UU
 
 
 // UpdateRepoDescription updates the description of a specific showcase repo.
+// Performance: Uses GetByID + ownership check instead of fetching ALL user repos.
 func (s *showcaseService) UpdateRepoDescription(ctx context.Context, userID uuid.UUID, repoID uuid.UUID, description string) error {
-	repos, err := s.showcaseRepo.GetByUserID(ctx, userID)
+	// Direct lookup by ID instead of fetching all user repos
+	target, err := s.showcaseRepo.GetByID(ctx, repoID)
 	if err != nil {
 		return err
 	}
 
-	var target *domain.ShowcaseRepo
-	for i := range repos {
-		if repos[i].ID == repoID {
-			target = &repos[i]
-			break
-		}
-	}
-	if target == nil {
+	// Verify ownership
+	if target.UserID != userID {
 		return domain.ErrNotFound
 	}
 
-	target.Description = description
-	target.UpdatedAt = time.Now()
 	return s.showcaseRepo.UpdateDescription(ctx, repoID, description)
 }

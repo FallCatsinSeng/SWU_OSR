@@ -44,8 +44,20 @@ func main() {
 	}
 
 	// Connect to PostgreSQL
+	// Performance: Explicit pool tuning prevents connection exhaustion under load
+	// and avoids stale connections from lingering too long.
 	ctx := context.Background()
-	pool, err := pgxpool.New(ctx, cfg.DatabaseURL)
+	poolConfig, err := pgxpool.ParseConfig(cfg.DatabaseURL)
+	if err != nil {
+		logger.Fatal("failed to parse database URL", zap.Error(err))
+	}
+	poolConfig.MaxConns = 25
+	poolConfig.MinConns = 5
+	poolConfig.MaxConnLifetime = 1 * time.Hour
+	poolConfig.MaxConnIdleTime = 15 * time.Minute
+	poolConfig.HealthCheckPeriod = 30 * time.Second
+
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		logger.Fatal("failed to connect to PostgreSQL", zap.Error(err))
 	}
@@ -110,11 +122,11 @@ func main() {
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authSvc, cfg.CookieSecure)
-	profileHandler := handler.NewProfileHandler(profileSvc)
+	profileHandler := handler.NewProfileHandler(profileSvc, rdb)
 	showcaseHandler := handler.NewShowcaseHandler(showcaseSvc)
 	aggregatorHandler := handler.NewAggregatorHandler(aggregatorSvc)
 	forumHandler := handler.NewForumHandler(forumSvc)
-	communityHandler := handler.NewCommunityHandler(pool)
+	communityHandler := handler.NewCommunityHandler(pool, rdb)
 	leaderboardHandler := handler.NewLeaderboardHandler(cachedLeaderboardSvc)
 
 	// Set up router
@@ -142,16 +154,18 @@ func main() {
 		// Public routes (no auth)
 		r.Group(func(r chi.Router) {
 			r.Get("/profiles/{alias}", profileHandler.HandleGetPublicProfile)
-			r.Get("/members", profileHandler.HandleListMembers)
 			r.Get("/feed", aggregatorHandler.HandleGetFeed)
-			r.Get("/stats", communityHandler.HandleGetStats)
-			r.Get("/repos/popular", communityHandler.HandleGetPopularRepos)
 			r.Get("/users/{id}/activity", aggregatorHandler.HandleGetUserActivity)
 			r.Get("/repos/{id}/activity", aggregatorHandler.HandleGetRepoActivity)
 			r.Get("/repos/{id}/threads", forumHandler.HandleListThreads)
 			r.Get("/threads/{id}", forumHandler.HandleGetThread)
-			r.Get("/leaderboard", leaderboardHandler.HandleGetLeaderboard)
-			r.Get("/leaderboard/users/{id}", leaderboardHandler.HandleGetUserSummary)
+
+			// Performance: Cache-Control headers for stable/slow-changing endpoints
+			r.With(mw.CacheControl(60)).Get("/members", profileHandler.HandleListMembers)
+			r.With(mw.CacheControl(30)).Get("/stats", communityHandler.HandleGetStats)
+			r.With(mw.CacheControl(60)).Get("/repos/popular", communityHandler.HandleGetPopularRepos)
+			r.With(mw.CacheControl(60)).Get("/leaderboard", leaderboardHandler.HandleGetLeaderboard)
+			r.With(mw.CacheControl(60)).Get("/leaderboard/users/{id}", leaderboardHandler.HandleGetUserSummary)
 		})
 
 		// Webhook endpoint (no auth, signature verified internally)

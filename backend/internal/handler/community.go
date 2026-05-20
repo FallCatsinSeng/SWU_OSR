@@ -2,20 +2,25 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 // CommunityHandler handles community-wide HTTP requests.
 type CommunityHandler struct {
-	pool *pgxpool.Pool
+	pool  *pgxpool.Pool
+	redis *redis.Client
 }
 
 // NewCommunityHandler creates a new community handler.
-func NewCommunityHandler(pool *pgxpool.Pool) *CommunityHandler {
-	return &CommunityHandler{pool: pool}
+// Performance: accepts Redis client to cache stats and popular repos (30s TTL),
+// eliminating 6+ DB queries per home page load.
+func NewCommunityHandler(pool *pgxpool.Pool, rdb *redis.Client) *CommunityHandler {
+	return &CommunityHandler{pool: pool, redis: rdb}
 }
 
 // CommunityStats holds platform-wide statistics.
@@ -29,13 +34,37 @@ type CommunityStats struct {
 }
 
 // HandleGetStats handles GET /api/stats.
+// Performance: Cached in Redis for 30s to avoid 6 sequential DB queries per request.
 func (h *CommunityHandler) HandleGetStats(w http.ResponseWriter, r *http.Request) {
+	const cacheKey = "api:community:stats"
+	const cacheTTL = 30 * time.Second
+
+	// Try Redis cache first
+	if h.redis != nil {
+		if cached, err := h.redis.Get(context.Background(), cacheKey).Bytes(); err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Cache", "HIT")
+			w.WriteHeader(http.StatusOK)
+			w.Write(cached)
+			return
+		}
+	}
+
 	ctx := r.Context()
 	stats, err := h.getCommunityStats(ctx)
 	if err != nil {
 		RespondError(w, http.StatusInternalServerError, "failed to fetch stats")
 		return
 	}
+
+	// Cache the result
+	if h.redis != nil {
+		if data, err := json.Marshal(stats); err == nil {
+			h.redis.Set(context.Background(), cacheKey, data, cacheTTL)
+		}
+	}
+
+	w.Header().Set("X-Cache", "MISS")
 	RespondJSON(w, http.StatusOK, stats)
 }
 
@@ -117,15 +146,39 @@ type PopularRepo struct {
 }
 
 // HandleGetPopularRepos handles GET /api/repos/popular.
+// Performance: Cached in Redis for 60s to avoid expensive correlated subquery per request.
+// Also uses LEFT JOIN on pre-aggregated counts instead of correlated subquery.
 func (h *CommunityHandler) HandleGetPopularRepos(w http.ResponseWriter, r *http.Request) {
+	const cacheKey = "api:community:popular_repos"
+	const cacheTTL = 60 * time.Second
+
+	// Try Redis cache first
+	if h.redis != nil {
+		if cached, err := h.redis.Get(context.Background(), cacheKey).Bytes(); err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Cache", "HIT")
+			w.WriteHeader(http.StatusOK)
+			w.Write(cached)
+			return
+		}
+	}
+
 	ctx := r.Context()
 
+	// Performance: LEFT JOIN on pre-aggregated activity counts instead of
+	// correlated subquery. This computes all counts in a single pass rather
+	// than executing a COUNT(*) per showcase_repo row.
 	query := `
 		SELECT s.id, s.repo_name, s.repo_full_name, s.description, s.language, 
 			s.html_url, s.academic_tag, u.alias, u.avatar_url,
-			COALESCE((SELECT COUNT(*) FROM activity_logs a WHERE a.showcase_repo_id = s.id), 0) as activity_count
+			COALESCE(ac.cnt, 0) as activity_count
 		FROM showcase_repos s
 		JOIN users u ON s.user_id = u.id
+		LEFT JOIN (
+			SELECT showcase_repo_id, COUNT(*) as cnt
+			FROM activity_logs
+			GROUP BY showcase_repo_id
+		) ac ON ac.showcase_repo_id = s.id
 		WHERE s.deleted_at IS NULL
 		ORDER BY activity_count DESC, s.created_at DESC
 		LIMIT 6`
@@ -157,5 +210,13 @@ func (h *CommunityHandler) HandleGetPopularRepos(w http.ResponseWriter, r *http.
 		repos = []PopularRepo{}
 	}
 
+	// Cache the result
+	if h.redis != nil {
+		if data, err := json.Marshal(repos); err == nil {
+			h.redis.Set(context.Background(), cacheKey, data, cacheTTL)
+		}
+	}
+
+	w.Header().Set("X-Cache", "MISS")
 	RespondJSON(w, http.StatusOK, repos)
 }

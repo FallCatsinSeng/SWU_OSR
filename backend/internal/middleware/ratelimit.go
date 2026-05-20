@@ -58,13 +58,39 @@ type RateLimiter struct {
 }
 
 // NewRateLimiter creates a new rate limiter with the given per-IP and per-user limits.
+// Performance: Starts a background goroutine to periodically clean stale entries
+// from the local fallback limiter map, preventing unbounded memory growth during Redis outages.
 func NewRateLimiter(client *redis.Client, ipLimit, userLimit int) *RateLimiter {
-	return &RateLimiter{
+	rl := &RateLimiter{
 		client:        client,
 		ipLimit:       ipLimit,
 		userLimit:     userLimit,
 		windowPeriod:  time.Minute,
 		localLimiters: make(map[string]*localLimiter),
+	}
+
+	// Start background cleanup every 5 minutes
+	go rl.cleanupLoop()
+
+	return rl
+}
+
+// cleanupLoop periodically removes stale entries from the local limiter map.
+// An entry is considered stale if it hasn't been accessed in over 5 minutes.
+func (rl *RateLimiter) cleanupLoop() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		rl.mu.Lock()
+		now := time.Now()
+		for key, limiter := range rl.localLimiters {
+			// Remove entries not accessed in the last 5 minutes
+			if now.Sub(limiter.lastRefill) > 5*time.Minute {
+				delete(rl.localLimiters, key)
+			}
+		}
+		rl.mu.Unlock()
 	}
 }
 
