@@ -125,6 +125,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(mw.MaxBodySize(1 << 20)) // 1MB global request body size limit
 	r.Use(mw.CORS(cfg.CORSOrigin))
 
 	// Rate limiter (IP-only applied globally)
