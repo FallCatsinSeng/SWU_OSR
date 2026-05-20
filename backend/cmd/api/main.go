@@ -214,7 +214,9 @@ func main() {
 			r.Use(rateLimiter.UserMiddleware)
 
 			r.Put("/profile", profileHandler.HandleUpdateProfile)
-			r.Post("/profile/banner", bannerHandler.HandleUploadBanner)
+			// Banner upload has its own 10MB limit set in the handler, so we
+			// override the global 1MB MaxBodySize for this route only.
+			r.With(mw.MaxBodySize(upload.MaxBannerSize + 4096)).Post("/profile/banner", bannerHandler.HandleUploadBanner)
 			r.Delete("/profile/banner", bannerHandler.HandleDeleteBanner)
 			r.Get("/profiles/{alias}/identity", profileHandler.HandleGetRealIdentity)
 			r.Get("/repos/available", showcaseHandler.HandleGetAvailableRepos)
