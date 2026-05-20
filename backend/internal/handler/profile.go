@@ -1,27 +1,33 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
 )
 
 // ProfileHandler handles profile HTTP requests.
 type ProfileHandler struct {
 	profileService service.ProfileService
 	validate       *validator.Validate
+	redis          *redis.Client
 }
 
 // NewProfileHandler creates a new profile handler.
-func NewProfileHandler(profileService service.ProfileService) *ProfileHandler {
+// Performance: accepts Redis client for caching expensive list operations.
+func NewProfileHandler(profileService service.ProfileService, rdb *redis.Client) *ProfileHandler {
 	return &ProfileHandler{
 		profileService: profileService,
 		validate:       validator.New(),
+		redis:          rdb,
 	}
 }
 
@@ -78,17 +84,44 @@ func (h *ProfileHandler) HandleUpdateProfile(w http.ResponseWriter, r *http.Requ
 }
 
 // HandleListMembers handles GET /api/members.
+// Performance: Caches the full response in Redis for 60s to avoid the expensive
+// N+1 query pattern (GetByUserID + GetUserStats per user on every request).
 func (h *ProfileHandler) HandleListMembers(w http.ResponseWriter, r *http.Request) {
+	const cacheKey = "api:members:list"
+	const cacheTTL = 60 * time.Second
+
+	// Try to serve from Redis cache first
+	if h.redis != nil {
+		cached, err := h.redis.Get(context.Background(), cacheKey).Bytes()
+		if err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Cache", "HIT")
+			w.WriteHeader(http.StatusOK)
+			w.Write(cached)
+			return
+		}
+	}
+
 	members, err := h.profileService.ListMembers(r.Context())
 	if err != nil {
 		RespondError(w, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	RespondJSON(w, http.StatusOK, map[string]interface{}{
+	response := map[string]interface{}{
 		"members": members,
 		"total":   len(members),
-	})
+	}
+
+	// Store in Redis cache for subsequent requests
+	if h.redis != nil {
+		if data, err := json.Marshal(response); err == nil {
+			h.redis.Set(context.Background(), cacheKey, data, cacheTTL)
+		}
+	}
+
+	w.Header().Set("X-Cache", "MISS")
+	RespondJSON(w, http.StatusOK, response)
 }
 
 // HandleGetRealIdentity handles GET /api/profiles/{alias}/identity (auth required).

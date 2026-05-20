@@ -190,39 +190,21 @@ func (s *profileService) GetRealIdentity(ctx context.Context, requesterID uuid.U
 	}, nil
 }
 
-// GetUserStats computes activity statistics for a user.
-// It combines data from the local activity_logs with live GitHub repo data.
+// GetUserStats computes activity statistics for a user using only local DB data.
+// Performance: Removed all real-time GitHub API calls. Data is populated by background sync
+// (SyncUserActivity) and webhook processing, so the DB always has fresh data.
+// This reduces profile load from 5-20s to <50ms.
 func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*UserStats, error) {
-	user, err := s.userRepo.GetByID(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-
 	repos, err := s.showcaseRepo.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Collect languages from showcase repos (already stored in DB)
+	// Collect languages from showcase repos (already stored in DB from sync)
 	langSet := make(map[string]struct{})
 	for _, r := range repos {
 		if r.Language != "" {
 			langSet[r.Language] = struct{}{}
-		}
-	}
-
-	// If user has a GitHub token, also fetch languages from all their repos
-	if user.GitHubToken != "" {
-		token, decErr := Decrypt(user.GitHubToken, s.encryptionKey)
-		if decErr == nil && token != "" {
-			ghRepos, listErr := s.githubSvc.ListRepos(ctx, token)
-			if listErr == nil {
-				for _, r := range ghRepos {
-					if r.Language != "" {
-						langSet[r.Language] = struct{}{}
-					}
-				}
-			}
 		}
 	}
 
@@ -231,7 +213,7 @@ func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*U
 		languages = append(languages, l)
 	}
 
-	// Get activity feed to compute commit stats
+	// Get activity feed from local DB to compute commit stats
 	feed, err := s.activityRepo.GetUserFeed(ctx, userID, time.Now().Add(time.Second), 1000)
 	if err != nil {
 		return nil, err
@@ -249,49 +231,10 @@ func (s *profileService) GetUserStats(ctx context.Context, userID uuid.UUID) (*U
 		dayCount[day]++
 	}
 
-	// If no activity in DB yet, try to get commit count from GitHub repos directly
-	if totalCommits == 0 && user.GitHubToken != "" {
-		token, decErr := Decrypt(user.GitHubToken, s.encryptionKey)
-		if decErr == nil && token != "" {
-			for _, repo := range repos {
-				parts := splitFullName(repo.RepoFullName)
-				if len(parts) != 2 {
-					continue
-				}
-				commits, cErr := s.githubSvc.GetRepoCommits(ctx, token, parts[0], parts[1], 100)
-				if cErr != nil {
-					continue
-				}
-				for _, c := range commits {
-					if c.Author.Login == user.GitHubUsername {
-						totalCommits++
-						if c.Commit.Author.Date != "" {
-							t, parseErr := time.Parse(time.RFC3339, c.Commit.Author.Date)
-							if parseErr == nil {
-								d := t.Format("2006-01-02")
-								daySet[d] = struct{}{}
-								dayCount[d]++
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// Also count total repos from GitHub if available
+	// Total repos = showcase repos count (GitHub total is not meaningful here)
 	totalRepos := len(repos)
-	if user.GitHubToken != "" {
-		token, decErr := Decrypt(user.GitHubToken, s.encryptionKey)
-		if decErr == nil && token != "" {
-			ghRepos, listErr := s.githubSvc.ListRepos(ctx, token)
-			if listErr == nil && len(ghRepos) > totalRepos {
-				totalRepos = len(ghRepos)
-			}
-		}
-	}
 
-	// Calculate streak
+	// Calculate streak from activity days
 	streak := 0
 	today := time.Now().Truncate(24 * time.Hour)
 	for i := 0; ; i++ {

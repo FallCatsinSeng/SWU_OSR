@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // OAuthToken holds the token received from GitHub OAuth exchange.
@@ -61,12 +62,15 @@ type service struct {
 }
 
 // NewService creates a new GitHub service.
+// Performance: HTTP client has a 10s timeout to prevent goroutine leaks if GitHub is unresponsive.
 func NewService(clientID, clientSecret, redirectURI string) Service {
 	return &service{
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		redirectURI:  redirectURI,
-		httpClient:   &http.Client{},
+		httpClient: &http.Client{
+			Timeout: 10 * time.Second,
+		},
 	}
 }
 

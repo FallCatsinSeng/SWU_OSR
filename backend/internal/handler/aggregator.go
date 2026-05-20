@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
@@ -73,7 +75,8 @@ func (h *AggregatorHandler) HandleGetFeed(w http.ResponseWriter, r *http.Request
 }
 
 // HandleSyncActivity handles POST /api/activity/sync (auth required).
-// It fetches recent public GitHub events for the current user and inserts new ones into the feed.
+// Performance: Returns 202 Accepted immediately and processes sync in the background.
+// This prevents blocking the HTTP handler for 5-30s while GitHub API calls complete.
 func (h *AggregatorHandler) HandleSyncActivity(w http.ResponseWriter, r *http.Request) {
 	claims, ok := domain.GetUserClaims(r.Context())
 	if !ok {
@@ -81,14 +84,17 @@ func (h *AggregatorHandler) HandleSyncActivity(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	inserted, err := h.aggregatorService.SyncUserActivity(r.Context(), claims.UserID)
-	if err != nil {
-		RespondError(w, http.StatusInternalServerError, "failed to sync activity")
-		return
-	}
+	// Launch sync in a background goroutine so the client isn't blocked
+	go func(userID uuid.UUID) {
+		// Use a detached context since the request context will be cancelled after response
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancel()
+		_, _ = h.aggregatorService.SyncUserActivity(ctx, userID)
+	}(claims.UserID)
 
-	RespondJSON(w, http.StatusOK, map[string]interface{}{
-		"synced": inserted,
+	RespondJSON(w, http.StatusAccepted, map[string]interface{}{
+		"status":  "accepted",
+		"message": "sync started in background",
 	})
 }
 

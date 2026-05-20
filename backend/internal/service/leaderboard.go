@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
@@ -65,7 +66,8 @@ func (s *leaderboardService) GetUserSummary(ctx context.Context, userID uuid.UUI
 }
 
 // RefreshLeaderboard recomputes points for all active users in the given period.
-// This should be called periodically (e.g., every 15 minutes via cron/scheduler).
+// Performance: Uses a bounded worker pool (10 goroutines) to parallelize per-user
+// computation, reducing refresh time from O(N×7) sequential to O(N×7/10) parallel.
 func (s *leaderboardService) RefreshLeaderboard(ctx context.Context, period domain.LeaderboardPeriod) error {
 	from, to := s.periodWindow(period)
 
@@ -81,17 +83,28 @@ func (s *leaderboardService) RefreshLeaderboard(ctx context.Context, period doma
 		zap.Int("active_users", len(userIDs)),
 	)
 
+	// Bounded worker pool to avoid overwhelming the DB connection pool
+	const maxWorkers = 10
+	sem := make(chan struct{}, maxWorkers)
+	var wg sync.WaitGroup
+
 	for _, userID := range userIDs {
-		if err := s.computeAndStoreUserPoints(ctx, userID, period, from, to); err != nil {
-			s.logger.Error("failed to compute points for user",
-				zap.Error(err),
-				zap.String("user_id", userID.String()),
-			)
-			// Continue processing other users
-			continue
-		}
+		wg.Add(1)
+		sem <- struct{}{} // Acquire semaphore slot
+		go func(uid uuid.UUID) {
+			defer wg.Done()
+			defer func() { <-sem }() // Release semaphore slot
+
+			if err := s.computeAndStoreUserPoints(ctx, uid, period, from, to); err != nil {
+				s.logger.Error("failed to compute points for user",
+					zap.Error(err),
+					zap.String("user_id", uid.String()),
+				)
+			}
+		}(userID)
 	}
 
+	wg.Wait()
 	return nil
 }
 
