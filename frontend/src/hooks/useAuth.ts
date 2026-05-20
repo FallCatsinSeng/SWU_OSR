@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { getAccessToken, setAccessToken, setSessionId, clearTokens } from "@/lib/auth";
+import { useAuthContext } from "@/components/AuthProvider";
 import type { LoginInput, PendingSession, AuthResult } from "@/types/auth";
 import type { User } from "@/types/user";
 
@@ -53,7 +54,11 @@ export function useLogout() {
 }
 
 export function useCurrentUser() {
-  const hasToken = typeof window !== "undefined" ? !!getAccessToken() : false;
+  // Use auth context to know when rehydration is complete
+  const { isReady, isAuthenticated } = useAuthContext();
+
+  // Only enable the query when auth is ready AND we have a token
+  const shouldFetch = isReady && isAuthenticated;
 
   return useQuery<User>({
     queryKey: ["currentUser"],
@@ -61,8 +66,16 @@ export function useCurrentUser() {
       const { data } = await api.get<{ ok: boolean; data: User }>("/auth/me");
       return data.data;
     },
-    enabled: hasToken,
+    enabled: shouldFetch,
     retry: false,
     staleTime: 5 * 60 * 1000,
   });
+}
+
+/**
+ * Hook to check if auth is still initializing (rehydrating token).
+ * Useful for showing loading states during initial auth check.
+ */
+export function useAuthReady() {
+  return useAuthContext();
 }
