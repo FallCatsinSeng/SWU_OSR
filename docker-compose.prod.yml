@@ -7,6 +7,9 @@ services:
     cap_drop:
       - ALL
     read_only: true
+    # Allow writing to upload directory (volume is writable even with read_only: true)
+    tmpfs:
+      - /tmp
     restart: unless-stopped
 
   frontend:

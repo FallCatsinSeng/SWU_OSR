@@ -106,6 +106,7 @@ func (h *AuthHandler) HandleGitHubCallback(w http.ResponseWriter, r *http.Reques
 			Alias:          result.User.Alias,
 			Bio:            result.User.Bio,
 			AvatarURL:      result.User.AvatarURL,
+			BannerURL:      result.User.BannerURL,
 			GitHubUsername: result.User.GitHubUsername,
 			Role:           result.User.Role,
 			CreatedAt:      result.User.CreatedAt,
@@ -190,6 +191,7 @@ type MeResponse struct {
 	Alias          string      `json:"alias"`
 	Bio            string      `json:"bio"`
 	AvatarURL      string      `json:"avatar_url"`
+	BannerURL      string      `json:"banner_url"`
 	GitHubUsername string      `json:"github_username"`
 	Role           domain.Role `json:"role"`
 	CreatedAt      time.Time   `json:"created_at"`
@@ -216,6 +218,7 @@ func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
 		Alias:          user.Alias,
 		Bio:            user.Bio,
 		AvatarURL:      user.AvatarURL,
+		BannerURL:      user.BannerURL,
 		GitHubUsername: user.GitHubUsername,
 		Role:           user.Role,
 		CreatedAt:      user.CreatedAt,
