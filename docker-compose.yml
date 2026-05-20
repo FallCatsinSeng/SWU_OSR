@@ -34,7 +34,7 @@ services:
     env_file:
       - ./backend/.env
     volumes:
-      - uploads:/data/uploads
+      - uploads:/data/uploads/banners
     depends_on:
       postgres:
         condition: service_healthy
@@ -55,7 +55,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - uploads:/data/uploads:ro
+      - uploads:/data/uploads/banners:ro
     depends_on:
       - backend
       - frontend
