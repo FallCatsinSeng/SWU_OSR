@@ -13,15 +13,7 @@ import (
 func TestSetShowcase_ValidatesMaxLimit(t *testing.T) {
 	userRepo := newMockUserRepo()
 	showcaseRepo := newMockShowcaseRepo()
-	ghSvc := &mockGitHubService{
-		listReposFn: nil,
-		registerWebhookFn: func(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error) {
-			return 42, nil
-		},
-		removeWebhookFn: func(ctx context.Context, token, owner, repo string, hookID int64) error {
-			return nil
-		},
-	}
+	ghSvc := &mockGitHubService{}
 
 	userID := uuid.New()
 	key := []byte("01234567890123456789012345678901") // 32 bytes
@@ -35,7 +27,7 @@ func TestSetShowcase_ValidatesMaxLimit(t *testing.T) {
 	}
 	userRepo.users["2021001"] = user
 
-	svc := NewShowcaseService(showcaseRepo, userRepo, ghSvc, key, "https://example.com/webhook", "secret")
+	svc := NewShowcaseService(showcaseRepo, userRepo, ghSvc, key)
 
 	// Create 21 selections - should fail
 	selections := make([]domain.ShowcaseSelection, 21)
@@ -56,14 +48,7 @@ func TestSetShowcase_ValidatesMaxLimit(t *testing.T) {
 func TestSetShowcase_ValidatesAcademicTags(t *testing.T) {
 	userRepo := newMockUserRepo()
 	showcaseRepo := newMockShowcaseRepo()
-	ghSvc := &mockGitHubService{
-		registerWebhookFn: func(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error) {
-			return 42, nil
-		},
-		removeWebhookFn: func(ctx context.Context, token, owner, repo string, hookID int64) error {
-			return nil
-		},
-	}
+	ghSvc := &mockGitHubService{}
 
 	userID := uuid.New()
 	key := []byte("01234567890123456789012345678901")
@@ -77,7 +62,7 @@ func TestSetShowcase_ValidatesAcademicTags(t *testing.T) {
 	}
 	userRepo.users["2021001"] = user
 
-	svc := NewShowcaseService(showcaseRepo, userRepo, ghSvc, key, "https://example.com/webhook", "secret")
+	svc := NewShowcaseService(showcaseRepo, userRepo, ghSvc, key)
 
 	// Invalid tag
 	selections := []domain.ShowcaseSelection{
@@ -97,14 +82,7 @@ func TestSetShowcase_ValidatesAcademicTags(t *testing.T) {
 func TestSetShowcase_ValidTags(t *testing.T) {
 	userRepo := newMockUserRepo()
 	showcaseRepo := newMockShowcaseRepo()
-	ghSvc := &mockGitHubService{
-		registerWebhookFn: func(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error) {
-			return 42, nil
-		},
-		removeWebhookFn: func(ctx context.Context, token, owner, repo string, hookID int64) error {
-			return nil
-		},
-	}
+	ghSvc := &mockGitHubService{}
 
 	userID := uuid.New()
 	key := []byte("01234567890123456789012345678901")
@@ -118,7 +96,7 @@ func TestSetShowcase_ValidTags(t *testing.T) {
 	}
 	userRepo.users["2021001"] = user
 
-	svc := NewShowcaseService(showcaseRepo, userRepo, ghSvc, key, "https://example.com/webhook", "secret")
+	svc := NewShowcaseService(showcaseRepo, userRepo, ghSvc, key)
 
 	validTags := []domain.AcademicTag{
 		domain.TagCoursework,
@@ -149,14 +127,7 @@ func TestSetShowcase_ValidTags(t *testing.T) {
 func TestSetShowcase_Max20Succeeds(t *testing.T) {
 	userRepo := newMockUserRepo()
 	showcaseRepo := newMockShowcaseRepo()
-	ghSvc := &mockGitHubService{
-		registerWebhookFn: func(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error) {
-			return 42, nil
-		},
-		removeWebhookFn: func(ctx context.Context, token, owner, repo string, hookID int64) error {
-			return nil
-		},
-	}
+	ghSvc := &mockGitHubService{}
 
 	userID := uuid.New()
 	key := []byte("01234567890123456789012345678901")
@@ -170,7 +141,7 @@ func TestSetShowcase_Max20Succeeds(t *testing.T) {
 	}
 	userRepo.users["2021001"] = user
 
-	svc := NewShowcaseService(showcaseRepo, userRepo, ghSvc, key, "https://example.com/webhook", "secret")
+	svc := NewShowcaseService(showcaseRepo, userRepo, ghSvc, key)
 
 	// Exactly 20 selections - should succeed
 	selections := make([]domain.ShowcaseSelection, 20)

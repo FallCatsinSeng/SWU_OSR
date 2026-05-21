@@ -108,14 +108,10 @@ func main() {
 
 	// Initialize application services
 	encryptionKey := cfg.EncryptionKey
-	webhookURL := cfg.WebhookURL
-	if webhookURL == "" {
-		logger.Fatal("WEBHOOK_URL must be set to the publicly reachable HTTPS URL of /api/webhooks/github")
-	}
 
 	authSvc := service.NewAuthService(siakadSvc, githubSvc, userRepo, refreshTokenRepo, rdb, cfg)
 	profileSvc := service.NewProfileService(userRepo, showcaseRepo, activityRepo, githubSvc, encryptionKey)
-	showcaseSvc := service.NewShowcaseService(showcaseRepo, userRepo, githubSvc, encryptionKey, webhookURL, cfg.WebhookSecret)
+	showcaseSvc := service.NewShowcaseService(showcaseRepo, userRepo, githubSvc, encryptionKey)
 	aggregatorSvc := service.NewAggregatorService(activityRepo, userRepo, showcaseRepo, githubSvc, encryptionKey, cfg.WebhookSecret)
 	forumSvc := service.NewForumService(threadRepo, commentRepo, notifRepo, showcaseRepo, userRepo, logger)
 	leaderboardSvc := service.NewLeaderboardService(leaderboardRepo, logger)
