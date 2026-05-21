@@ -20,7 +20,8 @@ const (
 type ActivityLog struct {
 	ID             uuid.UUID       `json:"id"`
 	UserID         uuid.UUID       `json:"user_id"`
-	ShowcaseRepoID uuid.UUID       `json:"showcase_repo_id"`
+	ShowcaseRepoID *uuid.UUID      `json:"showcase_repo_id"`
+	RepoFullName   string          `json:"repo_full_name"`
 	EventType      EventType       `json:"event_type"`
 	Summary        string          `json:"summary"`
 	Metadata       json.RawMessage `json:"metadata"`
@@ -43,14 +44,15 @@ type FeedResult struct {
 
 // ActivityItem is a single item in the activity feed.
 type ActivityItem struct {
-	ID        uuid.UUID       `json:"id"`
-	UserID    uuid.UUID       `json:"user_id"`
-	UserAlias string          `json:"user_alias"`
-	AvatarURL string          `json:"avatar_url"`
-	EventType EventType       `json:"event_type"`
-	RepoID    uuid.UUID       `json:"repo_id"`
-	RepoName  string          `json:"repo_name"`
-	Summary   string          `json:"summary"`
-	Metadata  json.RawMessage `json:"metadata"`
-	CreatedAt time.Time       `json:"created_at"`
+	ID           uuid.UUID       `json:"id"`
+	UserID       uuid.UUID       `json:"user_id"`
+	UserAlias    string          `json:"user_alias"`
+	AvatarURL    string          `json:"avatar_url"`
+	EventType    EventType       `json:"event_type"`
+	RepoID       *uuid.UUID      `json:"repo_id"`
+	RepoName     string          `json:"repo_name"`
+	RepoFullName string          `json:"repo_full_name"`
+	Summary      string          `json:"summary"`
+	Metadata     json.RawMessage `json:"metadata"`
+	CreatedAt    time.Time       `json:"created_at"`
 }

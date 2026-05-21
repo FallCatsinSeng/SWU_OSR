@@ -181,7 +181,7 @@ func (m *mockActivityRepo) GetUserFeed(_ context.Context, userID uuid.UUID, curs
 func (m *mockActivityRepo) GetRepoFeed(_ context.Context, showcaseRepoID uuid.UUID, cursor time.Time, limit int) ([]domain.ActivityItem, error) {
 	var items []domain.ActivityItem
 	for _, l := range m.logs {
-		if l.ShowcaseRepoID == showcaseRepoID && l.CreatedAt.Before(cursor) {
+		if l.ShowcaseRepoID != nil && *l.ShowcaseRepoID == showcaseRepoID && l.CreatedAt.Before(cursor) {
 			items = append(items, domain.ActivityItem{
 				ID:        l.ID,
 				UserID:    l.UserID,
