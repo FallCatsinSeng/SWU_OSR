@@ -79,7 +79,7 @@ func (s *service) GetAuthorizationURL(state string) string {
 	params := url.Values{}
 	params.Set("client_id", s.clientID)
 	params.Set("redirect_uri", s.redirectURI)
-	params.Set("scope", "read:user repo")
+	params.Set("scope", "read:user public_repo write:repo_hook")
 	params.Set("state", state)
 	return "https://github.com/login/oauth/authorize?" + params.Encode()
 }
@@ -158,7 +158,7 @@ func (s *service) ListRepos(ctx context.Context, token string) ([]Repository, er
 	page := 1
 
 	for {
-		reqURL := fmt.Sprintf("https://api.github.com/user/repos?per_page=100&page=%d", page)
+		reqURL := fmt.Sprintf("https://api.github.com/user/repos?per_page=100&visibility=public&page=%d", page)
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 		if err != nil {
 			return nil, fmt.Errorf("creating repos request: %w", err)
@@ -316,17 +316,11 @@ func (s *service) GetRepoEvents(ctx context.Context, token, owner, repo string) 
 	return events, nil
 }
 
-// GetUserPublicEvents fetches recent events for a GitHub user.
-// When called with a valid token, it uses the authenticated endpoint which
-// returns BOTH private and public events. Without a token, it falls back to public-only.
+// GetUserPublicEvents fetches recent public events for a GitHub user.
+// Uses the public events endpoint to respect the reduced OAuth scope.
+// The token is still passed for authentication (higher rate limits).
 func (s *service) GetUserPublicEvents(ctx context.Context, token, username string) ([]RepoEvent, error) {
-	// Use authenticated endpoint (includes private activity) when token is available
-	var reqURL string
-	if token != "" {
-		reqURL = fmt.Sprintf("https://api.github.com/users/%s/events?per_page=100", username)
-	} else {
-		reqURL = fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=30", username)
-	}
+	reqURL := fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=100", username)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
 	if err != nil {

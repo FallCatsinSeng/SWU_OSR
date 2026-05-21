@@ -89,11 +89,11 @@ func (s *aggregatorService) ProcessWebhook(ctx context.Context, payload []byte, 
 		return nil
 	}
 
-	// Resolve showcase repo
+	// Resolve showcase repo (may or may not exist)
+	var showcaseRepoID *uuid.UUID
 	showcaseRepo, err := s.showcaseRepo.GetByUserAndRepoFullName(ctx, user.ID, repoFullName)
-	if err != nil {
-		// Not in showcase, ignore
-		return nil
+	if err == nil && showcaseRepo != nil {
+		showcaseRepoID = &showcaseRepo.ID
 	}
 
 	// Check duplicate via github_event_id
@@ -109,7 +109,8 @@ func (s *aggregatorService) ProcessWebhook(ctx context.Context, payload []byte, 
 	log := &domain.ActivityLog{
 		ID:             uuid.New(),
 		UserID:         user.ID,
-		ShowcaseRepoID: showcaseRepo.ID,
+		ShowcaseRepoID: showcaseRepoID,
+		RepoFullName:   repoFullName,
 		EventType:      domain.EventType(eventType),
 		Summary:        summary,
 		Metadata:       metadata,
@@ -276,10 +277,12 @@ func (s *aggregatorService) SyncRepoActivity(ctx context.Context, userID uuid.UU
 			"message": commit.Commit.Message,
 		})
 
+		repoID := repo.ID
 		log := &domain.ActivityLog{
 			ID:             uuid.New(),
 			UserID:         userID,
-			ShowcaseRepoID: repo.ID,
+			ShowcaseRepoID: &repoID,
+			RepoFullName:   repo.RepoFullName,
 			EventType:      domain.EventPush,
 			Summary:        summary,
 			Metadata:       meta,
@@ -521,13 +524,12 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 			continue
 		}
 
-		// Find matching showcase repo (if any)
+		// Find matching showcase repo (if any) — activity is recorded regardless
+		var showcaseRepoID *uuid.UUID
 		showcaseRepo, found := repoMap[event.Repo.Name]
-		if !found {
-			// Not tied to a showcase repo — skip (FK constraint requires valid showcase_repo_id)
-			continue
+		if found {
+			showcaseRepoID = &showcaseRepo.ID
 		}
-		showcaseRepoID := showcaseRepo.ID
 
 		// Parse created_at
 		createdAt, parseErr := time.Parse(time.RFC3339, event.CreatedAt)
@@ -539,6 +541,7 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 			ID:             uuid.New(),
 			UserID:         userID,
 			ShowcaseRepoID: showcaseRepoID,
+			RepoFullName:   event.Repo.Name,
 			EventType:      eventType,
 			Summary:        summary,
 			Metadata:       event.Payload,
@@ -596,10 +599,12 @@ func (s *aggregatorService) SyncUserActivity(ctx context.Context, userID uuid.UU
 				"message": commit.Commit.Message,
 			})
 
+			repoID := repo.ID
 			log := &domain.ActivityLog{
 				ID:             uuid.New(),
 				UserID:         userID,
-				ShowcaseRepoID: repo.ID,
+				ShowcaseRepoID: &repoID,
+				RepoFullName:   repo.RepoFullName,
 				EventType:      domain.EventPush,
 				Summary:        summary,
 				Metadata:       meta,
