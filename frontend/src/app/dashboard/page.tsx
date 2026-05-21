@@ -51,7 +51,8 @@ interface PopularRepo {
 
 /**
  * Dashboard page — only for authenticated users.
- * If not authenticated, redirect to /welcome.
+ * Shows skeleton indefinitely until user loads OR 15s timeout.
+ * If auth fails or times out, redirect to /welcome.
  */
 export default function DashboardPage() {
   const { isReady, isAuthenticated } = useAuthContext();
@@ -63,6 +64,17 @@ export default function DashboardPage() {
       router.replace("/welcome");
     }
   }, [isReady, isAuthenticated, router]);
+
+  // Timeout: if nothing resolves in 15 seconds, redirect to welcome
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!user) {
+        router.replace("/welcome");
+      }
+    }, 15000);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const { data: stats } = useQuery<CommunityStats>({
     queryKey: ["communityStats"],

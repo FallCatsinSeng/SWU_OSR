@@ -3,13 +3,13 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/components/AuthProvider";
-import { hasLoggedInHint } from "@/lib/auth";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Root page — acts purely as a router.
- * Instantly redirects to /dashboard (authenticated) or /welcome (visitor).
- * Never renders the landing page or dashboard itself, eliminating flash.
+ * Root page — just a skeleton that redirects.
+ * Middleware handles most redirects at edge, this is the fallback.
+ * Shows skeleton, waits for auth, then goes to /dashboard or /welcome.
+ * If nothing happens in 15s, goes to /welcome.
  */
 export default function RootPage() {
   const { isReady, isAuthenticated } = useAuthContext();
@@ -17,19 +17,17 @@ export default function RootPage() {
 
   useEffect(() => {
     if (!isReady) return;
-    if (isAuthenticated) {
-      router.replace("/dashboard");
-    } else {
-      router.replace("/welcome");
-    }
+    router.replace(isAuthenticated ? "/dashboard" : "/welcome");
   }, [isReady, isAuthenticated, router]);
 
-  // While determining auth state, show a minimal loading indicator.
-  // If we have a hint the user was logged in, show dashboard-like skeleton.
-  // If no hint, show nothing (instant redirect to /welcome will happen).
-  if (!isReady && !hasLoggedInHint()) {
-    return null;
-  }
+  // 15s timeout fallback
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      router.replace("/welcome");
+    }, 15000);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="mx-auto max-w-geist-page px-6 py-8">
