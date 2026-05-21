@@ -33,6 +33,8 @@ type mockGitHubService struct {
 	exchangeCodeFn        func(ctx context.Context, code string) (*github.OAuthToken, error)
 	getUserFn             func(ctx context.Context, token string) (*github.GitHubUser, error)
 	listReposFn           func(ctx context.Context, token string) ([]github.Repository, error)
+	registerWebhookFn     func(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error)
+	removeWebhookFn       func(ctx context.Context, token, owner, repo string, hookID int64) error
 }
 
 func (m *mockGitHubService) GetAuthorizationURL(state string) string {
@@ -49,6 +51,18 @@ func (m *mockGitHubService) ListRepos(ctx context.Context, token string) ([]gith
 		return m.listReposFn(ctx, token)
 	}
 	return nil, nil
+}
+func (m *mockGitHubService) RegisterWebhook(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error) {
+	if m.registerWebhookFn != nil {
+		return m.registerWebhookFn(ctx, token, owner, repo, webhookURL, secret)
+	}
+	return 0, nil
+}
+func (m *mockGitHubService) RemoveWebhook(ctx context.Context, token, owner, repo string, hookID int64) error {
+	if m.removeWebhookFn != nil {
+		return m.removeWebhookFn(ctx, token, owner, repo, hookID)
+	}
+	return nil
 }
 func (m *mockGitHubService) GetRepoEvents(_ context.Context, _, _, _ string) ([]github.RepoEvent, error) {
 	return nil, nil

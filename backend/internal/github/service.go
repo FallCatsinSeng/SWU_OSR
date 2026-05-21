@@ -46,6 +46,8 @@ type Service interface {
 	ExchangeCode(ctx context.Context, code string) (*OAuthToken, error)
 	GetUser(ctx context.Context, token string) (*GitHubUser, error)
 	ListRepos(ctx context.Context, token string) ([]Repository, error)
+	RegisterWebhook(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error)
+	RemoveWebhook(ctx context.Context, token, owner, repo string, hookID int64) error
 	GetRepoEvents(ctx context.Context, token, owner, repo string) ([]RepoEvent, error)
 	GetUserPublicEvents(ctx context.Context, token, username string) ([]RepoEvent, error)
 	GetRepoCommits(ctx context.Context, token, owner, repo string, perPage int) ([]Commit, error)
@@ -77,7 +79,7 @@ func (s *service) GetAuthorizationURL(state string) string {
 	params := url.Values{}
 	params.Set("client_id", s.clientID)
 	params.Set("redirect_uri", s.redirectURI)
-	params.Set("scope", "read:user public_repo")
+	params.Set("scope", "read:user public_repo write:repo_hook")
 	params.Set("state", state)
 	return "https://github.com/login/oauth/authorize?" + params.Encode()
 }
@@ -197,6 +199,77 @@ func (s *service) ListRepos(ctx context.Context, token string) ([]Repository, er
 	return allRepos, nil
 }
 
+// RegisterWebhook creates a webhook on the given repository.
+func (s *service) RegisterWebhook(ctx context.Context, token, owner, repo, webhookURL, secret string) (int64, error) {
+	payload := map[string]interface{}{
+		"name":   "web",
+		"active": true,
+		"events": []string{"push", "pull_request"},
+		"config": map[string]string{
+			"url":          webhookURL,
+			"content_type": "json",
+			"secret":       secret,
+		},
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return 0, fmt.Errorf("marshaling webhook payload: %w", err)
+	}
+
+	reqURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/hooks", owner, repo)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, strings.NewReader(string(body)))
+	if err != nil {
+		return 0, fmt.Errorf("creating webhook request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("registering webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		respBody, _ := io.ReadAll(resp.Body)
+		return 0, fmt.Errorf("register webhook failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var result struct {
+		ID int64 `json:"id"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return 0, fmt.Errorf("decoding webhook response: %w", err)
+	}
+
+	return result.ID, nil
+}
+
+// RemoveWebhook deletes a webhook from the given repository.
+func (s *service) RemoveWebhook(ctx context.Context, token, owner, repo string, hookID int64) error {
+	reqURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/hooks/%d", owner, repo, hookID)
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, reqURL, nil)
+	if err != nil {
+		return fmt.Errorf("creating delete webhook request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("removing webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("remove webhook failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	return nil
+}
 
 
 // RepoEvent represents a GitHub repository event from the Events API.
@@ -243,58 +316,38 @@ func (s *service) GetRepoEvents(ctx context.Context, token, owner, repo string) 
 	return events, nil
 }
 
-// GetUserPublicEvents fetches recent public events for a GitHub user (paginated).
+// GetUserPublicEvents fetches recent public events for a GitHub user.
 // Uses the public events endpoint to respect the reduced OAuth scope.
 // The token is still passed for authentication (higher rate limits).
-// GitHub caps user events at 10 pages (300 events max).
 func (s *service) GetUserPublicEvents(ctx context.Context, token, username string) ([]RepoEvent, error) {
-	var allEvents []RepoEvent
-	page := 1
-	const maxPages = 10 // GitHub caps at 10 pages for events
+	reqURL := fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=100", username)
 
-	for page <= maxPages {
-		reqURL := fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=100&page=%d", username, page)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating user events request: %w", err)
+	}
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
 
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
-		if err != nil {
-			return nil, fmt.Errorf("creating user events request: %w", err)
-		}
-		if token != "" {
-			req.Header.Set("Authorization", "Bearer "+token)
-		}
-		req.Header.Set("Accept", "application/vnd.github+json")
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("fetching user events: %w", err)
+	}
+	defer resp.Body.Close()
 
-		resp, err := s.httpClient.Do(req)
-		if err != nil {
-			return nil, fmt.Errorf("fetching user events page %d: %w", page, err)
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
-			resp.Body.Close()
-			return nil, fmt.Errorf("get user events failed with status %d: %s", resp.StatusCode, string(body))
-		}
-
-		var events []RepoEvent
-		if err := json.NewDecoder(resp.Body).Decode(&events); err != nil {
-			resp.Body.Close()
-			return nil, fmt.Errorf("decoding user events response: %w", err)
-		}
-		resp.Body.Close()
-
-		if len(events) == 0 {
-			break
-		}
-
-		allEvents = append(allEvents, events...)
-		page++
-
-		if len(events) < 100 {
-			break
-		}
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("get user events failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
-	return allEvents, nil
+	var events []RepoEvent
+	if err := json.NewDecoder(resp.Body).Decode(&events); err != nil {
+		return nil, fmt.Errorf("decoding user events response: %w", err)
+	}
+
+	return events, nil
 }
 
 

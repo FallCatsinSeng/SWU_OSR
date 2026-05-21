@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
@@ -24,11 +25,13 @@ type ShowcaseService interface {
 
 // showcaseService is the concrete implementation.
 type showcaseService struct {
-	showcaseRepo  domain.ShowcaseRepository
-	userRepo      domain.UserRepository
-	githubSvc     github.Service
-	encryptionKey []byte
-	aggregatorSvc AggregatorService
+	showcaseRepo   domain.ShowcaseRepository
+	userRepo       domain.UserRepository
+	githubSvc      github.Service
+	encryptionKey  []byte
+	webhookURL     string
+	webhookSecret  string
+	aggregatorSvc  AggregatorService
 }
 
 // NewShowcaseService creates a new showcase service.
@@ -37,12 +40,16 @@ func NewShowcaseService(
 	userRepo domain.UserRepository,
 	githubSvc github.Service,
 	encryptionKey []byte,
+	webhookURL string,
+	webhookSecret string,
 ) ShowcaseService {
 	return &showcaseService{
 		showcaseRepo:  showcaseRepo,
 		userRepo:      userRepo,
 		githubSvc:     githubSvc,
 		encryptionKey: encryptionKey,
+		webhookURL:    webhookURL,
+		webhookSecret: webhookSecret,
 	}
 }
 
@@ -130,8 +137,10 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 		}
 
 		// Check if this repo was previously soft-deleted — if so, restore it
+		// We check by both full_name and github_repo_id (the DB constraint is on github_repo_id)
 		existingDeleted, _ := s.showcaseRepo.GetByUserAndRepoFullNameIncludeDeleted(ctx, userID, sel.FullName)
 		if existingDeleted == nil {
+			// Also try by github_repo_id directly
 			existingDeleted, _ = s.showcaseRepo.GetByUserAndGitHubRepoIDIncludeDeleted(ctx, userID, sel.RepoID)
 		}
 		if existingDeleted != nil {
@@ -152,6 +161,15 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 				existingDeleted.HTMLURL = fmt.Sprintf("https://github.com/%s", sel.FullName)
 			}
 
+			// Re-register webhook
+			parts := strings.SplitN(sel.FullName, "/", 2)
+			if len(parts) == 2 {
+				id, whErr := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
+				if whErr == nil {
+					existingDeleted.WebhookID = &id
+				}
+			}
+
 			if err := s.showcaseRepo.Restore(ctx, existingDeleted); err != nil {
 				continue
 			}
@@ -167,7 +185,17 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 			continue
 		}
 
-		// New repo — create showcase entry
+		// New repo — register webhook and create
+		parts := strings.SplitN(sel.FullName, "/", 2)
+		var webhookID *int64
+		if len(parts) == 2 {
+			id, whErr := s.githubSvc.RegisterWebhook(ctx, token, parts[0], parts[1], s.webhookURL, s.webhookSecret)
+			if whErr == nil {
+				webhookID = &id
+			}
+		}
+
+		// Get metadata from GitHub API response
 		var description, language, htmlURL string
 		if meta, ok := repoMetaMap[sel.FullName]; ok {
 			description = meta.Description
@@ -188,6 +216,7 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 			Language:     language,
 			HTMLURL:      htmlURL,
 			AcademicTag:  sel.Tag,
+			WebhookID:    webhookID,
 			CreatedAt:    time.Now(),
 			UpdatedAt:    time.Now(),
 		}
@@ -219,7 +248,7 @@ func (s *showcaseService) UpdateShowcase(ctx context.Context, userID uuid.UUID, 
 	return s.SetShowcase(ctx, userID, selections)
 }
 
-// RemoveFromShowcase soft-deletes a specific repo.
+// RemoveFromShowcase soft-deletes a specific repo and removes its webhook.
 // Performance: Uses GetByID + ownership check instead of fetching ALL user repos.
 func (s *showcaseService) RemoveFromShowcase(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error {
 	// Direct lookup by ID instead of fetching all user repos
@@ -233,8 +262,23 @@ func (s *showcaseService) RemoveFromShowcase(ctx context.Context, userID uuid.UU
 		return domain.ErrNotFound
 	}
 
+	// Remove webhook if it exists
+	if target.WebhookID != nil {
+		user, userErr := s.userRepo.GetByID(ctx, userID)
+		if userErr == nil {
+			token, decErr := Decrypt(user.GitHubToken, s.encryptionKey)
+			if decErr == nil {
+				parts := strings.SplitN(target.RepoFullName, "/", 2)
+				if len(parts) == 2 {
+					_ = s.githubSvc.RemoveWebhook(ctx, token, parts[0], parts[1], *target.WebhookID)
+				}
+			}
+		}
+	}
+
 	return s.showcaseRepo.SoftDeleteByUser(ctx, userID, repoID)
 }
+
 
 // UpdateRepoDescription updates the description of a specific showcase repo.
 // Performance: Uses GetByID + ownership check instead of fetching ALL user repos.
