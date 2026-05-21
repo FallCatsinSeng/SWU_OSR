@@ -469,7 +469,7 @@ function PageSkeleton() {
 // --- Main Page Component ---
 export default function HomePage() {
   const { data: user } = useCurrentUser();
-  const { isReady } = useAuthContext();
+  const { isReady, isAuthenticated } = useAuthContext();
 
   const { data: stats } = useQuery<CommunityStats>({
     queryKey: ["communityStats"],
@@ -496,6 +496,11 @@ export default function HomePage() {
   // Show skeleton while auth state is being determined (only if user was
   // previously logged in — genuine new visitors see the landing page instantly)
   if (!isReady && hasLoggedInHint()) {
+    return <PageSkeleton />;
+  }
+
+  // Auth resolved as authenticated but user data still loading from /auth/me
+  if (isReady && isAuthenticated && !user) {
     return <PageSkeleton />;
   }
 

@@ -30,7 +30,7 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const { data: user } = useCurrentUser();
-  const { isReady } = useAuthReady();
+  const { isReady, isAuthenticated } = useAuthReady();
   const logout = useLogout();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -133,8 +133,8 @@ export function Navbar() {
                     </DropdownMenuItem>
                   </DropdownMenu>
                 </>
-              ) : !isReady ? (
-                /* Auth is rehydrating — show placeholder to avoid flash */
+              ) : !isReady || isAuthenticated ? (
+                /* Auth is rehydrating or user data loading — show placeholder to avoid flash */
                 <div className="h-8 w-8 rounded-full bg-geist-canvas-soft-2 dark:bg-neutral-800 animate-pulse" />
               ) : (
                 <div className="flex items-center gap-2">
