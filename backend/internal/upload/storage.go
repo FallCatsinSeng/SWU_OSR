@@ -40,12 +40,17 @@ func NewStorage(basePath, urlPrefix string) (*Storage, error) {
 	// Check if directory already exists (e.g., pre-created in Docker image or volume mount)
 	if _, err := os.Stat(basePath); os.IsNotExist(err) {
 		// Try to create it — may fail in read-only containers without volume mounts
-		if mkErr := os.MkdirAll(basePath, 0750); mkErr != nil {
+		// 0755: world-readable+traversable so nginx (different UID) can serve files
+		if mkErr := os.MkdirAll(basePath, 0755); mkErr != nil {
 			return nil, fmt.Errorf("creating upload directory: %w", mkErr)
 		}
 	} else if err != nil {
 		return nil, fmt.Errorf("checking upload directory: %w", err)
 	}
+
+	// Ensure directory is world-readable+traversable (in case it was pre-created
+	// with restrictive permissions by Docker or a previous version)
+	_ = os.Chmod(basePath, 0755)
 
 	// Verify we can actually write to the directory
 	testFile := filepath.Join(basePath, ".write-test")
