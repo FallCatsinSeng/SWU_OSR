@@ -2,7 +2,7 @@
 ALTER TABLE activity_logs ALTER COLUMN showcase_repo_id DROP NOT NULL;
 
 -- Add repo_full_name column so we can display repo info even without a showcase entry.
-ALTER TABLE activity_logs ADD COLUMN repo_full_name VARCHAR(255) DEFAULT '';
+ALTER TABLE activity_logs ADD COLUMN repo_full_name VARCHAR(255) NOT NULL DEFAULT '';
 
 -- Backfill repo_full_name from existing showcase_repos references.
 UPDATE activity_logs a

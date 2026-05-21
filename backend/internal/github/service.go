@@ -316,38 +316,58 @@ func (s *service) GetRepoEvents(ctx context.Context, token, owner, repo string) 
 	return events, nil
 }
 
-// GetUserPublicEvents fetches recent public events for a GitHub user.
+// GetUserPublicEvents fetches recent public events for a GitHub user (paginated).
 // Uses the public events endpoint to respect the reduced OAuth scope.
 // The token is still passed for authentication (higher rate limits).
+// GitHub caps user events at 10 pages (300 events max).
 func (s *service) GetUserPublicEvents(ctx context.Context, token, username string) ([]RepoEvent, error) {
-	reqURL := fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=100", username)
+	var allEvents []RepoEvent
+	page := 1
+	const maxPages = 10 // GitHub caps at 10 pages for events
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("creating user events request: %w", err)
-	}
-	if token != "" {
-		req.Header.Set("Authorization", "Bearer "+token)
-	}
-	req.Header.Set("Accept", "application/vnd.github+json")
+	for page <= maxPages {
+		reqURL := fmt.Sprintf("https://api.github.com/users/%s/events/public?per_page=100&page=%d", username, page)
 
-	resp, err := s.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("fetching user events: %w", err)
-	}
-	defer resp.Body.Close()
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("creating user events request: %w", err)
+		}
+		if token != "" {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+		req.Header.Set("Accept", "application/vnd.github+json")
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("get user events failed with status %d: %s", resp.StatusCode, string(body))
+		resp, err := s.httpClient.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("fetching user events page %d: %w", page, err)
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			return nil, fmt.Errorf("get user events failed with status %d: %s", resp.StatusCode, string(body))
+		}
+
+		var events []RepoEvent
+		if err := json.NewDecoder(resp.Body).Decode(&events); err != nil {
+			resp.Body.Close()
+			return nil, fmt.Errorf("decoding user events response: %w", err)
+		}
+		resp.Body.Close()
+
+		if len(events) == 0 {
+			break
+		}
+
+		allEvents = append(allEvents, events...)
+		page++
+
+		if len(events) < 100 {
+			break
+		}
 	}
 
-	var events []RepoEvent
-	if err := json.NewDecoder(resp.Body).Decode(&events); err != nil {
-		return nil, fmt.Errorf("decoding user events response: %w", err)
-	}
-
-	return events, nil
+	return allEvents, nil
 }
 
 

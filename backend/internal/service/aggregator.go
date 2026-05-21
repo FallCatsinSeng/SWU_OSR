@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -94,6 +95,10 @@ func (s *aggregatorService) ProcessWebhook(ctx context.Context, payload []byte, 
 	showcaseRepo, err := s.showcaseRepo.GetByUserAndRepoFullName(ctx, user.ID, repoFullName)
 	if err == nil && showcaseRepo != nil {
 		showcaseRepoID = &showcaseRepo.ID
+	} else if err != nil && !errors.Is(err, domain.ErrNotFound) {
+		// Real DB error — log but don't block the insert
+		// showcaseRepoID remains nil
+		_ = err
 	}
 
 	// Check duplicate via github_event_id
