@@ -8,6 +8,7 @@ import (
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/sanitize"
 	"github.com/google/uuid"
 )
 
@@ -282,6 +283,12 @@ func (s *showcaseService) RemoveFromShowcase(ctx context.Context, userID uuid.UU
 // UpdateRepoDescription updates the description of a specific showcase repo.
 // Performance: Uses GetByID + ownership check instead of fetching ALL user repos.
 func (s *showcaseService) UpdateRepoDescription(ctx context.Context, userID uuid.UUID, repoID uuid.UUID, description string) error {
+	// Sanitize: strip HTML tags and enforce max length
+	description = sanitize.StripHTMLPreserveWhitespace(description)
+	if len([]rune(description)) > 500 {
+		return fmt.Errorf("description must not exceed 500 characters")
+	}
+
 	// Direct lookup by ID instead of fetching all user repos
 	target, err := s.showcaseRepo.GetByID(ctx, repoID)
 	if err != nil {

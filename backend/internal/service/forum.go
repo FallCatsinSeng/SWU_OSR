@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/sanitize"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -88,6 +89,10 @@ func (s *forumService) ListThreads(ctx context.Context, repoID uuid.UUID, params
 
 // CreateThread validates input, creates a thread, and notifies the repo owner.
 func (s *forumService) CreateThread(ctx context.Context, input domain.CreateThreadInput) (*domain.Thread, error) {
+	// Sanitize: strip HTML tags from user input to prevent stored XSS
+	input.Title = sanitize.StripHTML(input.Title)
+	input.Body = sanitize.StripHTMLPreserveWhitespace(input.Body)
+
 	// Validate title length
 	if len(input.Title) < 5 {
 		return nil, fmt.Errorf("title must be at least 5 characters")
@@ -165,6 +170,9 @@ func (s *forumService) GetThread(ctx context.Context, threadID uuid.UUID) (*doma
 
 // CreateComment validates input, stores the comment, increments count (eventual consistency), and notifies.
 func (s *forumService) CreateComment(ctx context.Context, input domain.CreateCommentInput) (*domain.Comment, error) {
+	// Sanitize: strip HTML tags from user input to prevent stored XSS
+	input.Body = sanitize.StripHTMLPreserveWhitespace(input.Body)
+
 	// Validate body length
 	if len(input.Body) == 0 {
 		return nil, fmt.Errorf("body must not be empty")
