@@ -42,16 +42,40 @@ function getRelativeTime(dateString: string): string {
   return "just now";
 }
 
-function getEventIcon(eventType: string) {
+function getEventConfig(eventType: string) {
   switch (eventType) {
     case "push":
-      return <GitCommit className="h-3.5 w-3.5 text-green-600" />;
+      return {
+        icon: <GitCommit className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />,
+        bg: "bg-emerald-50 dark:bg-emerald-950/40",
+        border: "border-emerald-200 dark:border-emerald-800/60",
+        label: "Pushed",
+        labelColor: "text-emerald-700 dark:text-emerald-400",
+      };
     case "pull_request":
-      return <GitPullRequest className="h-3.5 w-3.5 text-purple-600" />;
+      return {
+        icon: <GitPullRequest className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />,
+        bg: "bg-purple-50 dark:bg-purple-950/40",
+        border: "border-purple-200 dark:border-purple-800/60",
+        label: "PR",
+        labelColor: "text-purple-700 dark:text-purple-400",
+      };
     case "release":
-      return <Tag className="h-3.5 w-3.5 text-blue-600 dark:text-white" />;
+      return {
+        icon: <Tag className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />,
+        bg: "bg-blue-50 dark:bg-blue-950/40",
+        border: "border-blue-200 dark:border-blue-800/60",
+        label: "Release",
+        labelColor: "text-blue-700 dark:text-blue-400",
+      };
     default:
-      return <GitBranch className="h-3.5 w-3.5 text-gray-600 dark:text-white" />;
+      return {
+        icon: <GitBranch className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400" />,
+        bg: "bg-gray-50 dark:bg-neutral-800/60",
+        border: "border-gray-200 dark:border-neutral-700",
+        label: "Activity",
+        labelColor: "text-gray-600 dark:text-gray-400",
+      };
   }
 }
 
@@ -211,24 +235,33 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
             </CardHeader>
             <CardContent>
               {repoActivities.length > 0 ? (
-                <div className="space-y-3">
-                  {repoActivities.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-gray-50/50 border border-gray-100 dark:border-neutral-800"
-                    >
-                      <div className="mt-0.5">{getEventIcon(activity.event_type)}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-700 dark:text-white line-clamp-2">
-                          {activity.summary}
-                        </p>
-                        <span className="text-xs text-gray-400 dark:text-white flex items-center gap-1 mt-1">
-                          <Clock className="h-3 w-3" />
-                          {getRelativeTime(activity.created_at)}
-                        </span>
+                <div className="space-y-2.5">
+                  {repoActivities.map((activity) => {
+                    const config = getEventConfig(activity.event_type);
+                    return (
+                      <div
+                        key={activity.id}
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${config.bg} ${config.border}`}
+                      >
+                        <div className="mt-0.5 shrink-0">{config.icon}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={`text-[10px] font-semibold uppercase tracking-wide ${config.labelColor}`}>
+                              {config.label}
+                            </span>
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500">•</span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                              <Clock className="h-2.5 w-2.5" />
+                              {getRelativeTime(activity.created_at)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-800 dark:text-gray-200 line-clamp-2 leading-relaxed">
+                            {activity.summary}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -268,24 +301,24 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500 dark:text-white">Full Name</span>
-                <span className="text-xs font-medium text-gray-700 dark:text-white">{repo.repo_full_name}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Full Name</span>
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-200">{repo.repo_full_name}</span>
               </div>
               {repo.language && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 dark:text-white">Language</span>
-                  <span className="text-xs font-medium text-gray-700 dark:text-white">{repo.language}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Language</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-200">{repo.language}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500 dark:text-white">Tag</span>
-                <Badge className="text-[10px] bg-primary-50 text-primary-700 dark:bg-neutral-800 dark:text-white">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Tag</span>
+                <Badge className="text-[10px] bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300">
                   {repo.academic_tag.replace("_", " ")}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500 dark:text-white">Added</span>
-                <span className="text-xs text-gray-700 dark:text-white">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Added</span>
+                <span className="text-xs text-gray-700 dark:text-gray-200">
                   {new Date(repo.created_at).toLocaleDateString()}
                 </span>
               </div>
@@ -302,7 +335,7 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                 href={githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
                 Open on GitHub
@@ -311,7 +344,7 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                 href={`${githubUrl}/issues`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
                 <MessageSquare className="h-4 w-4" />
                 GitHub Issues
@@ -320,14 +353,14 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
                 href={`${githubUrl}/pulls`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
                 <GitPullRequest className="h-4 w-4" />
                 Pull Requests
               </a>
               <Link
                 href={`/repos/${repo.id}/discussions`}
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-white hover:text-primary-600 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
               >
                 <MessageSquare className="h-4 w-4" />
                 Forum Discussions
