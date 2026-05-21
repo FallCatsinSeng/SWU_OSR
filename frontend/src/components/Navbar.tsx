@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 const NAV_LINKS = [
-  { href: "/", label: "Feed", icon: Home },
+  { href: "/dashboard", label: "Feed", icon: Home },
   { href: "/showcase", label: "Showcase", icon: FolderGit2, auth: true },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/members", label: "Members", icon: Users, auth: true },
@@ -36,7 +36,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
+    if (href === "/dashboard") return pathname === "/" || pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 
@@ -49,7 +49,7 @@ export function Navbar() {
             {/* Left: Logo + Nav links */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link href="/" className="flex items-center gap-2">
+              <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2">
                 <div className="h-7 w-7 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center">
                   <Code2 className="h-3.5 w-3.5 text-geist-on-primary dark:text-black" />
                 </div>

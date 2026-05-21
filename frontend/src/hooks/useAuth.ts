@@ -53,7 +53,7 @@ export function useLogout() {
       clearTokens();
       setAuthenticated(false);
       queryClient.clear();
-      window.location.href = "/";
+      window.location.href = "/welcome";
     },
   });
 }

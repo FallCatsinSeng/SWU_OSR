@@ -22,7 +22,7 @@ export function GitHubCallbackContent() {
         { code, state },
         {
           onSuccess: () => {
-            router.push("/");
+            router.push("/dashboard");
           },
           onError: () => {
             router.push("/login?error=github_callback_failed");
