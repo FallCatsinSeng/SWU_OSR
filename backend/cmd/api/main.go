@@ -108,7 +108,10 @@ func main() {
 
 	// Initialize application services
 	encryptionKey := cfg.EncryptionKey
-	webhookURL := fmt.Sprintf("https://api.example.com/api/webhooks/github") // configured via env in production
+	webhookURL := cfg.WebhookURL
+	if webhookURL == "" {
+		logger.Fatal("WEBHOOK_URL must be set to the publicly reachable HTTPS URL of /api/webhooks/github")
+	}
 
 	authSvc := service.NewAuthService(siakadSvc, githubSvc, userRepo, refreshTokenRepo, rdb, cfg)
 	profileSvc := service.NewProfileService(userRepo, showcaseRepo, activityRepo, githubSvc, encryptionKey)
@@ -235,6 +238,7 @@ func main() {
 
 	// Start leaderboard refresh scheduler (every 15 minutes)
 	leaderboardScheduler := scheduler.New(leaderboardSvc, logger, 15*time.Minute)
+	leaderboardScheduler.SetCacheInvalidator(cachedLeaderboardSvc.(*cache.CachedLeaderboardService))
 	leaderboardScheduler.Start()
 
 	// Start HTTP server

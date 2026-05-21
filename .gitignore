@@ -34,3 +34,5 @@ frontend/out/
 # Build artifacts
 dist/
 build/
+
+docs
