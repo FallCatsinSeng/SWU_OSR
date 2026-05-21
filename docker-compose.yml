@@ -60,6 +60,8 @@ services:
 
   nginx:
     image: nginx:alpine
+    ports:
+      - "3000:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - uploads:/data/uploads/banners:ro
