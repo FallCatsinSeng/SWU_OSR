@@ -40,12 +40,17 @@ func NewStorage(basePath, urlPrefix string) (*Storage, error) {
 	// Check if directory already exists (e.g., pre-created in Docker image or volume mount)
 	if _, err := os.Stat(basePath); os.IsNotExist(err) {
 		// Try to create it — may fail in read-only containers without volume mounts
-		if mkErr := os.MkdirAll(basePath, 0750); mkErr != nil {
+		// 0755: world-readable+traversable so nginx (different UID) can serve files
+		if mkErr := os.MkdirAll(basePath, 0755); mkErr != nil {
 			return nil, fmt.Errorf("creating upload directory: %w", mkErr)
 		}
 	} else if err != nil {
 		return nil, fmt.Errorf("checking upload directory: %w", err)
 	}
+
+	// Ensure directory is world-readable+traversable (in case it was pre-created
+	// with restrictive permissions by Docker or a previous version)
+	_ = os.Chmod(basePath, 0755)
 
 	// Verify we can actually write to the directory
 	testFile := filepath.Join(basePath, ".write-test")
@@ -71,7 +76,8 @@ func NewStorage(basePath, urlPrefix string) (*Storage, error) {
 // - MIME type detected from first 512 bytes of actual content (not from header/extension)
 // - Filename is a cryptographically random hex string (no user-controlled path components)
 // - Extension is derived from validated MIME type (not from user input)
-// - File is written with restricted permissions (0640)
+// - File is written with world-readable permissions (0644) since nginx serves
+//   these files from a shared volume as a different user
 // - Path traversal impossible due to generated filename with no directory separators
 func (s *Storage) ValidateAndStore(file io.Reader, declaredContentType string) (string, error) {
 	// Read up to MaxBannerSize + 1 byte to detect oversized files
@@ -114,7 +120,9 @@ func (s *Storage) ValidateAndStore(file io.Reader, declaredContentType string) (
 	destPath := filepath.Join(s.BasePath, filename)
 
 	// Create the destination file with restricted permissions
-	destFile, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0640)
+	// Note: 0644 allows the file to be read by any user (needed because nginx
+	// runs as a different UID than the backend that writes the file).
+	destFile, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return "", fmt.Errorf("creating destination file: %w", err)
 	}

@@ -1,10 +1,17 @@
 /**
  * Resolves an upload path (e.g., "/uploads/banners/abc.jpg") to a full URL
- * that points to the backend server where the file is actually served.
+ * that the browser can access.
  *
- * In production (behind nginx), relative paths work fine because nginx serves
- * /uploads/* directly. In development (accessing frontend at localhost:3000),
- * we need to resolve against the backend origin.
+ * Upload files (banners, etc.) are served by nginx on the same origin as the
+ * frontend — NOT by the backend API server. So we must never resolve upload
+ * paths against NEXT_PUBLIC_API_URL (which points to the backend).
+ *
+ * - In production (behind nginx): relative paths work because nginx serves
+ *   /uploads/* directly on the same origin.
+ * - In development (docker-compose): nginx is exposed on port 3000 and serves
+ *   both the frontend AND /uploads/*, so relative paths also work.
+ * - If NEXT_PUBLIC_UPLOADS_URL is set, use it as the base for upload paths
+ *   (useful for CDN or custom domain setups).
  */
 export function resolveUploadUrl(path: string | undefined | null): string {
   if (!path) return "";
@@ -14,20 +21,15 @@ export function resolveUploadUrl(path: string | undefined | null): string {
     return path;
   }
 
-  // In production behind nginx, NEXT_PUBLIC_API_URL is usually "/api" or empty,
-  // so relative paths work. In development, it's "http://localhost:8080".
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-
-  // If API URL is a full origin (starts with http), use its origin for uploads
-  if (apiUrl.startsWith("http")) {
-    try {
-      const origin = new URL(apiUrl).origin;
-      return `${origin}${path}`;
-    } catch {
-      return path;
-    }
+  // If a dedicated uploads URL is configured (e.g., CDN), use it
+  const uploadsUrl = process.env.NEXT_PUBLIC_UPLOADS_URL || "";
+  if (uploadsUrl) {
+    // Remove trailing slash from base, path already starts with /
+    return `${uploadsUrl.replace(/\/$/, "")}${path}`;
   }
 
-  // Otherwise (behind proxy/nginx), relative path is fine
+  // Default: return relative path as-is.
+  // Nginx serves /uploads/* on the same origin as the frontend,
+  // so the browser resolves this correctly in all environments.
   return path;
 }
