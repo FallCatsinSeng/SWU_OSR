@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { rehydrateToken, getAccessToken } from "@/lib/auth";
+import { rehydrateToken, getAccessToken, hasLoggedInHint } from "@/lib/auth";
 
 interface AuthContextValue {
   /** True once the initial token rehydration attempt has completed. */
@@ -23,39 +23,50 @@ export function useAuthContext() {
 }
 
 /**
- * AuthProvider rehydrates the access token from the httpOnly refresh_token
- * cookie on mount. Until rehydration completes, children see isReady=false.
+ * Compute the initial auth state synchronously so the very first CLIENT
+ * render already knows if the user is authenticated (from sessionStorage).
  *
- * It also exposes setAuthenticated so that login mutations can update
- * the context without requiring a page reload.
+ * IMPORTANT: We always start with isReady=false to avoid hydration mismatch
+ * (server can't access sessionStorage). The useEffect immediately corrects
+ * this on mount — but since both server AND client start with the same
+ * initial state, there's no hydration conflict.
+ */
+
+/**
+ * AuthProvider rehydrates the access token on mount.
+ *
+ * Priority order:
+ * 1. If token already exists in sessionStorage → instant ready on first render.
+ * 2. Otherwise, check the httpOnly refresh cookie via /auth/refresh.
+ *
+ * While waiting for (2), the `hasLoggedInHint()` flag tells consuming
+ * components whether the user was previously logged in, so they can show
+ * a loading skeleton instead of flashing the unauthenticated landing page.
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = React.useState(false);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   React.useEffect(() => {
-    let mounted = true;
+    // Synchronous check: token in sessionStorage?
+    const token = getAccessToken();
+    if (token) {
+      setIsAuthenticated(true);
+      setIsReady(true);
+      return;
+    }
 
+    // No token in memory — try rehydrating from httpOnly cookie
+    let mounted = true;
     async function init() {
-      // Attempt to rehydrate token from refresh cookie
-      const token = await rehydrateToken();
+      const refreshed = await rehydrateToken();
       if (mounted) {
-        setIsAuthenticated(!!token);
+        setIsAuthenticated(!!refreshed);
         setIsReady(true);
       }
     }
-
-    // If there's already a token in memory (e.g., just logged in), skip rehydration
-    if (getAccessToken()) {
-      setIsAuthenticated(true);
-      setIsReady(true);
-    } else {
-      init();
-    }
-
-    return () => {
-      mounted = false;
-    };
+    init();
+    return () => { mounted = false; };
   }, []);
 
   const value = React.useMemo(

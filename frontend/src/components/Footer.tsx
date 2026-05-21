@@ -9,7 +9,7 @@ export function Footer() {
         <div className="py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/dashboard" className="flex items-center gap-2">
               <div className="h-7 w-7 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center">
                 <Code2 className="h-3.5 w-3.5 text-geist-on-primary dark:text-black" />
               </div>
@@ -31,7 +31,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/"
+                  href="/dashboard"
                   className="text-body-sm text-geist-body hover:text-geist-ink transition-colors dark:text-white dark:hover:text-white"
                 >
                   Activity Feed

@@ -1,9 +1,41 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/components/AuthProvider";
 import { LoginForm } from "@/features/auth/LoginForm";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Code2, Shield, Github, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
+  const { isReady, isAuthenticated } = useAuthContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isReady && isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [isReady, isAuthenticated, router]);
+
+  // While auth is rehydrating, show a minimal loading state
+  if (!isReady) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md space-y-4">
+          <Skeleton className="h-12 w-12 mx-auto rounded-geist-md" />
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+          <Skeleton className="h-48 w-full rounded-geist-md" />
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated, don't render login form (redirect is happening)
+  if (isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
       <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">

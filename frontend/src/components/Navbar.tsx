@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCurrentUser, useLogout } from "@/hooks/useAuth";
+import { useCurrentUser, useLogout, useAuthReady } from "@/hooks/useAuth";
 import { NotificationBell } from "@/features/forum/NotificationBell";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 const NAV_LINKS = [
-  { href: "/", label: "Feed", icon: Home },
+  { href: "/dashboard", label: "Feed", icon: Home },
   { href: "/showcase", label: "Showcase", icon: FolderGit2, auth: true },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/members", label: "Members", icon: Users, auth: true },
@@ -30,12 +30,22 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const { data: user } = useCurrentUser();
+  const { isReady, isAuthenticated } = useAuthReady();
   const logout = useLogout();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // If we're on an authenticated page (dashboard, showcase, members, settings, etc.)
+  // always show the full authenticated navbar — even while user data is loading.
+  const isOnAuthPage = pathname === "/dashboard" || pathname === "/showcase" ||
+    pathname === "/members" || pathname === "/settings" ||
+    pathname.startsWith("/profiles/") || pathname.startsWith("/repos/");
+
+  // Show all nav links if user is loaded OR if we're on an authenticated page
+  const showAuthLinks = !!user || isOnAuthPage;
+
   const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
+    if (href === "/dashboard") return pathname === "/" || pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 
@@ -48,7 +58,7 @@ export function Navbar() {
             {/* Left: Logo + Nav links */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link href="/" className="flex items-center gap-2">
+              <Link href={showAuthLinks ? "/dashboard" : "/"} className="flex items-center gap-2">
                 <div className="h-7 w-7 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center">
                   <Code2 className="h-3.5 w-3.5 text-geist-on-primary dark:text-black" />
                 </div>
@@ -60,7 +70,7 @@ export function Navbar() {
               {/* Desktop Navigation — centre link row */}
               <div className="hidden md:flex items-center gap-1">
                 {NAV_LINKS.map((link) => {
-                  if (link.auth && !user) return null;
+                  if (link.auth && !showAuthLinks) return null;
                   return (
                     <Link
                       key={link.href}
@@ -132,19 +142,15 @@ export function Navbar() {
                     </DropdownMenuItem>
                   </DropdownMenu>
                 </>
+              ) : isOnAuthPage || !isReady || isAuthenticated ? (
+                /* On auth pages or still loading — show avatar placeholder */
+                <div className="h-8 w-8 rounded-full bg-geist-canvas-soft-2 dark:bg-neutral-800 animate-pulse" />
               ) : (
-                <div className="flex items-center gap-2">
-                  <Link href="/login">
-                    <Button variant="nav-secondary" size="nav">
-                      Log In
-                    </Button>
-                  </Link>
-                  <Link href="/login">
-                    <Button variant="nav-primary" size="nav">
-                      Sign Up
-                    </Button>
-                  </Link>
-                </div>
+                <Link href="/login">
+                  <Button variant="nav-primary" size="nav">
+                    Log In
+                  </Button>
+                </Link>
               )}
 
               {/* Mobile hamburger */}
@@ -169,7 +175,7 @@ export function Navbar() {
         <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-geist-canvas dark:bg-black border-b border-geist-hairline dark:border-neutral-800 geist-level-4 animate-slide-down">
           <div className="px-4 py-3 space-y-1">
             {NAV_LINKS.map((link) => {
-              if (link.auth && !user) return null;
+              if (link.auth && !showAuthLinks) return null;
               const Icon = link.icon;
               return (
                 <Link
