@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -165,14 +166,60 @@ func (s *service) doAuthenticate(ctx context.Context, nim, password string) (*St
 		return nil, domain.ErrSessionInitFailed
 	}
 
+	// Fetch student profile (name) from the presensi/ujian page.
+	// The PHP page renders the student's name and NIM in a lightgreen box.
+	fullName := s.fetchStudentName(ctx, client, sessionID)
+
 	return &StudentData{
 		NIM:       nim,
-		FullName:  "", // Profile data (FullName, Major, Semester) to be populated during onboarding or admin verification.
-		Major:     "", // Extracting profile data requires parsing the authenticated session page, which varies by SIAKAD version.
+		FullName:  fullName,
+		Major:     "",
 		Semester:  0,
 		IsActive:  true,
 		SessionID: sessionID,
 	}, nil
+}
+
+// reNamaNIM extracts "NAMA | NIM" from the SIAKAD presensi page.
+// The PHP page renders: <div style="...background-color:lightgreen..."><center><br>Perkuliahan<Br>NAMA | NIM<br>...
+var reNamaNIM = []*regexp.Regexp{
+	// Pattern 1: lightgreen box structure from smain_judul
+	regexp.MustCompile(`(?is)background-color:\s*lightgreen[^>]*>[\s\S]*?<[Bb][Rr]\s*/?>[\s\S]*?<[Bb][Rr]\s*/?>\s*([^|<\r\n]+?)\s*\|\s*([A-Z0-9]+)\s*<[Bb][Rr]`),
+	// Pattern 2: generic "Name | ALPHANUMCODE" anywhere in body
+	regexp.MustCompile(`(?m)>\s*([A-Za-z][^|<\r\n]{3,50}?)\s*\|\s*([A-Z]{2,5}\d{6,12})\s*<`),
+}
+
+// fetchStudentName GETs the ujian_online_reguler page and parses the student's full name.
+// Returns empty string if parsing fails (non-fatal).
+func (s *service) fetchStudentName(ctx context.Context, client *http.Client, sessionID string) string {
+	profileURL := s.baseURL + "/modul_siswa/ujian_online_reguler/ujian_online_reguler.php?ujian=0&ekstra=0&param_menu="
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, profileURL, nil)
+	if err != nil {
+		return ""
+	}
+	req.Header.Set("Cookie", "PHPSESSID="+sessionID)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+	if err != nil {
+		return ""
+	}
+
+	bodyStr := string(body)
+	for _, re := range reNamaNIM {
+		if m := re.FindStringSubmatch(bodyStr); len(m) >= 3 {
+			name := strings.TrimSpace(m[1])
+			if name != "" {
+				return name
+			}
+		}
+	}
+	return ""
 }
 
 // retryableError marks an error as retryable.
