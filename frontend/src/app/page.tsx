@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useAuthContext } from "@/components/AuthProvider";
+import { hasLoggedInHint } from "@/lib/auth";
 import { ActivityFeed } from "@/features/feed/ActivityFeed";
 import { OnboardingPrompt } from "@/features/profile/OnboardingPrompt";
 import { Avatar } from "@/components/ui/avatar";
@@ -492,8 +493,9 @@ export default function HomePage() {
     enabled: !!user,
   });
 
-  // Show skeleton while auth state is being determined
-  if (!isReady) {
+  // Show skeleton while auth state is being determined (only if user was
+  // previously logged in — genuine new visitors see the landing page instantly)
+  if (!isReady && hasLoggedInHint()) {
     return <PageSkeleton />;
   }
 

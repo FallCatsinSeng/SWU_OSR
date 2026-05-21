@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { rehydrateToken, getAccessToken } from "@/lib/auth";
+import { rehydrateToken, getAccessToken, hasLoggedInHint } from "@/lib/auth";
 
 interface AuthContextValue {
   /** True once the initial token rehydration attempt has completed. */
@@ -23,11 +23,15 @@ export function useAuthContext() {
 }
 
 /**
- * AuthProvider rehydrates the access token from the httpOnly refresh_token
- * cookie on mount. Until rehydration completes, children see isReady=false.
+ * AuthProvider rehydrates the access token on mount.
  *
- * It also exposes setAuthenticated so that login mutations can update
- * the context without requiring a page reload.
+ * Priority order:
+ * 1. If token already exists in memory / sessionStorage → instant ready.
+ * 2. Otherwise, check the httpOnly refresh cookie via /auth/refresh.
+ *
+ * While waiting for (2), the `hasLoggedInHint()` flag tells consuming
+ * components whether the user was previously logged in, so they can show
+ * a loading skeleton instead of flashing the unauthenticated landing page.
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = React.useState(false);
@@ -45,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // If there's already a token in memory (e.g., just logged in), skip rehydration
+    // If there's already a token in memory or sessionStorage, skip network call
     if (getAccessToken()) {
       setIsAuthenticated(true);
       setIsReady(true);
