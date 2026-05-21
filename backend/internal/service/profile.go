@@ -9,6 +9,7 @@ import (
 
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/sanitize"
 	"github.com/google/uuid"
 )
 
@@ -137,6 +138,11 @@ func (s *profileService) UpdateProfile(ctx context.Context, userID uuid.UUID, in
 		}
 	}
 
+	// Sanitize: strip HTML tags from bio to prevent stored XSS
+	if input.Bio != "" {
+		input.Bio = sanitize.StripHTMLPreserveWhitespace(input.Bio)
+	}
+
 	// Validate bio length
 	if len(input.Bio) > 500 {
 		return fmt.Errorf("bio must not exceed 500 characters")
@@ -150,6 +156,19 @@ func (s *profileService) UpdateProfile(ctx context.Context, userID uuid.UUID, in
 		parsed, err := neturl.Parse(input.AvatarURL)
 		if err != nil || parsed.Scheme != "https" {
 			return fmt.Errorf("avatar_url must be a valid HTTPS URL")
+		}
+		// Security: restrict avatar URLs to known trusted domains
+		allowedHosts := map[string]bool{
+			"avatars.githubusercontent.com": true,
+			"github.com":                    true,
+			"raw.githubusercontent.com":     true,
+			"www.gravatar.com":              true,
+			"gravatar.com":                  true,
+			"i.gravatar.com":                true,
+			"secure.gravatar.com":           true,
+		}
+		if !allowedHosts[parsed.Host] {
+			return fmt.Errorf("avatar_url must be from GitHub or Gravatar")
 		}
 	}
 
