@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/useAuth";
+import { useAuthContext } from "@/components/AuthProvider";
 import { ActivityFeed } from "@/features/feed/ActivityFeed";
 import { OnboardingPrompt } from "@/features/profile/OnboardingPrompt";
 import { Avatar } from "@/components/ui/avatar";
@@ -431,9 +432,43 @@ function ActiveMembersSection() {
   );
 }
 
+// --- Loading skeleton shown during auth rehydration ---
+function PageSkeleton() {
+  return (
+    <div className="mx-auto max-w-geist-page px-6 py-8 animate-pulse">
+      <div className="mb-8 p-6 rounded-geist-md bg-geist-canvas dark:bg-neutral-900">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-geist-sm" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-geist-md" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-geist-md" />
+          ))}
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-40 rounded-geist-md" />
+          <Skeleton className="h-40 rounded-geist-md" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- Main Page Component ---
 export default function HomePage() {
   const { data: user } = useCurrentUser();
+  const { isReady } = useAuthContext();
 
   const { data: stats } = useQuery<CommunityStats>({
     queryKey: ["communityStats"],
@@ -456,6 +491,11 @@ export default function HomePage() {
     },
     enabled: !!user,
   });
+
+  // Show skeleton while auth state is being determined
+  if (!isReady) {
+    return <PageSkeleton />;
+  }
 
   // Logged-in: Community Dashboard
   if (user) {

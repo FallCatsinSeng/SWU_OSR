@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCurrentUser, useLogout } from "@/hooks/useAuth";
+import { useCurrentUser, useLogout, useAuthReady } from "@/hooks/useAuth";
 import { NotificationBell } from "@/features/forum/NotificationBell";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const { data: user } = useCurrentUser();
+  const { isReady } = useAuthReady();
   const logout = useLogout();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -132,6 +133,9 @@ export function Navbar() {
                     </DropdownMenuItem>
                   </DropdownMenu>
                 </>
+              ) : !isReady ? (
+                /* Auth is rehydrating — show placeholder to avoid flash */
+                <div className="h-8 w-8 rounded-full bg-geist-canvas-soft-2 dark:bg-neutral-800 animate-pulse" />
               ) : (
                 <div className="flex items-center gap-2">
                   <Link href="/login">
