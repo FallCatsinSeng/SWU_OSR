@@ -146,18 +146,11 @@ export function Navbar() {
                 /* On auth pages or still loading — show avatar placeholder */
                 <div className="h-8 w-8 rounded-full bg-geist-canvas-soft-2 dark:bg-neutral-800 animate-pulse" />
               ) : (
-                <div className="flex items-center gap-2">
-                  <Link href="/login">
-                    <Button variant="nav-secondary" size="nav">
-                      Log In
-                    </Button>
-                  </Link>
-                  <Link href="/login">
-                    <Button variant="nav-primary" size="nav">
-                      Sign Up
-                    </Button>
-                  </Link>
-                </div>
+                <Link href="/login">
+                  <Button variant="nav-primary" size="nav">
+                    Log In
+                  </Button>
+                </Link>
               )}
 
               {/* Mobile hamburger */}
