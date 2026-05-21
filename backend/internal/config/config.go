@@ -20,6 +20,7 @@ type Config struct {
 	GitHubClientSecret string        `mapstructure:"GITHUB_CLIENT_SECRET"`
 	GitHubRedirectURI  string        `mapstructure:"GITHUB_REDIRECT_URI"`
 	WebhookSecret      string        `mapstructure:"WEBHOOK_SECRET"`
+	WebhookURL         string        `mapstructure:"WEBHOOK_URL"`
 	EncryptionKey      []byte        // decoded from ENCRYPTION_KEY hex string
 	SIAKADBaseURL      string        `mapstructure:"SIAKAD_BASE_URL"`
 	CORSOrigin         string        `mapstructure:"CORS_ORIGIN"`
@@ -55,6 +56,7 @@ func Load() (*Config, error) {
 	cfg.GitHubClientSecret = viper.GetString("GITHUB_CLIENT_SECRET")
 	cfg.GitHubRedirectURI = viper.GetString("GITHUB_REDIRECT_URI")
 	cfg.WebhookSecret = viper.GetString("WEBHOOK_SECRET")
+	cfg.WebhookURL = viper.GetString("WEBHOOK_URL")
 	cfg.SIAKADBaseURL = viper.GetString("SIAKAD_BASE_URL")
 	cfg.CORSOrigin = viper.GetString("CORS_ORIGIN")
 	cfg.CookieSecure = viper.GetBool("COOKIE_SECURE")

@@ -14,13 +14,19 @@ type LeaderboardRefresher interface {
 	RefreshLeaderboard(ctx context.Context, period domain.LeaderboardPeriod) error
 }
 
+// CacheInvalidator can invalidate cached leaderboard data after a refresh.
+type CacheInvalidator interface {
+	InvalidateLeaderboard(ctx context.Context)
+}
+
 // Scheduler manages periodic background tasks.
 type Scheduler struct {
-	refresher LeaderboardRefresher
-	logger    *zap.Logger
-	interval  time.Duration
-	stopCh    chan struct{}
-	wg        sync.WaitGroup
+	refresher    LeaderboardRefresher
+	invalidator  CacheInvalidator
+	logger       *zap.Logger
+	interval     time.Duration
+	stopCh       chan struct{}
+	wg           sync.WaitGroup
 }
 
 // New creates a new scheduler.
@@ -31,6 +37,11 @@ func New(refresher LeaderboardRefresher, logger *zap.Logger, interval time.Durat
 		interval:  interval,
 		stopCh:    make(chan struct{}),
 	}
+}
+
+// SetCacheInvalidator sets an optional cache invalidator called after each refresh cycle.
+func (s *Scheduler) SetCacheInvalidator(inv CacheInvalidator) {
+	s.invalidator = inv
 }
 
 // Start begins the periodic leaderboard refresh in a background goroutine.
@@ -100,4 +111,10 @@ func (s *Scheduler) refreshAll() {
 		}(period)
 	}
 	refreshWg.Wait()
+
+	// Invalidate cached leaderboard data so the next API call fetches fresh results.
+	if s.invalidator != nil {
+		s.invalidator.InvalidateLeaderboard(ctx)
+		s.logger.Info("leaderboard cache invalidated after refresh")
+	}
 }
