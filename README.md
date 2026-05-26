@@ -249,4 +249,4 @@ Proyek ini dilisensikan di bawah **MIT License** — lihat file [LICENSE](LICENS
 
 ## Tim Pengembang
 
-Dikembangkan oleh tim **FallCatsinSeng** untuk komunitas open-source STMIKWIDYA UTAMA.
+Dikembangkan oleh tim **LPT HMPS-TI** dan **FallCatsinSeng** untuk komunitas open-source STMIK WIDYA UTAMA.
