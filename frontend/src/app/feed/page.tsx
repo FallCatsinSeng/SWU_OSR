@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthContext } from "@/components/AuthProvider";
 import { PublicActivityFeed } from "@/features/feed/PublicActivityFeed";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,21 +41,11 @@ interface PopularRepo {
 }
 
 /**
- * Public Feed page — accessible to everyone (unauthenticated).
+ * Public Feed page — accessible to everyone (both authenticated and unauthenticated).
  * Shows community stats, popular repos, and the global activity feed.
- * If user is authenticated, redirect to /dashboard for the full experience.
+ * No redirect — this page is always viewable.
  */
 export default function FeedPage() {
-  const { isReady, isAuthenticated } = useAuthContext();
-  const router = useRouter();
-
-  // Redirect authenticated users to dashboard (they have the full feed there)
-  useEffect(() => {
-    if (isReady && isAuthenticated) {
-      router.replace("/dashboard");
-    }
-  }, [isReady, isAuthenticated, router]);
-
   const { data: stats } = useQuery<CommunityStats>({
     queryKey: ["communityStats"],
     queryFn: async () => {
@@ -104,9 +91,6 @@ export default function FeedPage() {
       return data.data;
     },
   });
-
-  // Don't render page for authenticated users
-  if (isAuthenticated) return null;
 
   return (
     <div className="mx-auto max-w-geist-page px-6 py-8">
