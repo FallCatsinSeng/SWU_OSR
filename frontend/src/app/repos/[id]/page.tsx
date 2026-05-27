@@ -84,12 +84,12 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
-  // Fetch showcase repo details from the user's showcase list
-  const { data: repos, isLoading } = useQuery<ShowcaseRepo[]>({
-    queryKey: ["showcaseRepos"],
+  // Fetch showcase repo details from the public endpoint
+  const { data: repo, isLoading } = useQuery<ShowcaseRepo>({
+    queryKey: ["publicRepo", params.id],
     queryFn: async () => {
-      const { data } = await api.get<{ ok: boolean; data: ShowcaseRepo[] }>(
-        "/showcase"
+      const { data } = await api.get<{ ok: boolean; data: ShowcaseRepo }>(
+        `/repos/${params.id}`
       );
       return data.data;
     },
@@ -123,7 +123,6 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
     }
   };
 
-  const repo = repos?.find((r) => r.id === params.id);
   const repoActivities = feedData?.items ?? [];
 
   if (isLoading) {
@@ -167,11 +166,11 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
     <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Back link */}
       <Link
-        href="/showcase"
+        href="/feed"
         className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white mb-6 transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Showcase
+        Back to Feed
       </Link>
 
       {/* Repo Header */}

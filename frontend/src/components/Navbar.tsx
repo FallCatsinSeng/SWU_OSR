@@ -21,11 +21,17 @@ import {
   Trophy,
 } from "lucide-react";
 
-const NAV_LINKS = [
+const NAV_LINKS_AUTH = [
   { href: "/dashboard", label: "Feed", icon: Home },
-  { href: "/showcase", label: "Showcase", icon: FolderGit2, auth: true },
+  { href: "/showcase", label: "Showcase", icon: FolderGit2 },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/members", label: "Members", icon: Users, auth: true },
+  { href: "/members", label: "Members", icon: Users },
+];
+
+const NAV_LINKS_PUBLIC = [
+  { href: "/feed", label: "Feed", icon: Home },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/members", label: "Members", icon: Users },
 ];
 
 export function Navbar() {
@@ -35,17 +41,22 @@ export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // If we're on an authenticated page (dashboard, showcase, members, settings, etc.)
-  // always show the full authenticated navbar — even while user data is loading.
-  const isOnAuthPage = pathname === "/dashboard" || pathname === "/showcase" ||
-    pathname === "/members" || pathname === "/settings" ||
-    pathname.startsWith("/profiles/") || pathname.startsWith("/repos/");
+  // Pages that REQUIRE authentication — only these should show auth navbar
+  // while user data is still loading (to avoid flash).
+  // Note: /profiles/*, /repos/*, /members are PUBLIC pages, so they must NOT be here.
+  const isStrictAuthPage = pathname === "/dashboard" || pathname === "/showcase" ||
+    pathname === "/settings";
 
-  // Show all nav links if user is loaded OR if we're on an authenticated page
-  const showAuthLinks = !!user || isOnAuthPage;
+  // Show auth nav links when:
+  // 1. User is actually loaded (definitive), OR
+  // 2. We're on a strict auth-only page (so navbar doesn't flash while loading)
+  const showAuthLinks = !!user || isStrictAuthPage;
+
+  const navLinks = showAuthLinks ? NAV_LINKS_AUTH : NAV_LINKS_PUBLIC;
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/" || pathname === "/dashboard";
+    if (href === "/feed") return pathname === "/feed";
     return pathname.startsWith(href);
   };
 
@@ -58,7 +69,7 @@ export function Navbar() {
             {/* Left: Logo + Nav links */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link href={showAuthLinks ? "/dashboard" : "/"} className="flex items-center gap-2">
+              <Link href={showAuthLinks ? "/dashboard" : "/feed"} className="flex items-center gap-2">
                 <div className="h-7 w-7 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center">
                   <Code2 className="h-3.5 w-3.5 text-geist-on-primary dark:text-black" />
                 </div>
@@ -69,8 +80,7 @@ export function Navbar() {
 
               {/* Desktop Navigation — centre link row */}
               <div className="hidden md:flex items-center gap-1">
-                {NAV_LINKS.map((link) => {
-                  if (link.auth && !showAuthLinks) return null;
+                {navLinks.map((link) => {
                   return (
                     <Link
                       key={link.href}
@@ -142,8 +152,8 @@ export function Navbar() {
                     </DropdownMenuItem>
                   </DropdownMenu>
                 </>
-              ) : isOnAuthPage || !isReady || isAuthenticated ? (
-                /* On auth pages or still loading — show avatar placeholder */
+              ) : isStrictAuthPage || (!isReady && isAuthenticated) ? (
+                /* Only show loading skeleton on strict auth pages or when actively authenticating */
                 <div className="h-8 w-8 rounded-full bg-geist-canvas-soft-2 dark:bg-neutral-800 animate-pulse" />
               ) : (
                 <Link href="/login">
@@ -174,8 +184,7 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-geist-canvas dark:bg-black border-b border-geist-hairline dark:border-neutral-800 geist-level-4 animate-slide-down">
           <div className="px-4 py-3 space-y-1">
-            {NAV_LINKS.map((link) => {
-              if (link.auth && !showAuthLinks) return null;
+            {navLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <Link
