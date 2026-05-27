@@ -184,6 +184,7 @@ func main() {
 			r.Get("/profiles/{alias}", profileHandler.HandleGetPublicProfile)
 			r.Get("/feed", aggregatorHandler.HandleGetFeed)
 			r.Get("/users/{id}/activity", aggregatorHandler.HandleGetUserActivity)
+			r.Get("/repos/{id}", showcaseHandler.HandleGetPublicRepo)
 			r.Get("/repos/{id}/activity", aggregatorHandler.HandleGetRepoActivity)
 			r.Get("/repos/{id}/threads", forumHandler.HandleListThreads)
 			r.Get("/threads/{id}", forumHandler.HandleGetThread)

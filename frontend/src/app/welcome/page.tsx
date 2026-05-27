@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthContext } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
+import { PublicActivityFeed } from "@/features/feed/PublicActivityFeed";
 import {
   Code2,
   FolderGit2,
@@ -36,6 +37,7 @@ export default function WelcomePage() {
   return (
     <div>
       <HeroSection />
+      <FeedPreviewSection />
       <FeaturesSection />
       <CTASection />
     </div>
@@ -74,6 +76,34 @@ function HeroSection() {
               </Button>
             </Link>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FeedPreviewSection() {
+  return (
+    <section className="py-16 bg-geist-canvas dark:bg-[#0A0A0A]">
+      <div className="mx-auto max-w-geist-page px-6">
+        <div className="text-center mb-8">
+          <h2 className="text-display-lg text-geist-ink dark:text-white">
+            Community Activity
+          </h2>
+          <p className="mt-3 text-body-md text-geist-body dark:text-gray-300 max-w-xl mx-auto">
+            See what our members are building in real time.
+          </p>
+        </div>
+        <div className="max-w-2xl mx-auto">
+          <PublicActivityFeed />
+        </div>
+        <div className="text-center mt-8">
+          <Link href="/feed">
+            <Button variant="outline" size="default">
+              View full feed
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
