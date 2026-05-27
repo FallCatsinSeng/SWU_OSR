@@ -11,6 +11,7 @@ function makeQueryClient() {
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
+        gcTime: 2 * 60 * 1000, // Garbage-collect inactive queries after 2 min
         refetchOnWindowFocus: false,
       },
     },

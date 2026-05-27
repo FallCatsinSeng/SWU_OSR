@@ -1,10 +1,14 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { LeaderboardEntry } from "@/types/leaderboard";
-import { Trophy, Flame, GitBranch, GitPullRequest, MessageSquare, Star } from "lucide-react";
+import { Trophy, Flame, GitBranch, GitPullRequest, MessageSquare, Star, ChevronLeft, ChevronRight } from "lucide-react";
+
+const PAGE_SIZE = 15;
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
@@ -56,6 +60,14 @@ function getRankBadge(rank: number) {
 }
 
 export function LeaderboardTable({ entries, currentUserId }: LeaderboardTableProps) {
+  const [page, setPage] = useState(0);
+  const totalPages = Math.ceil(entries.length / PAGE_SIZE);
+
+  const paginatedEntries = useMemo(
+    () => entries.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [entries, page]
+  );
+
   if (entries.length === 0) {
     return (
       <div className="text-center py-12">
@@ -74,7 +86,7 @@ export function LeaderboardTable({ entries, currentUserId }: LeaderboardTablePro
 
   return (
     <div className="space-y-2">
-      {entries.map((entry) => {
+      {paginatedEntries.map((entry) => {
         const isCurrentUser = entry.user_id === currentUserId;
         return (
           <div
@@ -155,6 +167,31 @@ export function LeaderboardTable({ entries, currentUserId }: LeaderboardTablePro
           </div>
         );
       })}
+
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </Button>
+          <span className="text-caption-mono text-geist-mute dark:text-neutral-400 px-2">
+            {page + 1} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
