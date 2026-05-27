@@ -31,6 +31,7 @@ const NAV_LINKS_AUTH = [
 const NAV_LINKS_PUBLIC = [
   { href: "/feed", label: "Feed", icon: Home },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/members", label: "Members", icon: Users },
 ];
 
 export function Navbar() {
@@ -42,9 +43,9 @@ export function Navbar() {
 
   // Pages that REQUIRE authentication — only these should show auth navbar
   // while user data is still loading (to avoid flash).
-  // Note: /profiles/* and /repos/* are PUBLIC pages, so they must NOT be here.
+  // Note: /profiles/*, /repos/*, /members are PUBLIC pages, so they must NOT be here.
   const isStrictAuthPage = pathname === "/dashboard" || pathname === "/showcase" ||
-    pathname === "/members" || pathname === "/settings";
+    pathname === "/settings";
 
   // Show auth nav links when:
   // 1. User is actually loaded (definitive), OR
