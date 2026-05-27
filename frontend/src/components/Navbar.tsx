@@ -21,11 +21,16 @@ import {
   Trophy,
 } from "lucide-react";
 
-const NAV_LINKS = [
+const NAV_LINKS_AUTH = [
   { href: "/dashboard", label: "Feed", icon: Home },
-  { href: "/showcase", label: "Showcase", icon: FolderGit2, auth: true },
+  { href: "/showcase", label: "Showcase", icon: FolderGit2 },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/members", label: "Members", icon: Users, auth: true },
+  { href: "/members", label: "Members", icon: Users },
+];
+
+const NAV_LINKS_PUBLIC = [
+  { href: "/feed", label: "Feed", icon: Home },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
 export function Navbar() {
@@ -44,8 +49,11 @@ export function Navbar() {
   // Show all nav links if user is loaded OR if we're on an authenticated page
   const showAuthLinks = !!user || isOnAuthPage;
 
+  const navLinks = showAuthLinks ? NAV_LINKS_AUTH : NAV_LINKS_PUBLIC;
+
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/" || pathname === "/dashboard";
+    if (href === "/feed") return pathname === "/feed";
     return pathname.startsWith(href);
   };
 
@@ -69,8 +77,7 @@ export function Navbar() {
 
               {/* Desktop Navigation — centre link row */}
               <div className="hidden md:flex items-center gap-1">
-                {NAV_LINKS.map((link) => {
-                  if (link.auth && !showAuthLinks) return null;
+                {navLinks.map((link) => {
                   return (
                     <Link
                       key={link.href}
@@ -174,8 +181,7 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-geist-canvas dark:bg-black border-b border-geist-hairline dark:border-neutral-800 geist-level-4 animate-slide-down">
           <div className="px-4 py-3 space-y-1">
-            {NAV_LINKS.map((link) => {
-              if (link.auth && !showAuthLinks) return null;
+            {navLinks.map((link) => {
               const Icon = link.icon;
               return (
                 <Link
