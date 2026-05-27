@@ -64,7 +64,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="https://www.stmikwidyautama.ac.id"
+                  href="https://www.swu.ac.id"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-body-sm text-geist-body hover:text-geist-ink transition-colors inline-flex items-center gap-1 dark:text-white dark:hover:text-white"
