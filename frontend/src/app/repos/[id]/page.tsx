@@ -166,11 +166,11 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
     <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Back link */}
       <Link
-        href="/showcase"
+        href="/feed"
         className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white mb-6 transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Showcase
+        Back to Feed
       </Link>
 
       {/* Repo Header */}
