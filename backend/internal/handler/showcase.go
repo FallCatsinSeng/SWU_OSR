@@ -115,6 +115,25 @@ func (h *ShowcaseHandler) HandleRemoveFromShowcase(w http.ResponseWriter, r *htt
 	RespondJSON(w, http.StatusOK, map[string]string{"message": "repo removed from showcase"})
 }
 
+// HandleGetPublicRepo handles GET /api/repos/{id} (public, no auth).
+// Returns basic showcase repo info visible to anyone.
+func (h *ShowcaseHandler) HandleGetPublicRepo(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	repoID, err := uuid.Parse(idStr)
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "invalid repo id")
+		return
+	}
+
+	repo, err := h.showcaseService.GetPublicRepo(r.Context(), repoID)
+	if err != nil {
+		h.handleShowcaseError(w, err)
+		return
+	}
+
+	RespondJSON(w, http.StatusOK, repo)
+}
+
 // handleShowcaseError maps domain errors to HTTP responses.
 func (h *ShowcaseHandler) handleShowcaseError(w http.ResponseWriter, err error) {
 	switch {

@@ -17,6 +17,7 @@ type ShowcaseService interface {
 	GetAvailableRepos(ctx context.Context, userID uuid.UUID) ([]github.Repository, error)
 	SetShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error
 	GetShowcase(ctx context.Context, userID uuid.UUID) ([]domain.ShowcaseRepo, error)
+	GetPublicRepo(ctx context.Context, repoID uuid.UUID) (*domain.ShowcaseRepo, error)
 	UpdateShowcase(ctx context.Context, userID uuid.UUID, selections []domain.ShowcaseSelection) error
 	RemoveFromShowcase(ctx context.Context, userID uuid.UUID, repoID uuid.UUID) error
 	UpdateRepoDescription(ctx context.Context, userID uuid.UUID, repoID uuid.UUID, description string) error
@@ -241,6 +242,11 @@ func (s *showcaseService) SetShowcase(ctx context.Context, userID uuid.UUID, sel
 // GetShowcase returns the user's showcase repos from the database.
 func (s *showcaseService) GetShowcase(ctx context.Context, userID uuid.UUID) ([]domain.ShowcaseRepo, error) {
 	return s.showcaseRepo.GetByUserID(ctx, userID)
+}
+
+// GetPublicRepo returns a single showcase repo by ID (public, no ownership check).
+func (s *showcaseService) GetPublicRepo(ctx context.Context, repoID uuid.UUID) (*domain.ShowcaseRepo, error) {
+	return s.showcaseRepo.GetByID(ctx, repoID)
 }
 
 // UpdateShowcase is the same as SetShowcase (replace all).
