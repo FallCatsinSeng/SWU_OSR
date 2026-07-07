@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SWU Open Source Repository",
+  title: "ORBIT",
   description:
     "Platform mahasiswa STMIK Widya Utama untuk showcase karya open source, kolaborasi, dan membangun portofolio.",
 };
