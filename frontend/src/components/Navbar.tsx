@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCurrentUser, useLogout, useAuthReady } from "@/hooks/useAuth";
 import { NotificationBell } from "@/features/forum/NotificationBell";
@@ -17,9 +18,9 @@ import {
   Home,
   FolderGit2,
   Users,
-  Code2,
   Trophy,
 } from "lucide-react";
+import logoOrbit from "@/assets/logo orbit.png";
 
 const NAV_LINKS_AUTH = [
   { href: "/dashboard", label: "Feed", icon: Home },
@@ -70,11 +71,16 @@ export function Navbar() {
             <div className="flex items-center gap-8">
               {/* Logo */}
               <Link href={showAuthLinks ? "/dashboard" : "/feed"} className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center">
-                  <Code2 className="h-3.5 w-3.5 text-geist-on-primary dark:text-black" />
-                </div>
+                <Image
+                  src={logoOrbit}
+                  alt="ORBIT Logo"
+                  width={40}
+                  height={40}
+                  className="dark:invert"
+                  priority
+                />
                 <span className="text-body-sm-strong text-geist-ink dark:text-white hidden sm:inline">
-                  SWU OSR
+                  ORBIT
                 </span>
               </Link>
 
