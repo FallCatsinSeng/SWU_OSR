@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import api from "@/lib/api";
-import { resolveUploadUrl } from "@/lib/url";
+import { resolveUploadUrl, sanitizeUrl } from "@/lib/url";
 import type {
   PublicProfile as PublicProfileType,
   AcademicIdentity,
@@ -118,7 +118,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
             // Custom banner (image or video)
             profile.banner_url.endsWith(".mp4") || profile.banner_url.endsWith(".webm") ? (
               <video
-                src={resolveUploadUrl(profile.banner_url)}
+                src={sanitizeUrl(resolveUploadUrl(profile.banner_url))}
                 className="w-full h-full object-cover"
                 autoPlay
                 loop
@@ -127,7 +127,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
               />
             ) : (
               <img
-                src={resolveUploadUrl(profile.banner_url)}
+                src={sanitizeUrl(resolveUploadUrl(profile.banner_url))}
                 alt={`${profile.alias}'s banner`}
                 className="w-full h-full object-cover"
               />

@@ -131,6 +131,15 @@ grafana_data/
 prometheus_data/
 
 # -----------------------------------------------------------------------------
+# Backup data (WAL segments, base backups, rclone config)
+# Only backup/*.sh scripts and backup/.env.example are committed
+# -----------------------------------------------------------------------------
+backups/
+backup/.env
+backup/rclone.conf
+backup/*.log
+
+# -----------------------------------------------------------------------------
 # Build & release artifacts
 # -----------------------------------------------------------------------------
 dist/

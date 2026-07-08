@@ -33,3 +33,20 @@ export function resolveUploadUrl(path: string | undefined | null): string {
   // so the browser resolves this correctly in all environments.
   return path;
 }
+
+/**
+ * Sanitizes a URL by ensuring it uses a safe protocol.
+ * This prevents XSS attacks via javascript: or vbscript: URIs.
+ */
+export function sanitizeUrl(url: string | undefined | null): string {
+  if (!url) return "";
+  try {
+    const parsed = new URL(url, "http://localhost");
+    if (["http:", "https:", "blob:", "data:"].includes(parsed.protocol)) {
+      return url;
+    }
+    return "";
+  } catch {
+    return "";
+  }
+}
