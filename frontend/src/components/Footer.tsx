@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Code2, Github, ExternalLink } from "lucide-react";
+import Image from "next/image";
+import { Github, ExternalLink } from "lucide-react";
+import logoOrbit from "@/assets/logo orbit.png";
 
 export function Footer() {
   return (
@@ -10,11 +12,15 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
             <Link href="/feed" className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-geist-sm bg-geist-primary dark:bg-white flex items-center justify-center">
-                <Code2 className="h-3.5 w-3.5 text-geist-on-primary dark:text-black" />
-              </div>
+              <Image
+                src={logoOrbit}
+                alt="ORBIT Logo"
+                width={28}
+                height={28}
+                className="dark:invert"
+              />
               <span className="text-body-sm-strong text-geist-ink dark:text-white">
-                SWU OSR
+                ORBIT
               </span>
             </Link>
             <p className="mt-3 text-body-sm text-geist-body dark:text-white max-w-xs">

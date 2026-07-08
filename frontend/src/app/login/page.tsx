@@ -46,7 +46,7 @@ export default function LoginPage() {
               <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center">
                 <Code2 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gradient dark:text-white">SWU OSR</span>
+              <span className="text-2xl font-bold text-gradient dark:text-white">ORBIT</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">
               Join the student
