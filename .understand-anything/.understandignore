@@ -1,0 +1,31 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+
+# --- Reference directories (NOT part of the SWU OSR platform) ---
+# SWAAP is the legacy Smart Wrapper Academic Portal — explicitly excluded.
+SWAAP/
+skill/
+plan/
+
+# --- Environment & secrets ---
+.env
+.env.local
+.env.production
+
+# --- From .gitignore ---
+.idea/
+.vscode/
+backend/tmp/
+backend/vendor/
+backend/api
+frontend/.next/
+frontend/out/
+
+# --- Test file patterns (uncomment to exclude) ---
+# *.test.*
+# *.spec.*
+# *_test.go

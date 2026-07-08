@@ -13,6 +13,7 @@ import (
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/config"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/github"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/handler"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/metrics"
 	mw "github.com/FallCatsinSeng/SWU_OSR/backend/internal/middleware"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/repository"
 	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/scheduler"
@@ -141,6 +142,9 @@ func main() {
 	leaderboardHandler := handler.NewLeaderboardHandler(cachedLeaderboardSvc)
 	bannerHandler := handler.NewBannerHandler(userRepo, bannerStorage)
 
+	// Initialize Prometheus metrics
+	appMetrics := metrics.New()
+
 	// Set up router
 	r := chi.NewRouter()
 
@@ -151,6 +155,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(mw.MaxBodySize(1 << 20)) // 1MB global request body size limit
 	r.Use(mw.CORS(cfg.CORSOrigin))
+	r.Use(appMetrics.Middleware)
 
 	// Rate limiter (IP-only applied globally)
 	rateLimiter := mw.NewRateLimiter(rdb, cfg.RateLimitIP, cfg.RateLimitUser)
@@ -160,6 +165,11 @@ func main() {
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		handler.RespondJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
+
+	// Prometheus metrics endpoint
+	// Security: This endpoint should NOT be exposed to the public internet.
+	// In production, restrict access via Nginx (allow only internal/monitoring IPs).
+	r.Handle("/metrics", metrics.Handler())
 
 	// Serve uploaded banner files (public, no auth required)
 	// Security: Only serves from the specific uploads directory; chi.URLParam-based path
