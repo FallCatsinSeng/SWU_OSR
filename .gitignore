@@ -1,38 +1,175 @@
-# Local reference directories (not part of the platform)
+# =============================================================================
+# SWU_OSR — .gitignore
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Local reference directories (personal notes, not part of the platform)
+# -----------------------------------------------------------------------------
 SWAAP/
 skill/
 plan/
+docs/
+notes/
 
-# Environment & secrets
+# -----------------------------------------------------------------------------
+# Secrets & environment variables
+# NEVER commit these — use .env.example for templates
+# -----------------------------------------------------------------------------
 .env
 .env.local
+.env.development
 .env.production
+.env.staging
+.env.test
+*.pem
+*.key
+*.p12
+*.pfx
 
-# OS files
+# -----------------------------------------------------------------------------
+# SSL / TLS Certificates (Certbot / Let's Encrypt)
+# NEVER commit private keys or live certificates
+# -----------------------------------------------------------------------------
+certbot/conf/live/
+certbot/conf/archive/
+certbot/conf/renewal/
+certbot/conf/accounts/
+
+# -----------------------------------------------------------------------------
+# OS generated files
+# -----------------------------------------------------------------------------
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+ehthumbs.db
+desktop.ini
 
-# IDE
+# -----------------------------------------------------------------------------
+# IDE & editor files
+# -----------------------------------------------------------------------------
 .idea/
 .vscode/
 *.swp
 *.swo
+*.swn
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
 
-# Go
-backend/tmp/
-backend/vendor/
+# -----------------------------------------------------------------------------
+# Go — Backend
+# -----------------------------------------------------------------------------
+# Build outputs
 backend/api
+backend/healthcheck
+backend/tmp/
 
-# Node / Next.js
+# Dependencies (never commit vendor)
+backend/vendor/
+
+# Test & coverage artifacts
+backend/coverage.out
+backend/coverage.html
+backend/*.out
+backend/*.test
+
+# Go profiling
+*.prof
+*.pprof
+
+# Air (live reload)
+backend/tmp/
+
+# -----------------------------------------------------------------------------
+# Node.js / Next.js — Frontend
+# -----------------------------------------------------------------------------
+# Dependencies
 node_modules/
+frontend/node_modules/
+
+# Next.js build output
 frontend/.next/
 frontend/out/
+frontend/.output/
 
+# Standalone build (produced by next build with output: 'standalone')
+frontend/.next/standalone/
+
+# Test & coverage artifacts
+frontend/coverage/
+frontend/lcov.info
+frontend/*.lcov
+
+# Vitest cache
+frontend/.vitest/
+
+# TypeScript build info
+*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Package manager locks (only keep one — this project uses npm)
+# frontend/yarn.lock  ← uncomment if you want to ignore yarn.lock
+# frontend/pnpm-lock.yaml
+
+# -----------------------------------------------------------------------------
 # Docker
+# -----------------------------------------------------------------------------
+# Log files
 *.log
+docker-compose.override.yml
 
-# Build artifacts
+# Docker volumes data (if mounted locally)
+postgres_data/
+redis_data/
+grafana_data/
+prometheus_data/
+
+# -----------------------------------------------------------------------------
+# Backup data (WAL segments, base backups, rclone config)
+# Only backup/*.sh scripts and backup/.env.example are committed
+# -----------------------------------------------------------------------------
+backups/
+backup/.env
+backup/rclone.conf
+backup/*.log
+
+# -----------------------------------------------------------------------------
+# Build & release artifacts
+# -----------------------------------------------------------------------------
 dist/
 build/
+release/
+bin/
+*.tar.gz
+*.zip
+*.deb
+*.rpm
 
-docs
+# -----------------------------------------------------------------------------
+# Monitoring data (local dev only — should be in Docker volumes)
+# -----------------------------------------------------------------------------
+monitoring/grafana/data/
+monitoring/prometheus/data/
+
+# -----------------------------------------------------------------------------
+# Miscellaneous
+# -----------------------------------------------------------------------------
+# Backup files
+*.bak
+*.backup
+*.orig
+*.tmp
+
+# Patch files
+*.patch
+*.diff
+
+# Local scripts that shouldn't be shared
+local/
+scratch/

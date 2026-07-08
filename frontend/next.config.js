@@ -2,6 +2,23 @@
 const nextConfig = {
   output: 'standalone',
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+      },
+    ],
+  },
+
   // Proxy /uploads/* requests to the backend in development.
   // In production, nginx handles this directly and these rewrites are unused.
   async rewrites() {

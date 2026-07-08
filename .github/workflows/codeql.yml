@@ -1,0 +1,57 @@
+name: CodeQL Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Sundays at 02:00 UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  analyze:
+    name: CodeQL — ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['go', 'javascript']
+        # go    → backend
+        # javascript → frontend (TypeScript is analyzed as javascript)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go (for Go analysis)
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Use extended security queries for deeper analysis
+          queries: security-extended
+
+      - name: Auto-build (Go)
+        if: matrix.language == 'go'
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Auto-build (JavaScript/TypeScript)
+        if: matrix.language == 'javascript'
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:${{ matrix.language }}'
