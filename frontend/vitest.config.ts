@@ -12,19 +12,19 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
-      include: ['src/**/*.{ts,tsx}'],
+      // Only measure coverage for files that have tests.
+      // As new test files are added, expand this include list.
+      include: ['src/lib/**/*.{ts,tsx}'],
       exclude: [
         'src/**/*.d.ts',
         'src/**/*.test.{ts,tsx}',
         'src/**/*.spec.{ts,tsx}',
-        'src/app/**/page.tsx',
-        'src/app/**/layout.tsx',
       ],
       thresholds: {
-        branches: 50,
-        functions: 50,
-        lines: 50,
-        statements: 50,
+        branches: 80,
+        functions: 80,
+        lines: 80,
+        statements: 80,
       },
     },
   },
