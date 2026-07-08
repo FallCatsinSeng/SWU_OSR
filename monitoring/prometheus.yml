@@ -1,0 +1,32 @@
+global:
+  scrape_interval: 15s      # How often Prometheus scrapes targets
+  evaluation_interval: 15s  # How often rules are evaluated
+
+# Alerting (optional - configure Alertmanager here if needed)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # SWU_OSR backend metrics
+  # The backend exposes /metrics at port 8080 (internal only)
+  - job_name: 'swu-osr-backend'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['backend:8080']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'swu-osr-backend'
+
+  # Redis exporter (if added in the future)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
