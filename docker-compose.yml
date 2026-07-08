@@ -1,12 +1,21 @@
 services:
   postgres:
     image: postgres:16-alpine
+    # Enable WAL archiving for incremental backups
+    # See: backup/backup.sh for the full backup workflow
+    command: >
+      postgres
+      -c wal_level=replica
+      -c archive_mode=on
+      -c archive_command='test ! -f /backups/wal/%f && cp %p /backups/wal/%f'
+      -c archive_timeout=3600
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: swu_osr
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - backups:/backups
     networks:
       - internal
     healthcheck:
@@ -79,6 +88,7 @@ services:
 volumes:
   pgdata:
   uploads:
+  backups:
 
 networks:
   internal:

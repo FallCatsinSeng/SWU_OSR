@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   useInfiniteQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import api from "@/lib/api";
 import type { FeedResponse } from "@/types/activity";
 import { useCurrentUser } from "@/hooks/useAuth";
@@ -45,6 +46,7 @@ export function ActivityFeed() {
     initialPageParam: "",
     getNextPageParam: (lastPage) =>
       lastPage.has_more ? lastPage.next_cursor : undefined,
+    maxPages: 5, // Only keep last 5 pages in memory to limit RAM usage
   });
 
   const syncMutation = useMutation({
@@ -80,6 +82,32 @@ export function ActivityFeed() {
     }
   }, [data, user, isLoading, isError]);
 
+  // Virtualizer setup
+  const parentRef = useRef<HTMLDivElement>(null);
+  const items = data?.pages.flatMap((page) => page.items) ?? [];
+
+  const virtualizer = useVirtualizer({
+    count: items.length + (hasNextPage ? 1 : 0), // +1 for "load more" row
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 88, // estimated card height in px
+    overscan: 5,
+  });
+
+  // Auto-fetch next page when scrolling near the end
+  const virtualItems = virtualizer.getVirtualItems();
+  const lastItem = virtualItems[virtualItems.length - 1];
+
+  useEffect(() => {
+    if (!lastItem) return;
+    if (
+      lastItem.index >= items.length - 3 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      fetchNextPage();
+    }
+  }, [lastItem, items.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -107,8 +135,6 @@ export function ActivityFeed() {
       </Card>
     );
   }
-
-  const items = data?.pages.flatMap((page) => page.items) ?? [];
 
   if (items.length === 0) {
     return (
@@ -176,29 +202,61 @@ export function ActivityFeed() {
         </div>
       )}
 
-      {items.map((item) => (
-        <ActivityCard key={item.id} item={item} />
-      ))}
+      {/* Virtualized feed list */}
+      <div
+        ref={parentRef}
+        className="h-[600px] overflow-auto"
+      >
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          {virtualItems.map((virtualRow) => {
+            const isLoaderRow = virtualRow.index >= items.length;
 
-      {hasNextPage && (
-        <div className="flex justify-center pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-          >
-            {isFetchingNextPage ? (
-              <>
-                <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              "Load more"
-            )}
-          </Button>
+            return (
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={virtualizer.measureElement}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+              >
+                {isLoaderRow ? (
+                  <div className="flex justify-center py-4">
+                    {isFetchingNextPage ? (
+                      <div className="flex items-center gap-2 text-body-sm text-geist-mute">
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        Loading...
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchNextPage()}
+                      >
+                        Load more
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="pb-3">
+                    <ActivityCard item={items[virtualRow.index]} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }

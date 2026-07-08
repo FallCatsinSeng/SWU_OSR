@@ -19,6 +19,10 @@ services:
 
   postgres:
     restart: unless-stopped
+    # Override backups volume to bind mount for cron access from host
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backups:/backups
 
   redis:
     restart: unless-stopped

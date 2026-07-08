@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
-import { resolveUploadUrl } from "@/lib/url";
+import { resolveUploadUrl, sanitizeUrl } from "@/lib/url";
 
 const MAX_BANNER_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = [
@@ -129,7 +129,8 @@ export function ProfileEditForm() {
   }
 
   // Determine what to show as banner preview
-  const currentBanner = bannerPreview || resolveUploadUrl(user?.banner_url) || "";
+  const rawBanner = bannerPreview || resolveUploadUrl(user?.banner_url) || "";
+  const currentBanner = sanitizeUrl(rawBanner);
   const isVideo = currentBanner && (currentBanner.endsWith(".mp4") || currentBanner.endsWith(".webm"));
 
   return (

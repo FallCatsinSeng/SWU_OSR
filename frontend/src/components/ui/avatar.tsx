@@ -1,4 +1,5 @@
 import * as React from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -7,6 +8,8 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   fallback?: string;
   size?: "sm" | "md" | "lg";
 }
+
+const sizePx = { sm: 32, md: 40, lg: 64 } as const;
 
 function Avatar({
   src,
@@ -22,6 +25,8 @@ function Avatar({
     lg: "h-16 w-16 text-lg",
   };
 
+  const px = sizePx[size];
+
   return (
     <div
       className={cn(
@@ -32,10 +37,14 @@ function Avatar({
       {...props}
     >
       {src ? (
-        <img
+        <Image
           src={src}
           alt={alt || "Avatar"}
+          width={px}
+          height={px}
+          loading="lazy"
           className="aspect-square h-full w-full object-cover"
+          unoptimized={src.startsWith("data:")}
         />
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-geist-canvas-soft-2 text-geist-body font-medium dark:bg-neutral-800 dark:text-white">
