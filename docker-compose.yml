@@ -8,7 +8,9 @@ services:
       -c wal_level=replica
       -c archive_mode=on
       -c archive_command='test ! -f /backups/wal/%f && cp %p /backups/wal/%f'
-      -c archive_timeout=3600
+      # archive_timeout=300: maksimum 5 menit data loss jika crash (RPO).
+      # Sebelumnya 3600 (1 jam) — terlalu berisiko untuk data akademik.
+      -c archive_timeout=300
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
