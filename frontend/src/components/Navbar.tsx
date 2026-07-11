@@ -9,7 +9,7 @@ import { NotificationBell } from '@/features/forum/NotificationBell';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User, Menu, X, Home, FolderGit2, Users, Trophy } from 'lucide-react';
+import { LogOut, Settings, User, Menu, X, Home, FolderGit2, Users, Trophy, Shield } from 'lucide-react';
 import logoOrbit from '@/assets/logo orbit.png';
 
 const NAV_LINKS_AUTH = [
@@ -134,6 +134,14 @@ export function Navbar() {
                         Settings
                       </Link>
                     </DropdownMenuItem>
+                    {user.role === 'super_admin' && (
+                      <DropdownMenuItem>
+                        <Link href="/admin" className="flex items-center gap-2 text-rose-500 dark:text-rose-400">
+                          <Shield className="h-4 w-4" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() => logout.mutate()}
                       className="text-geist-error dark:text-red-400"
@@ -210,6 +218,16 @@ export function Navbar() {
                   <Settings className="h-4 w-4" />
                   Settings
                 </Link>
+                {user.role === 'super_admin' && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm text-rose-500 hover:bg-rose-50/60 dark:text-rose-400 dark:hover:bg-rose-900/20"
+                  >
+                    <Shield className="h-4 w-4" />
+                    Admin Panel
+                  </Link>
+                )}
               </>
             )}
           </div>

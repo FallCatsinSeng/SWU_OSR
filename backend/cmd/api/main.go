@@ -141,6 +141,7 @@ func main() {
 	communityHandler := handler.NewCommunityHandler(pool, rdb)
 	leaderboardHandler := handler.NewLeaderboardHandler(cachedLeaderboardSvc)
 	bannerHandler := handler.NewBannerHandler(userRepo, bannerStorage)
+	adminHandler := handler.NewAdminHandler(pool)
 
 	// Initialize Prometheus metrics
 	appMetrics := metrics.New()
@@ -244,6 +245,14 @@ func main() {
 			r.Get("/notifications", forumHandler.HandleListNotifications)
 			r.Put("/notifications/{id}/read", forumHandler.HandleMarkNotificationRead)
 			r.Get("/leaderboard/me", leaderboardHandler.HandleGetMyPoints)
+		})
+
+		// Admin routes (super_admin only)
+		r.Group(func(r chi.Router) {
+			r.Use(mw.JWTAuth(cfg.JWTSecret))
+			r.Use(mw.RequireSuperAdmin)
+			r.Get("/admin/users", adminHandler.HandleListUsers)
+			r.Put("/admin/users/{id}/role", adminHandler.HandleUpdateUserRole)
 		})
 	})
 

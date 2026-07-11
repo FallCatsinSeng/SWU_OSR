@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
+import { useCurrentUser } from '@/hooks/useAuth';
 import api from '@/lib/api';
 import type { ShowcaseRepo } from '@/types/showcase';
 import type { ActivityItem } from '@/types/activity';
@@ -81,7 +81,7 @@ function getEventConfig(eventType: string) {
 }
 
 export default function RepoDetailPage({ params }: RepoPageProps) {
-  const { user } = useAuth();
+  const { data: user } = useCurrentUser();
   const queryClient = useQueryClient();
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
