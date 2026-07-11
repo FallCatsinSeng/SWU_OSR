@@ -1,4 +1,4 @@
-export type Role = "student" | "faculty";
+export type Role = 'student' | 'faculty';
 
 export interface User {
   id: string;
@@ -21,15 +21,14 @@ export interface UserStats {
   current_streak: number;
   contribution_days: Record<string, number>;
   // Behavioral fields (used for badge computation)
-  night_owl_count?: number;   // pushes between 00:00–04:00
-  early_bird_count?: number;  // pushes between 04:00–07:00
-  weekend_count?: number;     // pushes on Sat/Sun
-  total_push_count?: number;  // all pushes (for ratio)
-  forum_total?: number;       // threads + comments
-  total_merged_prs?: number;  // merged pull requests
+  night_owl_count?: number; // pushes between 00:00–04:00
+  early_bird_count?: number; // pushes between 04:00–07:00
+  weekend_count?: number; // pushes on Sat/Sun
+  total_push_count?: number; // all pushes (for ratio)
+  forum_total?: number; // threads + comments
+  total_merged_prs?: number; // merged pull requests
   total_showcase_repos?: number; // showcase repos count
 }
-
 
 export interface PublicProfile {
   id: string;
@@ -39,7 +38,7 @@ export interface PublicProfile {
   banner_url: string;
   github_username: string;
   role: Role;
-  showcase_repos: import("./showcase").ShowcaseRepo[];
+  showcase_repos: import('./showcase').ShowcaseRepo[];
   stats: UserStats | null;
   created_at: string;
 }

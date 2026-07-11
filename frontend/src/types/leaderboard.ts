@@ -31,4 +31,4 @@ export interface UserPointsSummary {
   rank: number;
 }
 
-export type LeaderboardPeriod = "quarterly" | "all_time";
+export type LeaderboardPeriod = 'quarterly' | 'all_time';

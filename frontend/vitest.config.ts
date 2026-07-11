@@ -15,11 +15,7 @@ export default defineConfig({
       // Only measure coverage for files that have tests.
       // As new test files are added, expand this include list.
       include: ['src/lib/**/*.{ts,tsx}'],
-      exclude: [
-        'src/**/*.d.ts',
-        'src/**/*.test.{ts,tsx}',
-        'src/**/*.spec.{ts,tsx}',
-      ],
+      exclude: ['src/**/*.d.ts', 'src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
       thresholds: {
         branches: 80,
         functions: 80,

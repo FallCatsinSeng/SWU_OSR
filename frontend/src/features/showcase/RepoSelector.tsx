@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
-import type { Repository, AcademicTag, ShowcaseSelection, ShowcaseRepo } from "@/types/showcase";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/toast";
-import { Check, Globe } from "lucide-react";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/api';
+import type { Repository, AcademicTag, ShowcaseSelection, ShowcaseRepo } from '@/types/showcase';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/components/ui/toast';
+import { Check, Globe } from 'lucide-react';
 
 const ACADEMIC_TAGS: AcademicTag[] = [
-  "coursework",
-  "thesis",
-  "hackathon",
-  "personal_research",
-  "team_project",
+  'coursework',
+  'thesis',
+  'hackathon',
+  'personal_research',
+  'team_project',
 ];
 
 export function RepoSelector() {
@@ -24,42 +24,41 @@ export function RepoSelector() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: repos, isLoading, isError, refetch } = useQuery<Repository[]>({
-    queryKey: ["availableRepos"],
+  const {
+    data: repos,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<Repository[]>({
+    queryKey: ['availableRepos'],
     queryFn: async () => {
-      const { data } = await api.get<{ ok: boolean; data: Repository[] }>(
-        "/repos/available"
-      );
+      const { data } = await api.get<{ ok: boolean; data: Repository[] }>('/repos/available');
       return data.data;
     },
   });
 
   const { data: showcaseRepos } = useQuery<ShowcaseRepo[]>({
-    queryKey: ["showcaseRepos"],
+    queryKey: ['showcaseRepos'],
     queryFn: async () => {
-      const { data } = await api.get<{ ok: boolean; data: ShowcaseRepo[] }>(
-        "/showcase"
-      );
+      const { data } = await api.get<{ ok: boolean; data: ShowcaseRepo[] }>('/showcase');
       return data.data;
     },
   });
 
-  const showcasedFullNames = new Set(
-    (showcaseRepos ?? []).map((r) => r.repo_full_name)
-  );
+  const showcasedFullNames = new Set((showcaseRepos ?? []).map((r) => r.repo_full_name));
 
   const saveShowcase = useMutation({
     mutationFn: async (items: ShowcaseSelection[]) => {
-      const { data } = await api.post("/showcase", { selections: items });
+      const { data } = await api.post('/showcase', { selections: items });
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["showcaseRepos"] });
-      toast("Showcase updated successfully", "success");
+      queryClient.invalidateQueries({ queryKey: ['showcaseRepos'] });
+      toast('Showcase updated successfully', 'success');
       setSelections(new Map());
     },
     onError: () => {
-      toast("Failed to update showcase", "error");
+      toast('Failed to update showcase', 'error');
     },
   });
 
@@ -106,7 +105,9 @@ export function RepoSelector() {
     return (
       <Card>
         <CardContent className="p-6 text-center">
-          <p className="text-gray-600 dark:text-white mb-3">Failed to load available repositories.</p>
+          <p className="text-gray-600 dark:text-white mb-3">
+            Failed to load available repositories.
+          </p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             Try Again
           </Button>
@@ -133,10 +134,10 @@ export function RepoSelector() {
               key={repo.id}
               className={
                 alreadyShowcased
-                  ? "opacity-60"
+                  ? 'opacity-60'
                   : selections.has(repo.id)
-                    ? "border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950"
-                    : ""
+                    ? 'border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950'
+                    : ''
               }
             >
               <CardContent className="p-4">
@@ -150,12 +151,10 @@ export function RepoSelector() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500 dark:text-white mt-1">
-                      {repo.description || "No description"}
+                      {repo.description || 'No description'}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                      {repo.language && (
-                        <Badge variant="secondary">{repo.language}</Badge>
-                      )}
+                      {repo.language && <Badge variant="secondary">{repo.language}</Badge>}
                       {alreadyShowcased && (
                         <Badge className="bg-green-100 dark:bg-neutral-800 text-green-800 dark:text-white border-green-200 dark:border-neutral-700">
                           Already in showcase
@@ -175,11 +174,11 @@ export function RepoSelector() {
                         onClick={() => toggleRepo(repo, tag)}
                         className={`px-2 py-1 text-xs rounded-full border transition-colors ${
                           selections.get(repo.id) === tag
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white dark:bg-neutral-800 text-gray-600 dark:text-white border-gray-300 dark:border-neutral-700 hover:border-blue-300"
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-white border-gray-300 dark:border-neutral-700 hover:border-blue-300'
                         }`}
                       >
-                        {tag.replace("_", " ")}
+                        {tag.replace('_', ' ')}
                       </button>
                     ))}
                   </div>
@@ -192,9 +191,7 @@ export function RepoSelector() {
       {selections.size > 0 && (
         <div className="flex justify-end">
           <Button onClick={handleSave} disabled={saveShowcase.isPending}>
-            {saveShowcase.isPending
-              ? "Saving..."
-              : `Add ${selections.size} to Showcase`}
+            {saveShowcase.isPending ? 'Saving...' : `Add ${selections.size} to Showcase`}
           </Button>
         </div>
       )}
