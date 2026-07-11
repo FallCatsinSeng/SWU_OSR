@@ -133,6 +133,12 @@ func (r *SkillRepo) RemoveUserSkill(ctx context.Context, userID, skillID uuid.UU
 
 // GetUserSkills returns all skills for a user, with endorsement counts and "is endorsed by me" flag.
 func (r *SkillRepo) GetUserSkills(ctx context.Context, userID uuid.UUID, currentUserID *uuid.UUID) ([]domain.UserSkill, error) {
+	// Use uuid.Nil as fallback so se.endorser_id = $2 is always a valid UUID comparison
+	viewerID := uuid.Nil
+	if currentUserID != nil {
+		viewerID = *currentUserID
+	}
+
 	rows, err := r.pool.Query(ctx, `
 		SELECT
 			us.id, us.user_id, us.created_at,
@@ -141,7 +147,7 @@ func (r *SkillRepo) GetUserSkills(ctx context.Context, userID uuid.UUID, current
 			COUNT(CASE WHEN u.role = 'student'     THEN 1 END) AS peer_count,
 			COUNT(CASE WHEN u.role = 'faculty'     THEN 1 END) AS faculty_count,
 			COUNT(CASE WHEN u.role = 'lpt_officer' THEN 1 END) AS lpt_count,
-			BOOL_OR(se.endorser_id = $2) AS is_endorsed_by_me
+			COALESCE(BOOL_OR(se.endorser_id = $2), false) AS is_endorsed_by_me
 		FROM user_skills us
 		JOIN skills s ON s.id = us.skill_id
 		LEFT JOIN skill_endorsements se ON se.user_skill_id = us.id
@@ -149,7 +155,7 @@ func (r *SkillRepo) GetUserSkills(ctx context.Context, userID uuid.UUID, current
 		WHERE us.user_id = $1
 		GROUP BY us.id, us.user_id, us.created_at, s.id, s.name, s.slug, s.category, s.created_at
 		ORDER BY endorse_count DESC, us.created_at ASC`,
-		userID, currentUserID,
+		userID, viewerID,
 	)
 	if err != nil {
 		return nil, err
@@ -220,6 +226,12 @@ func (r *SkillRepo) GetUserSkillByID(ctx context.Context, userSkillID uuid.UUID)
 }
 
 func (r *SkillRepo) getUserSkillByIDInternal(ctx context.Context, userSkillID uuid.UUID, currentUserID *uuid.UUID) (*domain.UserSkill, error) {
+	// Use uuid.Nil as fallback so the comparison is always valid (never NULL)
+	viewerID := uuid.Nil
+	if currentUserID != nil {
+		viewerID = *currentUserID
+	}
+
 	var us domain.UserSkill
 	err := r.pool.QueryRow(ctx, `
 		SELECT
@@ -229,14 +241,14 @@ func (r *SkillRepo) getUserSkillByIDInternal(ctx context.Context, userSkillID uu
 			COUNT(CASE WHEN u.role = 'student'     THEN 1 END),
 			COUNT(CASE WHEN u.role = 'faculty'     THEN 1 END),
 			COUNT(CASE WHEN u.role = 'lpt_officer' THEN 1 END),
-			BOOL_OR(se.endorser_id = $2)
+			COALESCE(BOOL_OR(se.endorser_id = $2), false)
 		FROM user_skills us
 		JOIN skills s ON s.id = us.skill_id
 		LEFT JOIN skill_endorsements se ON se.user_skill_id = us.id
 		LEFT JOIN users u ON u.id = se.endorser_id
 		WHERE us.id = $1
 		GROUP BY us.id, us.user_id, us.created_at, s.id, s.name, s.slug, s.category, s.created_at`,
-		userSkillID, currentUserID,
+		userSkillID, viewerID,
 	).Scan(
 		&us.ID, &us.UserID, &us.CreatedAt,
 		&us.Skill.ID, &us.Skill.Name, &us.Skill.Slug, &us.Skill.Category, &us.Skill.CreatedAt,

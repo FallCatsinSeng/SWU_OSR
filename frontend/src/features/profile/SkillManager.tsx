@@ -6,6 +6,7 @@ import { useCurrentUser } from '@/hooks/useAuth';
 import api from '@/lib/api';
 import type { Skill, UserSkill } from '@/types/user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/components/ui/toast';
 import {
   Zap,
   Plus,
@@ -49,6 +50,7 @@ function SkillPill({ skill, onRemove, isRemoving }: SkillPillProps) {
 export function SkillManager() {
   const { data: user } = useCurrentUser();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [removingID, setRemovingID] = useState<string | null>(null);
   const [addingID, setAddingID] = useState<string | null>(null);
@@ -105,6 +107,10 @@ export function SkillManager() {
       setShowDropdown(false);
       setAddingID(null);
     },
+    onError: (err: any) => {
+      toast(err?.response?.data?.error || 'Gagal menambahkan skill', 'error');
+      setAddingID(null);
+    },
     onSettled: () => setAddingID(null),
   });
 
@@ -115,6 +121,10 @@ export function SkillManager() {
     onSuccess: () => {
       refetchMySkills();
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setRemovingID(null);
+    },
+    onError: (err: any) => {
+      toast(err?.response?.data?.error || 'Gagal menghapus skill', 'error');
       setRemovingID(null);
     },
     onSettled: () => setRemovingID(null),
