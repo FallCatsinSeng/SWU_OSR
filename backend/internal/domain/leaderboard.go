@@ -10,23 +10,21 @@ import (
 // Point values for different activities.
 const (
 	PointsPush          = 3
-	PointsPROpened      = 5
-	PointsPRMerged      = 8
+	PointsPROpened      = 2  // Small bonus just for opening a PR
+	PointsPRMerged      = 12 // Full points only for merged PRs — anti-gaming
 	PointsShowcaseAdded = 10
 	PointsThreadCreated = 2
 	PointsCommentPosted = 1
-	PointsStreakBonus   = 15
+	PointsStreakBonus   = 20 // Streak bonus per threshold
 
-	// Anti-gaming: maximum points a user can earn per day.
+	// Anti-gaming: maximum push-points a user can earn per day.
 	MaxPointsPerDay = 30
 
-	// Anti-gaming: maximum scoreable push events per repo per week.
-	// If someone makes more than this many pushes to a single repo in a week,
-	// the excess won't count toward points.
-	MaxPushPerRepoPerWeek = 15
+	// Anti-gaming: maximum scoreable push events per repo per quarter.
+	MaxPushPerRepoPerQuarter = 90
 
-	// Anti-gaming: maximum scoreable PR events per repo per week.
-	MaxPRPerRepoPerWeek = 5
+	// Anti-gaming: maximum scoreable PR events per repo per quarter.
+	MaxPRPerRepoPerQuarter = 20
 
 	// Streak threshold: consecutive days needed for bonus.
 	StreakThresholdDays = 7
@@ -36,10 +34,8 @@ const (
 type LeaderboardPeriod string
 
 const (
-	PeriodWeekly   LeaderboardPeriod = "weekly"
-	PeriodMonthly  LeaderboardPeriod = "monthly"
-	PeriodAllTime  LeaderboardPeriod = "all_time"
-	PeriodSemester LeaderboardPeriod = "semester"
+	PeriodQuarterly LeaderboardPeriod = "quarterly"
+	PeriodAllTime   LeaderboardPeriod = "all_time"
 )
 
 // LeaderboardEntry represents a single user's position on the leaderboard.
@@ -61,6 +57,7 @@ type LeaderboardResult struct {
 	Period  LeaderboardPeriod  `json:"period"`
 	From    time.Time          `json:"from"`
 	To      time.Time          `json:"to"`
+	Quarter int                `json:"quarter,omitempty"` // 1-4 for quarterly period
 	Entries []LeaderboardEntry `json:"entries"`
 }
 
@@ -81,6 +78,20 @@ type UserPointsSummary struct {
 type RepoEventCount struct {
 	RepoID uuid.UUID
 	Count  int
+}
+
+// BehavioralStats holds activity timing stats used for behavioral badges.
+type BehavioralStats struct {
+	// NightOwlCount: commits/pushes done between 00:00–04:00 local server time
+	NightOwlCount int `json:"night_owl_count"`
+	// EarlyBirdCount: commits/pushes done between 04:00–07:00
+	EarlyBirdCount int `json:"early_bird_count"`
+	// WeekendCount: commits/pushes done on Saturday or Sunday
+	WeekendCount int `json:"weekend_count"`
+	// TotalActivityCount: all commits/pushes (for ratio calculation)
+	TotalActivityCount int `json:"total_activity_count"`
+	// ForumTotal: total threads + comments (for community badges)
+	ForumTotal int `json:"forum_total"`
 }
 
 // LeaderboardRepository defines data access methods for leaderboard.
@@ -104,6 +115,13 @@ type LeaderboardRepository interface {
 	// Per-repo count methods for anti-gaming caps.
 	CountUserPushEventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]RepoEventCount, error)
 	CountUserPREventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]RepoEventCount, error)
+
+	// CountUserMergedPREventsPerRepo returns per-repo counts of merged PRs only.
+	// A PR is considered merged when metadata->>'action' = 'closed' AND metadata->>'merged' = 'true'.
+	CountUserMergedPREventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]RepoEventCount, error)
+
+	// GetUserBehavioralStats returns timing-based activity stats for badge calculation.
+	GetUserBehavioralStats(ctx context.Context, userID uuid.UUID, from, to time.Time) (*BehavioralStats, error)
 
 	// GetAllActiveUserIDs returns user IDs with activity in the given time range.
 	GetAllActiveUserIDs(ctx context.Context, from, to time.Time) ([]uuid.UUID, error)

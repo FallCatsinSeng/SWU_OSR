@@ -245,3 +245,10 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-geist-hairline-strong dark:bg-neutral-600;
 }
+
+/* Badge shimmer animation — Diamond tier */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+

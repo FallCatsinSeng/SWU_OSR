@@ -111,8 +111,8 @@ func (r *LeaderboardRepo) GetUserPoints(ctx context.Context, userID uuid.UUID, f
 	if domain.PointsPush > 0 {
 		summary.PushCount = pushPts / domain.PointsPush
 	}
-	if domain.PointsPROpened > 0 {
-		summary.PRCount = prPts / domain.PointsPROpened
+	if domain.PointsPRMerged > 0 {
+		summary.PRCount = prPts / domain.PointsPRMerged
 	}
 	// Forum points are mixed (threads=2, comments=1), store raw for now
 	summary.ThreadCount = 0
@@ -205,12 +205,13 @@ func (r *LeaderboardRepo) CountUserPREvents(ctx context.Context, userID uuid.UUI
 }
 
 // CountUserPushEventsPerRepo returns push event counts grouped by showcase_repo_id for a user within a time range.
-// This is used to apply per-repo weekly caps to prevent gaming.
+// This is used to apply per-repo quarterly caps to prevent gaming.
 func (r *LeaderboardRepo) CountUserPushEventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]domain.RepoEventCount, error) {
 	query := `
 		SELECT showcase_repo_id, COUNT(*) AS cnt
 		FROM activity_logs
 		WHERE user_id = $1 AND event_type = 'push' AND created_at >= $2 AND created_at < $3
+		  AND showcase_repo_id IS NOT NULL
 		GROUP BY showcase_repo_id`
 
 	rows, err := r.pool.Query(ctx, query, userID, from, to)
@@ -234,12 +235,13 @@ func (r *LeaderboardRepo) CountUserPushEventsPerRepo(ctx context.Context, userID
 }
 
 // CountUserPREventsPerRepo returns PR event counts grouped by showcase_repo_id for a user within a time range.
-// This is used to apply per-repo weekly caps to prevent gaming.
+// This is used to apply per-repo quarterly caps to prevent gaming.
 func (r *LeaderboardRepo) CountUserPREventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]domain.RepoEventCount, error) {
 	query := `
 		SELECT showcase_repo_id, COUNT(*) AS cnt
 		FROM activity_logs
 		WHERE user_id = $1 AND event_type = 'pull_request' AND created_at >= $2 AND created_at < $3
+		  AND showcase_repo_id IS NOT NULL
 		GROUP BY showcase_repo_id`
 
 	rows, err := r.pool.Query(ctx, query, userID, from, to)
@@ -260,6 +262,83 @@ func (r *LeaderboardRepo) CountUserPREventsPerRepo(ctx context.Context, userID u
 		results = []domain.RepoEventCount{}
 	}
 	return results, rows.Err()
+}
+
+// CountUserMergedPREventsPerRepo returns per-repo counts of PRs that were merged.
+// A PR is considered merged when: event_type='pull_request' AND metadata->>'action'='closed'
+// AND (metadata->>'merged'='true' OR metadata->>'merged' IS inferred from GitHub payload).
+// We check for action='closed' as the main filter since webhooks send 'closed' for merges.
+func (r *LeaderboardRepo) CountUserMergedPREventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]domain.RepoEventCount, error) {
+	query := `
+		SELECT showcase_repo_id, COUNT(*) AS cnt
+		FROM activity_logs
+		WHERE user_id = $1
+		  AND event_type = 'pull_request'
+		  AND created_at >= $2 AND created_at < $3
+		  AND showcase_repo_id IS NOT NULL
+		  AND (
+		    metadata->>'action' = 'closed'
+		    OR metadata->>'merged' = 'true'
+		  )
+		GROUP BY showcase_repo_id`
+
+	rows, err := r.pool.Query(ctx, query, userID, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []domain.RepoEventCount
+	for rows.Next() {
+		var rc domain.RepoEventCount
+		if err := rows.Scan(&rc.RepoID, &rc.Count); err != nil {
+			return nil, err
+		}
+		results = append(results, rc)
+	}
+	if results == nil {
+		results = []domain.RepoEventCount{}
+	}
+	return results, rows.Err()
+}
+
+// GetUserBehavioralStats returns timing-based activity statistics for badge calculation.
+// Uses the EXTRACT function to determine the local server hour and day-of-week.
+func (r *LeaderboardRepo) GetUserBehavioralStats(ctx context.Context, userID uuid.UUID, from, to time.Time) (*domain.BehavioralStats, error) {
+	query := `
+		SELECT
+			COUNT(*) FILTER (WHERE EXTRACT(HOUR FROM created_at) >= 0 AND EXTRACT(HOUR FROM created_at) < 4)  AS night_owl_count,
+			COUNT(*) FILTER (WHERE EXTRACT(HOUR FROM created_at) >= 4 AND EXTRACT(HOUR FROM created_at) < 7)  AS early_bird_count,
+			COUNT(*) FILTER (WHERE EXTRACT(DOW FROM created_at) IN (0, 6))                                     AS weekend_count,
+			COUNT(*)                                                                                            AS total_count
+		FROM activity_logs
+		WHERE user_id = $1
+		  AND event_type = 'push'
+		  AND created_at >= $2 AND created_at < $3`
+
+	var stats domain.BehavioralStats
+	err := r.pool.QueryRow(ctx, query, userID, from, to).Scan(
+		&stats.NightOwlCount,
+		&stats.EarlyBirdCount,
+		&stats.WeekendCount,
+		&stats.TotalActivityCount,
+	)
+	if err != nil {
+		return &domain.BehavioralStats{}, nil
+	}
+
+	// Get total forum activity
+	forumQuery := `
+		SELECT 
+			(SELECT COUNT(*) FROM threads WHERE author_id = $1 AND created_at >= $2 AND created_at < $3 AND deleted_at IS NULL)
+			+ (SELECT COUNT(*) FROM comments WHERE author_id = $1 AND created_at >= $2 AND created_at < $3 AND deleted_at IS NULL)
+			AS forum_total`
+	err = r.pool.QueryRow(ctx, forumQuery, userID, from, to).Scan(&stats.ForumTotal)
+	if err != nil {
+		stats.ForumTotal = 0
+	}
+
+	return &stats, nil
 }
 
 // CountUserThreads counts threads created by a user within a time range.

@@ -20,7 +20,16 @@ export interface UserStats {
   active_days: number;
   current_streak: number;
   contribution_days: Record<string, number>;
+  // Behavioral fields (used for badge computation)
+  night_owl_count?: number;   // pushes between 00:00–04:00
+  early_bird_count?: number;  // pushes between 04:00–07:00
+  weekend_count?: number;     // pushes on Sat/Sun
+  total_push_count?: number;  // all pushes (for ratio)
+  forum_total?: number;       // threads + comments
+  total_merged_prs?: number;  // merged pull requests
+  total_showcase_repos?: number; // showcase repos count
 }
+
 
 export interface PublicProfile {
   id: string;
