@@ -9,7 +9,18 @@ import { NotificationBell } from '@/features/forum/NotificationBell';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, User, Menu, X, Home, FolderGit2, Users, Trophy, Shield } from 'lucide-react';
+import {
+  LogOut,
+  Settings,
+  User,
+  Menu,
+  X,
+  Home,
+  FolderGit2,
+  Users,
+  Trophy,
+  Shield,
+} from 'lucide-react';
 import logoOrbit from '@/assets/logo orbit.png';
 
 const NAV_LINKS_AUTH = [
@@ -136,7 +147,10 @@ export function Navbar() {
                     </DropdownMenuItem>
                     {user.role === 'super_admin' && (
                       <DropdownMenuItem>
-                        <Link href="/admin" className="flex items-center gap-2 text-rose-500 dark:text-rose-400">
+                        <Link
+                          href="/admin"
+                          className="flex items-center gap-2 text-rose-500 dark:text-rose-400"
+                        >
                           <Shield className="h-4 w-4" />
                           Admin Panel
                         </Link>

@@ -22,17 +22,21 @@ import {
 // ─── Role badge config ────────────────────────────────────────────────────────
 
 const ROLE_ICON: Record<string, React.ReactNode> = {
-  faculty:     <GraduationCap className="h-2.5 w-2.5" />,
+  faculty: <GraduationCap className="h-2.5 w-2.5" />,
   lpt_officer: <BookOpen className="h-2.5 w-2.5" />,
   super_admin: <Star className="h-2.5 w-2.5" />,
-  student:     <User className="h-2.5 w-2.5" />,
+  student: <User className="h-2.5 w-2.5" />,
 };
 
 const ROLE_COLOR: Record<string, string> = {
-  faculty:     'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700/40',
-  lpt_officer: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700/40',
-  super_admin: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-700/40',
-  student:     'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-700/40',
+  faculty:
+    'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700/40',
+  lpt_officer:
+    'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700/40',
+  super_admin:
+    'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-700/40',
+  student:
+    'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 border-sky-200 dark:border-sky-700/40',
 };
 
 // ─── Endorser Avatars ─────────────────────────────────────────────────────────
@@ -41,7 +45,7 @@ function EndorserAvatars({ endorsers }: { endorsers: EndorserPreview[] }) {
   if (!endorsers || endorsers.length === 0) return null;
   return (
     <div className="flex -space-x-1.5">
-      {endorsers.slice(0, 5).map((e) => (
+      {endorsers.slice(0, 5).map((e) =>
         e.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -60,7 +64,7 @@ function EndorserAvatars({ endorsers }: { endorsers: EndorserPreview[] }) {
             {e.alias[0]?.toUpperCase()}
           </div>
         )
-      ))}
+      )}
     </div>
   );
 }
@@ -95,13 +99,17 @@ function SkillCard({
           </span>
           {/* Official verifier badges */}
           {hasLPT && (
-            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${ROLE_COLOR.lpt_officer}`}>
+            <span
+              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${ROLE_COLOR.lpt_officer}`}
+            >
               <BookOpen className="h-2 w-2" />
               LPT
             </span>
           )}
           {hasFaculty && (
-            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${ROLE_COLOR.faculty}`}>
+            <span
+              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${ROLE_COLOR.faculty}`}
+            >
               <GraduationCap className="h-2 w-2" />
               Dosen
             </span>
@@ -113,7 +121,7 @@ function SkillCard({
           <button
             id={`endorse-${us.id}`}
             disabled={isEndorsePending}
-            onClick={() => us.is_endorsed_by_me ? onUnendorse(us.id) : onEndorse(us.id)}
+            onClick={() => (us.is_endorsed_by_me ? onUnendorse(us.id) : onEndorse(us.id))}
             className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border transition-all ${
               us.is_endorsed_by_me
                 ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700/40 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 hover:border-red-200'
@@ -123,9 +131,13 @@ function SkillCard({
             {isEndorsePending ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : us.is_endorsed_by_me ? (
-              <><Check className="h-3 w-3" /> Endorsed</>
+              <>
+                <Check className="h-3 w-3" /> Endorsed
+              </>
             ) : (
-              <><Plus className="h-3 w-3" /> Endorse</>
+              <>
+                <Plus className="h-3 w-3" /> Endorse
+              </>
             )}
           </button>
         )}
@@ -143,11 +155,12 @@ function SkillCard({
               ? 'No endorsements yet'
               : `${us.endorse_count} endorsement${us.endorse_count !== 1 ? 's' : ''}`}
           </span>
-          {us.endorse_count > 0 && (
-            showEndorsers
-              ? <ChevronUp className="h-3 w-3" />
-              : <ChevronDown className="h-3 w-3" />
-          )}
+          {us.endorse_count > 0 &&
+            (showEndorsers ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            ))}
         </button>
       </div>
 
@@ -261,7 +274,10 @@ export function SkillSection({ userID: _userID, skills, isOwn, onRefetch }: Skil
       {/* Legend for non-logged-in viewers */}
       {!isViewerLoggedIn && (
         <p className="text-[11px] text-geist-mute dark:text-neutral-500 text-center pt-1">
-          <a href="/login" className="underline hover:text-geist-ink">Login</a> untuk memberikan endorsement.
+          <a href="/login" className="underline hover:text-geist-ink">
+            Login
+          </a>{' '}
+          untuk memberikan endorsement.
         </p>
       )}
 

@@ -58,10 +58,7 @@ export function PublicProfile({ alias }: PublicProfileProps) {
   });
 
   // Fetch skills for this profile
-  const {
-    data: skills,
-    refetch: refetchSkills,
-  } = useQuery<UserSkill[]>({
+  const { data: skills, refetch: refetchSkills } = useQuery<UserSkill[]>({
     queryKey: ['skills', profile?.id],
     queryFn: async () => {
       const { data } = await api.get<{ ok: boolean; data: UserSkill[] }>(

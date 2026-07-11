@@ -7,14 +7,7 @@ import api from '@/lib/api';
 import type { Skill, UserSkill } from '@/types/user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/toast';
-import {
-  Zap,
-  Plus,
-  X,
-  Search,
-  Loader2,
-  AlertCircle,
-} from 'lucide-react';
+import { Zap, Plus, X, Search, Loader2, AlertCircle } from 'lucide-react';
 
 const MAX_SKILLS = 15;
 
@@ -37,11 +30,7 @@ function SkillPill({ skill, onRemove, isRemoving }: SkillPillProps) {
         className="ml-0.5 p-0.5 rounded-full text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-40"
         title={`Remove ${skill.skill.name}`}
       >
-        {isRemoving ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : (
-          <X className="h-3 w-3" />
-        )}
+        {isRemoving ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
       </button>
     </div>
   );
@@ -69,7 +58,9 @@ export function SkillManager() {
   const { data: mySkills = [], refetch: refetchMySkills } = useQuery<UserSkill[]>({
     queryKey: ['skills', user?.id],
     queryFn: async () => {
-      const { data } = await api.get<{ ok: boolean; data: UserSkill[] }>(`/users/${user!.id}/skills`);
+      const { data } = await api.get<{ ok: boolean; data: UserSkill[] }>(
+        `/users/${user!.id}/skills`
+      );
       return data.data ?? [];
     },
     enabled: !!user?.id,
@@ -78,12 +69,11 @@ export function SkillManager() {
   const mySkillIDs = useMemo(() => new Set(mySkills.map((s) => s.skill.id)), [mySkills]);
 
   // Filter available skills by search (exclude already-added)
-  const filtered = useMemo(() =>
-    allSkills.filter(
-      (s) =>
-        !mySkillIDs.has(s.id) &&
-        s.name.toLowerCase().includes(search.toLowerCase())
-    ),
+  const filtered = useMemo(
+    () =>
+      allSkills.filter(
+        (s) => !mySkillIDs.has(s.id) && s.name.toLowerCase().includes(search.toLowerCase())
+      ),
     [allSkills, mySkillIDs, search]
   );
 
@@ -172,7 +162,8 @@ export function SkillManager() {
         {isAtLimit ? (
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-            Kamu sudah mencapai batas maksimal {MAX_SKILLS} skill. Hapus beberapa untuk menambah skill baru.
+            Kamu sudah mencapai batas maksimal {MAX_SKILLS} skill. Hapus beberapa untuk menambah
+            skill baru.
           </div>
         ) : (
           <div className="relative">
@@ -193,7 +184,10 @@ export function SkillManager() {
               />
               {search && (
                 <button
-                  onClick={() => { setSearch(''); setShowDropdown(false); }}
+                  onClick={() => {
+                    setSearch('');
+                    setShowDropdown(false);
+                  }}
                   className="text-geist-mute hover:text-geist-ink transition-colors"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -208,7 +202,9 @@ export function SkillManager() {
                 <div className="absolute top-full left-0 right-0 mt-1 z-20 max-h-64 overflow-y-auto bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg">
                   {filtered.length === 0 ? (
                     <div className="px-3 py-4 text-sm text-center text-geist-mute dark:text-neutral-500">
-                      {search ? `Skill "${search}" tidak ditemukan.` : 'Semua skill sudah ditambahkan.'}
+                      {search
+                        ? `Skill "${search}" tidak ditemukan.`
+                        : 'Semua skill sudah ditambahkan.'}
                     </div>
                   ) : (
                     Object.entries(groupedFiltered).map(([category, skills]) => (
@@ -226,7 +222,9 @@ export function SkillManager() {
                             disabled={addingID === s.id}
                             className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors text-left disabled:opacity-50"
                           >
-                            <span className="text-geist-ink dark:text-white font-medium">{s.name}</span>
+                            <span className="text-geist-ink dark:text-white font-medium">
+                              {s.name}
+                            </span>
                             {addingID === s.id ? (
                               <Loader2 className="h-3.5 w-3.5 text-geist-mute animate-spin" />
                             ) : (

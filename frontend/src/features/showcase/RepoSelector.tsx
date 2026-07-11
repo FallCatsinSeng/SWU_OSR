@@ -140,7 +140,12 @@ export function RepoSelector() {
                   <DropdownMenu
                     align="right"
                     trigger={
-                      <Button size="sm" variant="outline" className="w-full sm:w-auto" disabled={saveShowcase.isPending}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                        disabled={saveShowcase.isPending}
+                      >
                         <Plus className="h-4 w-4 mr-2" />
                         Add <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
                       </Button>

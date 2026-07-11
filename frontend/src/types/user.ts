@@ -1,6 +1,5 @@
 export type Role = 'student' | 'faculty' | 'lpt_officer' | 'super_admin';
 
-
 export interface User {
   id: string;
   nim: string;
@@ -80,4 +79,3 @@ export interface UserSkill {
   endorsers: EndorserPreview[];
   created_at: string;
 }
-
