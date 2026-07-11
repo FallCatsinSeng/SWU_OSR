@@ -5,10 +5,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
-	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/domain"
+	"github.com/FallCatsinSeng/SWU_OSR/backend/internal/service"
 )
 
 // SkillHandler handles skill-related HTTP requests.

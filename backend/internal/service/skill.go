@@ -135,10 +135,10 @@ func toSlug(name string) string {
 	prevDash := false
 	for _, r := range strings.ToLower(name) {
 		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			b.WriteRune(r)
+			_, _ = b.WriteRune(r) // WriteRune on Builder never errors
 			prevDash = false
 		} else if !prevDash && b.Len() > 0 {
-			b.WriteRune('-')
+			_, _ = b.WriteRune('-') // WriteRune on Builder never errors
 			prevDash = true
 		}
 	}
