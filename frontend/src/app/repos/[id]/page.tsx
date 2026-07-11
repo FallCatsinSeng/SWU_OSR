@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
 import type { ShowcaseRepo } from '@/types/showcase';
 import type { ActivityItem } from '@/types/activity';
@@ -80,6 +81,7 @@ function getEventConfig(eventType: string) {
 }
 
 export default function RepoDetailPage({ params }: RepoPageProps) {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<string | null>(null);
@@ -164,11 +166,11 @@ export default function RepoDetailPage({ params }: RepoPageProps) {
     <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Back link */}
       <Link
-        href="/feed"
+        href={user ? "/dashboard" : "/feed"}
         className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-white hover:text-primary-600 dark:hover:text-white mb-6 transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Feed
+        {user ? "Back to Dashboard" : "Back to Feed"}
       </Link>
 
       {/* Repo Header */}

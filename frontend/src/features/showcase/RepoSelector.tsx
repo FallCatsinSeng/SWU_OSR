@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import type { Repository, AcademicTag, ShowcaseSelection, ShowcaseRepo } from '@/types/showcase';
@@ -9,7 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
-import { Check, Globe } from 'lucide-react';
+import { Globe, Plus, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 const ACADEMIC_TAGS: AcademicTag[] = [
   'coursework',
@@ -20,7 +20,6 @@ const ACADEMIC_TAGS: AcademicTag[] = [
 ];
 
 export function RepoSelector() {
-  const [selections, setSelections] = useState<Map<number, AcademicTag>>(new Map());
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -54,41 +53,22 @@ export function RepoSelector() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['showcaseRepos'] });
-      toast('Showcase updated successfully', 'success');
-      setSelections(new Map());
+      toast('Repository added to showcase!', 'success');
     },
     onError: () => {
-      toast('Failed to update showcase', 'error');
+      toast('Failed to add repository', 'error');
     },
   });
 
-  const toggleRepo = (repo: Repository, tag: AcademicTag) => {
-    const next = new Map(selections);
-    if (next.has(repo.id) && next.get(repo.id) === tag) {
-      next.delete(repo.id);
-    } else {
-      next.set(repo.id, tag);
-    }
-    setSelections(next);
-  };
-
-  const handleSave = () => {
-    if (selections.size === 0) return;
-    const items: ShowcaseSelection[] = [];
-    if (repos) {
-      for (const repo of repos) {
-        const tag = selections.get(repo.id);
-        if (tag) {
-          items.push({
-            repo_id: repo.id,
-            repo_name: repo.name,
-            full_name: repo.full_name,
-            tag,
-          });
-        }
-      }
-    }
-    saveShowcase.mutate(items);
+  const handleAdd = (repo: Repository, tag: AcademicTag) => {
+    saveShowcase.mutate([
+      {
+        repo_id: repo.id,
+        repo_name: repo.name,
+        full_name: repo.full_name,
+        tag,
+      },
+    ]);
   };
 
   if (isLoading) {
@@ -126,75 +106,65 @@ export function RepoSelector() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-3">
-        {repos.map((repo) => {
-          const alreadyShowcased = showcasedFullNames.has(repo.full_name);
-          return (
-            <Card
-              key={repo.id}
-              className={
-                alreadyShowcased
-                  ? 'opacity-60'
-                  : selections.has(repo.id)
-                    ? 'border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950'
-                    : ''
-              }
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-gray-900 dark:text-white">{repo.name}</h3>
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded bg-green-50 dark:bg-neutral-800 text-green-700 dark:text-white border border-green-200 dark:border-neutral-700">
-                        <Globe className="h-2.5 w-2.5" />
-                        Public
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 dark:text-white mt-1">
-                      {repo.description || 'No description'}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      {repo.language && <Badge variant="secondary">{repo.language}</Badge>}
-                      {alreadyShowcased && (
-                        <Badge className="bg-green-100 dark:bg-neutral-800 text-green-800 dark:text-white border-green-200 dark:border-neutral-700">
-                          Already in showcase
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  {selections.has(repo.id) && (
-                    <Check className="h-5 w-5 text-blue-600 dark:text-white" />
-                  )}
+      {repos.map((repo) => {
+        const alreadyShowcased = showcasedFullNames.has(repo.full_name);
+        return (
+          <Card key={repo.id} className={alreadyShowcased ? 'opacity-60' : ''}>
+            <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                    {repo.name}
+                  </h3>
+                  <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium rounded bg-green-50 dark:bg-neutral-800 text-green-700 dark:text-white border border-green-200 dark:border-neutral-700">
+                    <Globe className="h-2.5 w-2.5" />
+                    Public
+                  </span>
                 </div>
-                {!alreadyShowcased && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {ACADEMIC_TAGS.map((tag) => (
-                      <button
-                        key={tag}
-                        onClick={() => toggleRepo(repo, tag)}
-                        className={`px-2 py-1 text-xs rounded-full border transition-colors ${
-                          selections.get(repo.id) === tag
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white dark:bg-neutral-800 text-gray-600 dark:text-white border-gray-300 dark:border-neutral-700 hover:border-blue-300'
-                        }`}
-                      >
-                        {tag.replace('_', ' ')}
-                      </button>
-                    ))}
+                <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1 truncate">
+                  {repo.description || 'No description provided.'}
+                </p>
+                {repo.language && (
+                  <div className="mt-2">
+                    <Badge variant="secondary">{repo.language}</Badge>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-      {selections.size > 0 && (
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saveShowcase.isPending}>
-            {saveShowcase.isPending ? 'Saving...' : `Add ${selections.size} to Showcase`}
-          </Button>
-        </div>
-      )}
+              </div>
+
+              <div className="shrink-0 flex items-center">
+                {alreadyShowcased ? (
+                  <Badge className="bg-green-100 dark:bg-neutral-800 text-green-800 dark:text-white border-green-200 dark:border-neutral-700 py-1.5 px-3">
+                    Already in Showcase
+                  </Badge>
+                ) : (
+                  <DropdownMenu
+                    align="right"
+                    trigger={
+                      <Button size="sm" variant="outline" className="w-full sm:w-auto" disabled={saveShowcase.isPending}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
+                      </Button>
+                    }
+                  >
+                    <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-geist-mute dark:text-neutral-500">
+                      Select Category
+                    </div>
+                    {ACADEMIC_TAGS.map((tag) => (
+                      <DropdownMenuItem
+                        key={tag}
+                        onClick={() => handleAdd(repo, tag)}
+                        className="capitalize"
+                      >
+                        {tag.replace('_', ' ')}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenu>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
