@@ -2,6 +2,7 @@
 
 import { useCurrentUser, useLogout } from '@/hooks/useAuth';
 import { ProfileEditForm } from '@/features/profile/ProfileEditForm';
+import { SkillManager } from '@/features/profile/SkillManager';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,14 @@ export default function SettingsPage() {
             Profile
           </h2>
           <ProfileEditForm />
+        </section>
+
+        {/* Skills section */}
+        <section>
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-white uppercase tracking-wider mb-3">
+            Skills
+          </h2>
+          <SkillManager />
         </section>
 
         {/* GitHub connection */}

@@ -7,7 +7,7 @@ import { useCurrentUser } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import api from '@/lib/api';
-import type { Role } from '@/types/user';
+import type { Role, Skill } from '@/types/user';
 import {
   Shield,
   Search,
@@ -20,6 +20,9 @@ import {
   BookOpen,
   Star,
   User,
+  Zap,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -185,12 +188,137 @@ function SkeletonRow() {
   );
 }
 
+const SKILL_CATEGORIES = ['Backend','Frontend','Mobile','DevOps','Database','Tools','AI/ML','General'];
+
+// ─── Skill Admin Panel ────────────────────────────────────────────────────────
+
+function SkillAdminTab() {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState('General');
+  const [deletingID, setDeletingID] = useState<string | null>(null);
+
+  const { data: skills = [], isLoading } = useQuery<Skill[]>({
+    queryKey: ['allSkills'],
+    queryFn: async () => {
+      const { data } = await api.get<{ ok: boolean; data: Skill[] }>('/skills');
+      return data.data ?? [];
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      await api.post('/admin/skills', { name, category });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allSkills'] });
+      setName('');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/admin/skills/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allSkills'] });
+      setDeletingID(null);
+    },
+    onSettled: () => setDeletingID(null),
+  });
+
+  // Group skills by category
+  const grouped = skills.reduce<Record<string, Skill[]>>((acc, s) => {
+    if (!acc[s.category]) acc[s.category] = [];
+    acc[s.category].push(s);
+    return acc;
+  }, {});
+
+  return (
+    <div className="space-y-4">
+      {/* Add skill form */}
+      <Card>
+        <CardContent className="p-4">
+          <p className="text-caption font-semibold text-geist-ink dark:text-white mb-3">Tambah Skill Baru</p>
+          <div className="flex gap-2">
+            <input
+              id="admin-skill-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nama skill (mis. Svelte)"
+              className="flex-1 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-geist-ink dark:text-white placeholder:text-geist-mute dark:placeholder:text-neutral-500 outline-none focus:ring-2 focus:ring-geist-ink/10 dark:focus:ring-white/10"
+            />
+            <select
+              id="admin-skill-category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-geist-ink dark:text-white outline-none"
+            >
+              {SKILL_CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <button
+              id="admin-skill-add"
+              onClick={() => name.trim() && createMutation.mutate()}
+              disabled={createMutation.isPending || !name.trim()}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-geist-ink dark:bg-white text-white dark:text-black text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+            >
+              {createMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+              Tambah
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Skill list grouped by category */}
+      <Card>
+        <div className="p-4 border-b border-neutral-100 dark:border-neutral-800/60 flex items-center justify-between">
+          <span className="text-caption font-semibold text-geist-ink dark:text-white">Master Skill List</span>
+          <span className="text-caption text-geist-mute dark:text-neutral-500">{skills.length} skill</span>
+        </div>
+        {isLoading ? (
+          <div className="p-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-geist-mute" /></div>
+        ) : (
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
+            {Object.entries(grouped).map(([cat, catSkills]) => (
+              <div key={cat} className="px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-geist-mute dark:text-neutral-500 mb-2">{cat}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {catSkills.map((s) => (
+                    <span
+                      key={s.id}
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs font-medium text-geist-ink dark:text-white"
+                    >
+                      {s.name}
+                      <button
+                        onClick={() => { setDeletingID(s.id); deleteMutation.mutate(s.id); }}
+                        disabled={deletingID === s.id}
+                        className="p-0.5 rounded-full text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-40"
+                        title={`Hapus ${s.name}`}
+                      >
+                        {deletingID === s.id ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Trash2 className="h-2.5 w-2.5" />}
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
   const router = useRouter();
   const { data: currentUser, isLoading: isLoadingUser } = useCurrentUser();
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<'users' | 'skills'>('users');
 
   // Guard: redirect non-admins
   useEffect(() => {
@@ -253,6 +381,29 @@ export default function AdminPage() {
         </p>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl p-1 w-fit">
+        {(['users', 'skills'] as const).map((tab) => (
+          <button
+            key={tab}
+            id={`admin-tab-${tab}`}
+            onClick={() => setActiveTab(tab)}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === tab
+                ? 'bg-white dark:bg-neutral-700 text-geist-ink dark:text-white shadow-sm'
+                : 'text-geist-mute dark:text-neutral-400 hover:text-geist-ink dark:hover:text-white'
+            }`}
+          >
+            {tab === 'users' ? <Users className="h-3.5 w-3.5" /> : <Zap className="h-3.5 w-3.5" />}
+            {tab === 'users' ? 'Pengguna' : 'Skills'}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'skills' ? (
+        <SkillAdminTab />
+      ) : (
+        <>
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {(Object.keys(ROLE_CONFIG) as Role[]).map((role) => {
@@ -431,6 +582,8 @@ export default function AdminPage() {
           </p>
         </div>
       </Card>
+      </>
+      )}
     </div>
   );
 }

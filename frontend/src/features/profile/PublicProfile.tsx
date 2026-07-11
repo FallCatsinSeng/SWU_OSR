@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { resolveUploadUrl, sanitizeUrl } from '@/lib/url';
-import type { PublicProfile as PublicProfileType, AcademicIdentity } from '@/types/user';
+import type { PublicProfile as PublicProfileType, AcademicIdentity, UserSkill } from '@/types/user';
 import { useCurrentUser } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogHeader, DialogTitle, DialogContent } from '@/components/ui/dialog';
+import { SkillSection } from './SkillSection';
 import {
   ExternalLink,
   MessageSquare,
@@ -55,6 +56,23 @@ export function PublicProfile({ alias }: PublicProfileProps) {
       return data.data;
     },
   });
+
+  // Fetch skills for this profile
+  const {
+    data: skills,
+    refetch: refetchSkills,
+  } = useQuery<UserSkill[]>({
+    queryKey: ['skills', profile?.id],
+    queryFn: async () => {
+      const { data } = await api.get<{ ok: boolean; data: UserSkill[] }>(
+        `/users/${profile!.id}/skills`
+      );
+      return data.data ?? [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const isOwnProfile = !!currentUser && currentUser.alias === alias;
 
   const handleViewIdentity = async () => {
     setIdentityLoading(true);
@@ -279,6 +297,31 @@ export function PublicProfile({ alias }: PublicProfileProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Skills */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            ⚡ Skills
+            {isOwnProfile && (
+              <a
+                href="/settings#skills"
+                className="ml-auto text-[11px] font-normal text-geist-mute dark:text-neutral-500 hover:text-geist-ink dark:hover:text-white transition-colors"
+              >
+                Manage →
+              </a>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SkillSection
+            userID={profile.id}
+            skills={skills ?? []}
+            isOwn={isOwnProfile}
+            onRefetch={() => refetchSkills()}
+          />
+        </CardContent>
+      </Card>
 
       {/* Showcase Repos */}
       {profile.showcase_repos && profile.showcase_repos.length > 0 && (

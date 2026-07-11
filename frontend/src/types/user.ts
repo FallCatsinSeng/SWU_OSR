@@ -50,3 +50,34 @@ export interface AcademicIdentity {
   major: string;
   semester: number;
 }
+
+// ─── Skill Types ─────────────────────────────────────────────────────────────
+
+export interface Skill {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  created_at: string;
+}
+
+export interface EndorserPreview {
+  user_id: string;
+  alias: string;
+  avatar_url: string;
+  role: Role;
+}
+
+export interface UserSkill {
+  id: string;
+  user_id: string;
+  skill: Skill;
+  endorse_count: number;
+  peer_count: number;
+  faculty_count: number;
+  lpt_count: number;
+  is_endorsed_by_me: boolean;
+  endorsers: EndorserPreview[];
+  created_at: string;
+}
+
