@@ -14,10 +14,29 @@ import type {
   LeaderboardResult,
   UserPointsSummary,
 } from "@/types/leaderboard";
-import { Trophy, Info, GitBranch, GitPullRequest, MessageSquare, FolderGit2, Flame } from "lucide-react";
+import {
+  Trophy,
+  Info,
+  GitBranch,
+  GitPullRequest,
+  MessageSquare,
+  FolderGit2,
+  Flame,
+  GitMerge,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+
+const QUARTER_LABELS: Record<number, string> = {
+  1: "Q1 — Jan to Mar",
+  2: "Q2 — Apr to Jun",
+  3: "Q3 — Jul to Sep",
+  4: "Q4 — Oct to Dec",
+};
 
 export default function LeaderboardPage() {
-  const [period, setPeriod] = useState<LeaderboardPeriod>("weekly");
+  const [period, setPeriod] = useState<LeaderboardPeriod>("quarterly");
+  const [showPointsInfo, setShowPointsInfo] = useState(false);
   const { data: user } = useCurrentUser();
 
   const {
@@ -47,6 +66,13 @@ export default function LeaderboardPage() {
     enabled: !!user,
   });
 
+  const periodLabel =
+    period === "quarterly"
+      ? leaderboard?.quarter
+        ? QUARTER_LABELS[leaderboard.quarter] ?? "This Quarter"
+        : "This Quarter"
+      : "All Time";
+
   return (
     <div className="mx-auto max-w-geist-page px-6 py-8">
       {/* Header */}
@@ -58,7 +84,8 @@ export default function LeaderboardPage() {
               Leaderboard
             </h1>
             <p className="text-body-sm text-geist-body dark:text-neutral-400 mt-1">
-              Top contributors ranked by activity points.
+              Top contributors ranked by activity points —{" "}
+              <span className="font-medium text-geist-ink dark:text-white">{periodLabel}</span>
             </p>
           </div>
           <PeriodToggle period={period} onChange={setPeriod} />
@@ -69,37 +96,74 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Point system info */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Info className="h-4 w-4 text-geist-mute dark:text-neutral-500 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-caption text-geist-body dark:text-neutral-400 mb-2">
-                <span className="font-medium text-geist-ink dark:text-white">How points work:</span>
-              </p>
-              <div className="flex flex-wrap gap-3 text-caption text-geist-mute dark:text-neutral-500">
-                <span className="inline-flex items-center gap-1">
-                  <GitBranch className="h-3 w-3" /> Push: 3 pts
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <GitPullRequest className="h-3 w-3" /> PR: 5 pts
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <FolderGit2 className="h-3 w-3" /> Showcase: 10 pts
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MessageSquare className="h-3 w-3" /> Thread: 2 pts
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MessageSquare className="h-3 w-3" /> Comment: 1 pt
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Flame className="h-3 w-3" /> 7-day streak: +15 pts
-                </span>
+      <Card className="mb-6 overflow-hidden">
+        <button
+          onClick={() => setShowPointsInfo(!showPointsInfo)}
+          className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors text-left"
+        >
+          <div className="flex items-center gap-3">
+            <Info className="h-4 w-4 text-geist-mute dark:text-neutral-500 shrink-0" />
+            <p className="text-caption font-medium text-geist-ink dark:text-white">
+              How points work
+            </p>
+          </div>
+          {showPointsInfo ? (
+            <ChevronUp className="h-4 w-4 text-geist-mute dark:text-neutral-500" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-geist-mute dark:text-neutral-500" />
+          )}
+        </button>
+
+        {showPointsInfo && (
+          <CardContent className="px-4 pb-4 pt-1 border-t border-neutral-100 dark:border-neutral-800/50">
+            <div className="space-y-5 mt-2">
+              <div>
+                <p className="text-caption font-semibold text-geist-ink dark:text-white mb-2">Base Points</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-2 text-caption text-geist-mute dark:text-neutral-400">
+                  <span className="inline-flex items-center gap-1.5">
+                    <GitBranch className="h-3 w-3 text-blue-500" /> Push: 3 pts <span className="text-[10px] opacity-70">(capped/day)</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <GitPullRequest className="h-3 w-3 text-violet-500" /> PR Opened: 2 pts
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <GitMerge className="h-3 w-3 text-emerald-500" /> PR Merged: 12 pts
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <FolderGit2 className="h-3 w-3 text-orange-500" /> Showcase: 10 pts
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <MessageSquare className="h-3 w-3 text-teal-500" /> Thread: 2 pts
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <MessageSquare className="h-3 w-3 text-cyan-500" /> Comment: 1 pt
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 col-span-2 sm:col-span-1">
+                    <Flame className="h-3 w-3 text-orange-500" /> 7-day streak: +20 pts
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-caption font-semibold text-geist-ink dark:text-white mb-1.5 flex items-center gap-1.5">
+                  🌟 Repo Reputation (Dynamic Scoring)
+                </p>
+                <p className="text-caption text-geist-mute dark:text-neutral-400 leading-relaxed">
+                  Points for Pushes and Merged PRs are dynamically multiplied based on the popularity (GitHub Stars) of the destination repository. Contributing to highly-starred repos yields up to a <strong className="text-geist-ink dark:text-white font-medium">5.0x multiplier</strong>.
+                </p>
+              </div>
+
+              <div>
+                <p className="text-caption font-semibold text-geist-ink dark:text-white mb-1.5 flex items-center gap-1.5">
+                  🛡️ Anti-Spam & Anomaly Detection
+                </p>
+                <p className="text-caption text-geist-mute dark:text-neutral-400 leading-relaxed">
+                  Our system automatically detects unnatural burst activity using Z-Score anomaly detection. Spamming commits will result in point penalties. Quarterly and daily caps are also actively enforced to ensure fair competition.
+                </p>
               </div>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
 
       {/* Leaderboard table */}
