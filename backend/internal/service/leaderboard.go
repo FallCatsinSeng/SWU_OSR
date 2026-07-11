@@ -117,18 +117,47 @@ func (s *leaderboardService) RefreshLeaderboard(ctx context.Context, period doma
 
 // computeAndStoreUserPoints calculates and persists a user's points.
 // Anti-gaming measures:
-//  1. Push events: per-repo quarterly cap (MaxPushPerRepoPerQuarter) + daily points cap (MaxPointsPerDay)
-//  2. PR events: only MERGED PRs get full PointsPRMerged, opened PRs get small PointsPROpened
-//  3. Per-repo quarterly cap on PR merged events (MaxPRPerRepoPerQuarter)
+//  1. Push: per-repo quarterly cap + daily cap + anomaly Z-Score penalty
+//  2. PR: only MERGED PRs get full PointsPRMerged
+//  3. Both push and merged PR points are weighted by repo star multiplier (Repo Reputation)
+//  4. Per-repo quarterly cap on PR merged events (MaxPRPerRepoPerQuarter)
 func (s *leaderboardService) computeAndStoreUserPoints(ctx context.Context, userID uuid.UUID, period domain.LeaderboardPeriod, from, to time.Time) error {
-	// --- Per-repo capped push count ---
-	pushPerRepo, err := s.repo.CountUserPushEventsPerRepo(ctx, userID, from, to)
+	// --- Anomaly coefficient (Z-Score burst detection, runs in PostgreSQL) ---
+	anomalyCoeff, err := s.repo.GetUserAnomalyCoefficient(ctx, userID)
+	if err != nil {
+		anomalyCoeff = 1.0 // fail-open: jika gagal, tidak terapkan penalti
+	}
+
+	// --- Per-repo weighted push count (dengan star multiplier) ---
+	weightedPushPerRepo, err := s.repo.CountUserWeightedPushPerRepo(ctx, userID, from, to)
 	if err != nil {
 		return err
 	}
-	pushCount := s.applyCappedCount(pushPerRepo, domain.MaxPushPerRepoPerQuarter)
 
-	// --- PR opened (small points, no per-repo cap needed for quarterly) ---
+	// Apply per-repo quarterly cap + star multiplier + anomaly coefficient
+	pushPtsFloat := 0.0
+	for _, wrc := range weightedPushPerRepo {
+		capped := wrc.Count
+		if capped > domain.MaxPushPerRepoPerQuarter {
+			capped = domain.MaxPushPerRepoPerQuarter
+		}
+		multiplier := domain.StarMultiplier(wrc.Stars)
+		pushPtsFloat += float64(capped) * float64(domain.PointsPush) * multiplier
+	}
+	// Terapkan daily cap (cegah point explosion dari multi-repo)
+	days := int(to.Sub(from).Hours()/24) + 1
+	if days < 1 {
+		days = 1
+	}
+	maxPushPts := float64((domain.MaxPointsPerDay / domain.PointsPush) * days * domain.PointsPush)
+	if pushPtsFloat > maxPushPts {
+		pushPtsFloat = maxPushPts
+	}
+	// Terapkan anomaly penalty ke push points
+	pushPtsFloat *= anomalyCoeff
+	pushPts := int(pushPtsFloat)
+
+	// --- PR opened (poin kecil, flat, tidak ada star multiplier untuk mencegah spam) ---
 	prOpenedPerRepo, err := s.repo.CountUserPREventsPerRepo(ctx, userID, from, to)
 	if err != nil {
 		return err
@@ -137,18 +166,26 @@ func (s *leaderboardService) computeAndStoreUserPoints(ctx context.Context, user
 	for _, rc := range prOpenedPerRepo {
 		prOpenedCount += rc.Count
 	}
-	// Cap total opened PRs (to avoid spamming draft PRs)
 	const maxOpenedPRsPerQuarter = 50
 	if prOpenedCount > maxOpenedPRsPerQuarter {
 		prOpenedCount = maxOpenedPRsPerQuarter
 	}
 
-	// --- PR merged (full points, per-repo cap) ---
-	mergedPerRepo, err := s.repo.CountUserMergedPREventsPerRepo(ctx, userID, from, to)
+	// --- PR merged (poin penuh + star multiplier — kontribusi nyata ke repo penting) ---
+	weightedMergedPerRepo, err := s.repo.CountUserWeightedMergedPRPerRepo(ctx, userID, from, to)
 	if err != nil {
 		return err
 	}
-	mergedCount := s.applyCappedCount(mergedPerRepo, domain.MaxPRPerRepoPerQuarter)
+	mergedPtsFloat := 0.0
+	for _, wrc := range weightedMergedPerRepo {
+		capped := wrc.Count
+		if capped > domain.MaxPRPerRepoPerQuarter {
+			capped = domain.MaxPRPerRepoPerQuarter
+		}
+		multiplier := domain.StarMultiplier(wrc.Stars)
+		mergedPtsFloat += float64(capped) * float64(domain.PointsPRMerged) * multiplier
+	}
+	prPts := int(mergedPtsFloat) + (prOpenedCount * domain.PointsPROpened)
 
 	threadCount, err := s.repo.CountUserThreads(ctx, userID, from, to)
 	if err != nil {
@@ -170,16 +207,10 @@ func (s *leaderboardService) computeAndStoreUserPoints(ctx context.Context, user
 		streak = 0
 	}
 
-	// Calculate points with daily cap applied for push
-	pushPts := s.capDailyPoints(pushCount, domain.PointsPush, from, to)
-
-	// PR points = merged (full) + opened (small)
-	prPts := (mergedCount * domain.PointsPRMerged) + (prOpenedCount * domain.PointsPROpened)
-
 	forumPts := (threadCount * domain.PointsThreadCreated) + (commentCount * domain.PointsCommentPosted)
 	otherPts := showcaseCount * domain.PointsShowcaseAdded
 
-	// Add streak bonus if threshold met
+	// Streak bonus
 	if streak >= domain.StreakThresholdDays {
 		streakBonuses := streak / domain.StreakThresholdDays
 		otherPts += streakBonuses * domain.PointsStreakBonus
@@ -187,9 +218,9 @@ func (s *leaderboardService) computeAndStoreUserPoints(ctx context.Context, user
 
 	totalPts := pushPts + prPts + forumPts + otherPts
 
-	// Persist
 	return s.repo.UpsertPoints(ctx, userID, period, from, to, pushPts, prPts, forumPts, otherPts, totalPts, streak)
 }
+
 
 // applyCappedCount applies a flat cap to event counts per repo.
 // For each repo, only up to maxPerRepo events count.

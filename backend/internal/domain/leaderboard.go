@@ -80,6 +80,35 @@ type RepoEventCount struct {
 	Count  int
 }
 
+// WeightedRepoEventCount holds event counts with repository reputation (stars).
+// Used by the scoring engine to apply the Repo Reputation multiplier.
+type WeightedRepoEventCount struct {
+	RepoID uuid.UUID
+	Count  int
+	Stars  int // GitHub stargazers_count from webhook metadata
+}
+
+// StarMultiplier returns the scoring multiplier based on repository star count.
+// This is the core of the Repo Reputation algorithm (lightweight PageRank adaptation):
+// repositories with more stars are more "important" in the contribution graph,
+// so contributions to them receive a higher weight.
+//
+// Tier thresholds are intentionally coarse to avoid micro-optimization by users.
+func StarMultiplier(stars int) float64 {
+	switch {
+	case stars >= 1000:
+		return 5.0 // Proyek open source besar/populer
+	case stars >= 100:
+		return 3.0 // Open source dengan komunitas aktif
+	case stars >= 10:
+		return 2.0 // Proyek dengan beberapa pengikut
+	case stars >= 1:
+		return 1.5 // Ada sedikit peminat
+	default:
+		return 1.0 // Repo pribadi/belum ada star (base rate)
+	}
+}
+
 // BehavioralStats holds activity timing stats used for behavioral badges.
 type BehavioralStats struct {
 	// NightOwlCount: commits/pushes done between 00:00–04:00 local server time
@@ -119,6 +148,19 @@ type LeaderboardRepository interface {
 	// CountUserMergedPREventsPerRepo returns per-repo counts of merged PRs only.
 	// A PR is considered merged when metadata->>'action' = 'closed' AND metadata->>'merged' = 'true'.
 	CountUserMergedPREventsPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]RepoEventCount, error)
+
+	// CountUserWeightedPushPerRepo returns per-repo push counts WITH the star count from metadata.
+	// Stars are read from metadata->>'repo_stars' stored by the aggregator on each webhook.
+	// For legacy rows without repo_stars, stars defaults to 0 (multiplier = 1.0).
+	CountUserWeightedPushPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]WeightedRepoEventCount, error)
+
+	// CountUserWeightedMergedPRPerRepo returns per-repo merged PR counts WITH star count from metadata.
+	CountUserWeightedMergedPRPerRepo(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]WeightedRepoEventCount, error)
+
+	// GetUserAnomalyCoefficient computes a penalty multiplier [0.1, 1.0] for push events.
+	// Uses 30-day rolling AVG+STDDEV to detect burst activity (Z-Score > 2 = anomaly).
+	// Returns 1.0 (no penalty) if data is insufficient or no anomaly detected.
+	GetUserAnomalyCoefficient(ctx context.Context, userID uuid.UUID) (float64, error)
 
 	// GetUserBehavioralStats returns timing-based activity stats for badge calculation.
 	GetUserBehavioralStats(ctx context.Context, userID uuid.UUID, from, to time.Time) (*BehavioralStats, error)

@@ -14,33 +14,39 @@ import (
 
 // mockLeaderboardRepo implements domain.LeaderboardRepository for testing.
 type mockLeaderboardRepo struct {
-	entries             []domain.LeaderboardEntry
-	userPoints          map[uuid.UUID]*domain.UserPointsSummary
-	userStreaks          map[uuid.UUID]int
-	upsertedPoints      map[uuid.UUID]int
-	activeUserIDs       []uuid.UUID
-	pushPerRepo         map[uuid.UUID][]domain.RepoEventCount
-	prPerRepo           map[uuid.UUID][]domain.RepoEventCount
-	mergedPRPerRepo     map[uuid.UUID][]domain.RepoEventCount
-	threadCounts        map[uuid.UUID]int
-	commentCounts       map[uuid.UUID]int
-	showcaseCounts      map[uuid.UUID]int
-	behavioralStats     map[uuid.UUID]*domain.BehavioralStats
+	entries                 []domain.LeaderboardEntry
+	userPoints             map[uuid.UUID]*domain.UserPointsSummary
+	userStreaks             map[uuid.UUID]int
+	upsertedPoints         map[uuid.UUID]int
+	activeUserIDs          []uuid.UUID
+	pushPerRepo            map[uuid.UUID][]domain.RepoEventCount
+	prPerRepo              map[uuid.UUID][]domain.RepoEventCount
+	mergedPRPerRepo        map[uuid.UUID][]domain.RepoEventCount
+	weightedPushPerRepo    map[uuid.UUID][]domain.WeightedRepoEventCount
+	weightedMergedPerRepo  map[uuid.UUID][]domain.WeightedRepoEventCount
+	anomalyCoeff           map[uuid.UUID]float64
+	threadCounts           map[uuid.UUID]int
+	commentCounts          map[uuid.UUID]int
+	showcaseCounts         map[uuid.UUID]int
+	behavioralStats        map[uuid.UUID]*domain.BehavioralStats
 }
 
 func newMockLeaderboardRepo() *mockLeaderboardRepo {
 	return &mockLeaderboardRepo{
-		entries:          []domain.LeaderboardEntry{},
-		userPoints:       make(map[uuid.UUID]*domain.UserPointsSummary),
-		userStreaks:       make(map[uuid.UUID]int),
-		upsertedPoints:   make(map[uuid.UUID]int),
-		pushPerRepo:      make(map[uuid.UUID][]domain.RepoEventCount),
-		prPerRepo:        make(map[uuid.UUID][]domain.RepoEventCount),
-		mergedPRPerRepo:  make(map[uuid.UUID][]domain.RepoEventCount),
-		threadCounts:     make(map[uuid.UUID]int),
-		commentCounts:    make(map[uuid.UUID]int),
-		showcaseCounts:   make(map[uuid.UUID]int),
-		behavioralStats:  make(map[uuid.UUID]*domain.BehavioralStats),
+		entries:                []domain.LeaderboardEntry{},
+		userPoints:             make(map[uuid.UUID]*domain.UserPointsSummary),
+		userStreaks:            make(map[uuid.UUID]int),
+		upsertedPoints:        make(map[uuid.UUID]int),
+		pushPerRepo:           make(map[uuid.UUID][]domain.RepoEventCount),
+		prPerRepo:             make(map[uuid.UUID][]domain.RepoEventCount),
+		mergedPRPerRepo:       make(map[uuid.UUID][]domain.RepoEventCount),
+		weightedPushPerRepo:   make(map[uuid.UUID][]domain.WeightedRepoEventCount),
+		weightedMergedPerRepo: make(map[uuid.UUID][]domain.WeightedRepoEventCount),
+		anomalyCoeff:          make(map[uuid.UUID]float64),
+		threadCounts:          make(map[uuid.UUID]int),
+		commentCounts:         make(map[uuid.UUID]int),
+		showcaseCounts:        make(map[uuid.UUID]int),
+		behavioralStats:       make(map[uuid.UUID]*domain.BehavioralStats),
 	}
 }
 
@@ -96,6 +102,21 @@ func (m *mockLeaderboardRepo) CountUserPREventsPerRepo(_ context.Context, userID
 
 func (m *mockLeaderboardRepo) CountUserMergedPREventsPerRepo(_ context.Context, userID uuid.UUID, _, _ time.Time) ([]domain.RepoEventCount, error) {
 	return m.mergedPRPerRepo[userID], nil
+}
+
+func (m *mockLeaderboardRepo) CountUserWeightedPushPerRepo(_ context.Context, userID uuid.UUID, _, _ time.Time) ([]domain.WeightedRepoEventCount, error) {
+	return m.weightedPushPerRepo[userID], nil
+}
+
+func (m *mockLeaderboardRepo) CountUserWeightedMergedPRPerRepo(_ context.Context, userID uuid.UUID, _, _ time.Time) ([]domain.WeightedRepoEventCount, error) {
+	return m.weightedMergedPerRepo[userID], nil
+}
+
+func (m *mockLeaderboardRepo) GetUserAnomalyCoefficient(_ context.Context, userID uuid.UUID) (float64, error) {
+	if coeff, ok := m.anomalyCoeff[userID]; ok {
+		return coeff, nil
+	}
+	return 1.0, nil // default: no penalty
 }
 
 func (m *mockLeaderboardRepo) GetUserBehavioralStats(_ context.Context, userID uuid.UUID, _, _ time.Time) (*domain.BehavioralStats, error) {
@@ -332,16 +353,67 @@ func TestComputePoints_MergedPRScoresHigher(t *testing.T) {
 	userID := uuid.New()
 	repoID := uuid.New()
 
-	// User opened 5 PRs, 3 of them merged
+	// 5 pushes ke repo 0 stars (multiplier 1.0)
+	repo.weightedPushPerRepo[userID] = []domain.WeightedRepoEventCount{
+		{RepoID: repoID, Count: 5, Stars: 0},
+	}
+	// 3 PR merged ke repo 0 stars (multiplier 1.0)
+	repo.weightedMergedPerRepo[userID] = []domain.WeightedRepoEventCount{
+		{RepoID: repoID, Count: 3, Stars: 0},
+	}
+	// 5 PR opened
 	repo.prPerRepo[userID] = []domain.RepoEventCount{{RepoID: repoID, Count: 5}}
-	repo.mergedPRPerRepo[userID] = []domain.RepoEventCount{{RepoID: repoID, Count: 3}}
 	repo.activeUserIDs = []uuid.UUID{userID}
 
 	err := svc.RefreshLeaderboard(context.Background(), domain.PeriodQuarterly)
 	require.NoError(t, err)
 
-	// Expected: 3 merged * 12 pts + 5 opened * 2 pts = 36 + 10 = 46 PR pts
-	// Plus any push/forum/other (all 0 in this test)
+	// Expected PR pts: 3*12*1.0 + 5*2 = 36 + 10 = 46
+	// Expected push pts: 5*3*1.0 = 15
+	// Total = 61
 	totalPts := repo.upsertedPoints[userID]
-	assert.Equal(t, 3*domain.PointsPRMerged+5*domain.PointsPROpened, totalPts)
+	expectedPR := 3*domain.PointsPRMerged + 5*domain.PointsPROpened
+	expectedPush := 5 * domain.PointsPush
+	assert.Equal(t, expectedPR+expectedPush, totalPts)
+}
+
+func TestComputePoints_HighStarRepoScoresMore(t *testing.T) {
+	svc, repo := setupLeaderboardService()
+
+	userID := uuid.New()
+	repoID := uuid.New()
+
+	// 5 pushes ke repo dengan 500 stars (multiplier 3.0)
+	repo.weightedPushPerRepo[userID] = []domain.WeightedRepoEventCount{
+		{RepoID: repoID, Count: 5, Stars: 500},
+	}
+	repo.activeUserIDs = []uuid.UUID{userID}
+
+	err := svc.RefreshLeaderboard(context.Background(), domain.PeriodQuarterly)
+	require.NoError(t, err)
+
+	// 5 pushes × 3 pts × 3.0 multiplier = 45 pts
+	totalPts := repo.upsertedPoints[userID]
+	assert.Equal(t, int(float64(5*domain.PointsPush)*domain.StarMultiplier(500)), totalPts)
+}
+
+func TestComputePoints_AnomalyPenaltyApplied(t *testing.T) {
+	svc, repo := setupLeaderboardService()
+
+	userID := uuid.New()
+	repoID := uuid.New()
+
+	repo.weightedPushPerRepo[userID] = []domain.WeightedRepoEventCount{
+		{RepoID: repoID, Count: 10, Stars: 0},
+	}
+	repo.activeUserIDs = []uuid.UUID{userID}
+	// Simulasi anomaly: hanya 50% poin yang dihitung
+	repo.anomalyCoeff[userID] = 0.5
+
+	err := svc.RefreshLeaderboard(context.Background(), domain.PeriodQuarterly)
+	require.NoError(t, err)
+
+	// 10 pushes × 3 pts × 1.0 multiplier × 0.5 anomaly = 15 pts
+	totalPts := repo.upsertedPoints[userID]
+	assert.Equal(t, 15, totalPts)
 }
