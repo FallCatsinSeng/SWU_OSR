@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type { UserStats } from "@/types/user";
+import type { UserStats } from '@/types/user';
 import {
   GitBranch,
   Flame,
@@ -12,63 +12,74 @@ import {
   Lock,
   Sparkles,
   HelpCircle,
-} from "lucide-react";
+} from 'lucide-react';
 
 // ─── Tier System ──────────────────────────────────────────────────────────────
 
-type Tier = "iron" | "bronze" | "silver" | "gold" | "platinum" | "diamond";
+type Tier = 'iron' | 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 
 const TIER_META: Record<
   Tier,
-  { label: string; textClass: string; bgClass: string; borderClass: string; glowClass: string; badgeStyle: string }
+  {
+    label: string;
+    textClass: string;
+    bgClass: string;
+    borderClass: string;
+    glowClass: string;
+    badgeStyle: string;
+  }
 > = {
   iron: {
-    label: "Iron",
-    textClass: "text-zinc-500 dark:text-zinc-400",
-    bgClass: "bg-zinc-100 dark:bg-zinc-800/60",
-    borderClass: "border-zinc-300 dark:border-zinc-600",
-    glowClass: "",
-    badgeStyle: "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300",
+    label: 'Iron',
+    textClass: 'text-zinc-500 dark:text-zinc-400',
+    bgClass: 'bg-zinc-100 dark:bg-zinc-800/60',
+    borderClass: 'border-zinc-300 dark:border-zinc-600',
+    glowClass: '',
+    badgeStyle: 'bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300',
   },
   bronze: {
-    label: "Bronze",
-    textClass: "text-amber-700 dark:text-amber-500",
-    bgClass: "bg-amber-50 dark:bg-amber-950/40",
-    borderClass: "border-amber-300 dark:border-amber-700",
-    glowClass: "",
-    badgeStyle: "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400",
+    label: 'Bronze',
+    textClass: 'text-amber-700 dark:text-amber-500',
+    bgClass: 'bg-amber-50 dark:bg-amber-950/40',
+    borderClass: 'border-amber-300 dark:border-amber-700',
+    glowClass: '',
+    badgeStyle: 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400',
   },
   silver: {
-    label: "Silver",
-    textClass: "text-slate-600 dark:text-slate-300",
-    bgClass: "bg-slate-50 dark:bg-slate-800/40",
-    borderClass: "border-slate-300 dark:border-slate-500",
-    glowClass: "",
-    badgeStyle: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300",
+    label: 'Silver',
+    textClass: 'text-slate-600 dark:text-slate-300',
+    bgClass: 'bg-slate-50 dark:bg-slate-800/40',
+    borderClass: 'border-slate-300 dark:border-slate-500',
+    glowClass: '',
+    badgeStyle: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
   },
   gold: {
-    label: "Gold",
-    textClass: "text-yellow-600 dark:text-yellow-400",
-    bgClass: "bg-yellow-50 dark:bg-yellow-950/30",
-    borderClass: "border-yellow-400 dark:border-yellow-600",
-    glowClass: "shadow-[0_0_10px_rgba(234,179,8,0.2)] dark:shadow-[0_0_10px_rgba(234,179,8,0.15)]",
-    badgeStyle: "bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400",
+    label: 'Gold',
+    textClass: 'text-yellow-600 dark:text-yellow-400',
+    bgClass: 'bg-yellow-50 dark:bg-yellow-950/30',
+    borderClass: 'border-yellow-400 dark:border-yellow-600',
+    glowClass: 'shadow-[0_0_10px_rgba(234,179,8,0.2)] dark:shadow-[0_0_10px_rgba(234,179,8,0.15)]',
+    badgeStyle: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400',
   },
   platinum: {
-    label: "Platinum",
-    textClass: "text-cyan-600 dark:text-cyan-300",
-    bgClass: "bg-cyan-50 dark:bg-cyan-950/30",
-    borderClass: "border-cyan-400 dark:border-cyan-600",
-    glowClass: "shadow-[0_0_14px_rgba(34,211,238,0.25)] dark:shadow-[0_0_14px_rgba(34,211,238,0.2)]",
-    badgeStyle: "bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-300",
+    label: 'Platinum',
+    textClass: 'text-cyan-600 dark:text-cyan-300',
+    bgClass: 'bg-cyan-50 dark:bg-cyan-950/30',
+    borderClass: 'border-cyan-400 dark:border-cyan-600',
+    glowClass:
+      'shadow-[0_0_14px_rgba(34,211,238,0.25)] dark:shadow-[0_0_14px_rgba(34,211,238,0.2)]',
+    badgeStyle: 'bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-300',
   },
   diamond: {
-    label: "Diamond",
-    textClass: "text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500",
-    bgClass: "bg-gradient-to-br from-violet-50 via-fuchsia-50 to-pink-50 dark:from-violet-950/30 dark:via-fuchsia-950/30 dark:to-pink-950/30",
-    borderClass: "border-fuchsia-400 dark:border-fuchsia-600",
-    glowClass: "shadow-[0_0_18px_rgba(217,70,239,0.3)] dark:shadow-[0_0_18px_rgba(217,70,239,0.2)]",
-    badgeStyle: "bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/50 dark:to-pink-900/50 text-fuchsia-700 dark:text-fuchsia-300",
+    label: 'Diamond',
+    textClass:
+      'text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500',
+    bgClass:
+      'bg-gradient-to-br from-violet-50 via-fuchsia-50 to-pink-50 dark:from-violet-950/30 dark:via-fuchsia-950/30 dark:to-pink-950/30',
+    borderClass: 'border-fuchsia-400 dark:border-fuchsia-600',
+    glowClass: 'shadow-[0_0_18px_rgba(217,70,239,0.3)] dark:shadow-[0_0_18px_rgba(217,70,239,0.2)]',
+    badgeStyle:
+      'bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/50 dark:to-pink-900/50 text-fuchsia-700 dark:text-fuchsia-300',
   },
 };
 
@@ -92,62 +103,62 @@ interface BadgeCategoryConfig {
 const BADGE_CATEGORIES: BadgeCategoryConfig[] = [
   // ── Commit & Code ──
   {
-    id: "code",
+    id: 'code',
     icon: GitBranch,
-    description: "Commit contributions across all repositories",
-    unit: "commits",
+    description: 'Commit contributions across all repositories',
+    unit: 'commits',
     tiers: [
-      { tier: "iron",     threshold: 1,    label: "Code Initiate" },
-      { tier: "bronze",   threshold: 25,   label: "Code Apprentice" },
-      { tier: "silver",   threshold: 100,  label: "Code Journeyman" },
-      { tier: "gold",     threshold: 500,  label: "Code Master" },
-      { tier: "platinum", threshold: 1000, label: "Code Virtuoso" },
-      { tier: "diamond",  threshold: 5000, label: "Code Deity" },
+      { tier: 'iron', threshold: 1, label: 'Code Initiate' },
+      { tier: 'bronze', threshold: 25, label: 'Code Apprentice' },
+      { tier: 'silver', threshold: 100, label: 'Code Journeyman' },
+      { tier: 'gold', threshold: 500, label: 'Code Master' },
+      { tier: 'platinum', threshold: 1000, label: 'Code Virtuoso' },
+      { tier: 'diamond', threshold: 5000, label: 'Code Deity' },
     ],
     getValue: (stats) => stats.total_commits,
   },
   // ── Streak ──
   {
-    id: "streak",
+    id: 'streak',
     icon: Flame,
-    description: "Consecutive days of contribution",
-    unit: "days streak",
+    description: 'Consecutive days of contribution',
+    unit: 'days streak',
     tiers: [
-      { tier: "iron",     threshold: 3,   label: "Warm Up" },
-      { tier: "bronze",   threshold: 7,   label: "On Fire" },
-      { tier: "silver",   threshold: 14,  label: "Hot Streak" },
-      { tier: "gold",     threshold: 30,  label: "Blazing" },
-      { tier: "platinum", threshold: 60,  label: "Inferno" },
-      { tier: "diamond",  threshold: 100, label: "Eternal Flame" },
+      { tier: 'iron', threshold: 3, label: 'Warm Up' },
+      { tier: 'bronze', threshold: 7, label: 'On Fire' },
+      { tier: 'silver', threshold: 14, label: 'Hot Streak' },
+      { tier: 'gold', threshold: 30, label: 'Blazing' },
+      { tier: 'platinum', threshold: 60, label: 'Inferno' },
+      { tier: 'diamond', threshold: 100, label: 'Eternal Flame' },
     ],
     getValue: (stats) => stats.current_streak,
   },
   // ── Community (Forum) ──
   {
-    id: "community",
+    id: 'community',
     icon: MessageSquare,
-    description: "Forum threads + comments posted",
-    unit: "forum posts",
+    description: 'Forum threads + comments posted',
+    unit: 'forum posts',
     tiers: [
-      { tier: "iron",     threshold: 5,   label: "Voice" },
-      { tier: "bronze",   threshold: 20,  label: "Contributor" },
-      { tier: "silver",   threshold: 75,  label: "Communicator" },
-      { tier: "gold",     threshold: 200, label: "Community Pillar" },
-      { tier: "platinum", threshold: 500, label: "Community Legend" },
+      { tier: 'iron', threshold: 5, label: 'Voice' },
+      { tier: 'bronze', threshold: 20, label: 'Contributor' },
+      { tier: 'silver', threshold: 75, label: 'Communicator' },
+      { tier: 'gold', threshold: 200, label: 'Community Pillar' },
+      { tier: 'platinum', threshold: 500, label: 'Community Legend' },
     ],
     getValue: (stats) => stats.forum_total ?? 0,
   },
   // ── Showcase ──
   {
-    id: "showcase",
+    id: 'showcase',
     icon: FolderGit2,
-    description: "Projects in your showcase portfolio",
-    unit: "repos",
+    description: 'Projects in your showcase portfolio',
+    unit: 'repos',
     tiers: [
-      { tier: "iron",   threshold: 1,  label: "Portfolio Start" },
-      { tier: "bronze", threshold: 3,  label: "Builder" },
-      { tier: "silver", threshold: 7,  label: "Architect" },
-      { tier: "gold",   threshold: 15, label: "Visionary" },
+      { tier: 'iron', threshold: 1, label: 'Portfolio Start' },
+      { tier: 'bronze', threshold: 3, label: 'Builder' },
+      { tier: 'silver', threshold: 7, label: 'Architect' },
+      { tier: 'gold', threshold: 15, label: 'Visionary' },
     ],
     getValue: (stats) => stats.total_showcase_repos ?? stats.total_repos,
   },
@@ -170,36 +181,36 @@ interface SpecialBadgeConfig {
 
 const SPECIAL_BADGES: SpecialBadgeConfig[] = [
   {
-    id: "night-owl",
-    label: "🦉 Night Owl",
-    description: "Made 10+ contributions between midnight and 4am",
+    id: 'night-owl',
+    label: '🦉 Night Owl',
+    description: 'Made 10+ contributions between midnight and 4am',
     icon: Moon,
-    colorClass: "text-indigo-600 dark:text-indigo-300",
-    bgClass: "bg-indigo-50 dark:bg-indigo-950/40",
-    borderClass: "border-indigo-300 dark:border-indigo-700",
-    glowClass: "",
+    colorClass: 'text-indigo-600 dark:text-indigo-300',
+    bgClass: 'bg-indigo-50 dark:bg-indigo-950/40',
+    borderClass: 'border-indigo-300 dark:border-indigo-700',
+    glowClass: '',
     check: (stats) => (stats.night_owl_count ?? 0) >= 10,
   },
   {
-    id: "early-bird",
-    label: "☕ Early Bird",
-    description: "Made 10+ contributions before 7am",
+    id: 'early-bird',
+    label: '☕ Early Bird',
+    description: 'Made 10+ contributions before 7am',
     icon: Sun,
-    colorClass: "text-orange-500 dark:text-orange-300",
-    bgClass: "bg-orange-50 dark:bg-orange-950/40",
-    borderClass: "border-orange-300 dark:border-orange-700",
-    glowClass: "",
+    colorClass: 'text-orange-500 dark:text-orange-300',
+    bgClass: 'bg-orange-50 dark:bg-orange-950/40',
+    borderClass: 'border-orange-300 dark:border-orange-700',
+    glowClass: '',
     check: (stats) => (stats.early_bird_count ?? 0) >= 10,
   },
   {
-    id: "weekend-warrior",
-    label: "📅 Weekend Warrior",
-    description: "Over 60% of contributions made on weekends",
+    id: 'weekend-warrior',
+    label: '📅 Weekend Warrior',
+    description: 'Over 60% of contributions made on weekends',
     icon: Calendar,
-    colorClass: "text-teal-600 dark:text-teal-300",
-    bgClass: "bg-teal-50 dark:bg-teal-950/40",
-    borderClass: "border-teal-300 dark:border-teal-700",
-    glowClass: "",
+    colorClass: 'text-teal-600 dark:text-teal-300',
+    bgClass: 'bg-teal-50 dark:bg-teal-950/40',
+    borderClass: 'border-teal-300 dark:border-teal-700',
+    glowClass: '',
     check: (stats) => {
       const total = stats.total_push_count ?? 0;
       const weekend = stats.weekend_count ?? 0;
@@ -207,14 +218,14 @@ const SPECIAL_BADGES: SpecialBadgeConfig[] = [
     },
   },
   {
-    id: "necromancer",
-    label: "???",
-    description: "A hidden achievement. Keep contributing to discover it.",
+    id: 'necromancer',
+    label: '???',
+    description: 'A hidden achievement. Keep contributing to discover it.',
     icon: HelpCircle,
-    colorClass: "text-rose-600 dark:text-rose-400",
-    bgClass: "bg-rose-50 dark:bg-rose-950/30",
-    borderClass: "border-rose-300 dark:border-rose-700",
-    glowClass: "shadow-[0_0_12px_rgba(244,63,94,0.2)]",
+    colorClass: 'text-rose-600 dark:text-rose-400',
+    bgClass: 'bg-rose-50 dark:bg-rose-950/30',
+    borderClass: 'border-rose-300 dark:border-rose-700',
+    glowClass: 'shadow-[0_0_12px_rgba(244,63,94,0.2)]',
     isSecret: true,
     check: (stats) => (stats.forum_total ?? 0) >= 100 && stats.active_days >= 90,
   },
@@ -249,7 +260,9 @@ function resolveEarnedTier(
 function TierBadgePill({ tier }: { tier: Tier }) {
   const meta = TIER_META[tier];
   return (
-    <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide ${meta.badgeStyle}`}>
+    <span
+      className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide ${meta.badgeStyle}`}
+    >
       {meta.label}
     </span>
   );
@@ -289,19 +302,19 @@ function CategoryCard({ category, value }: CategoryCardProps) {
     <div
       className={`relative overflow-hidden flex flex-col gap-2 p-3 rounded-xl border transition-all ${
         isLocked
-          ? "bg-geist-canvas-soft dark:bg-neutral-900 border-geist-hairline dark:border-neutral-800 opacity-60"
+          ? 'bg-geist-canvas-soft dark:bg-neutral-900 border-geist-hairline dark:border-neutral-800 opacity-60'
           : `${meta!.bgClass} ${meta!.borderClass} ${meta!.glowClass} hover:scale-[1.02]`
       }`}
     >
-      {activeTier === "diamond" && <DiamondShimmer />}
+      {activeTier === 'diamond' && <DiamondShimmer />}
 
       {/* Icon + lock */}
       <div className="flex items-start justify-between">
-        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-          isLocked
-            ? "bg-geist-canvas-soft-2 dark:bg-neutral-800"
-            : meta!.bgClass
-        }`}>
+        <div
+          className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+            isLocked ? 'bg-geist-canvas-soft-2 dark:bg-neutral-800' : meta!.bgClass
+          }`}
+        >
           {isLocked ? (
             <Lock className="h-4 w-4 text-geist-mute dark:text-neutral-500" />
           ) : (
@@ -313,11 +326,11 @@ function CategoryCard({ category, value }: CategoryCardProps) {
 
       {/* Name */}
       <div>
-        <p className={`text-xs font-semibold leading-tight ${
-          isLocked
-            ? "text-geist-mute dark:text-neutral-500"
-            : meta!.textClass
-        }`}>
+        <p
+          className={`text-xs font-semibold leading-tight ${
+            isLocked ? 'text-geist-mute dark:text-neutral-500' : meta!.textClass
+          }`}
+        >
           {isLocked ? next?.label : earned?.label}
         </p>
         <p className="text-[10px] text-geist-mute dark:text-neutral-500 mt-0.5 leading-tight">
@@ -334,18 +347,18 @@ function CategoryCard({ category, value }: CategoryCardProps) {
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 isLocked
-                  ? "bg-geist-hairline dark:bg-neutral-700"
-                  : activeTier === "diamond"
-                  ? "bg-gradient-to-r from-violet-500 to-pink-500"
-                  : activeTier === "platinum"
-                  ? "bg-cyan-500"
-                  : activeTier === "gold"
-                  ? "bg-yellow-500"
-                  : activeTier === "silver"
-                  ? "bg-slate-400"
-                  : activeTier === "bronze"
-                  ? "bg-amber-500"
-                  : "bg-zinc-400"
+                  ? 'bg-geist-hairline dark:bg-neutral-700'
+                  : activeTier === 'diamond'
+                    ? 'bg-gradient-to-r from-violet-500 to-pink-500'
+                    : activeTier === 'platinum'
+                      ? 'bg-cyan-500'
+                      : activeTier === 'gold'
+                        ? 'bg-yellow-500'
+                        : activeTier === 'silver'
+                          ? 'bg-slate-400'
+                          : activeTier === 'bronze'
+                            ? 'bg-amber-500'
+                            : 'bg-zinc-400'
               }`}
               style={{ width: `${progress}%` }}
             />
@@ -397,12 +410,14 @@ function SpecialBadgeCard({ badge, earned }: SpecialBadgeCardProps) {
       className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all ${
         earned
           ? `${badge.bgClass} ${badge.borderClass} ${badge.glowClass} hover:scale-[1.02]`
-          : "border-geist-hairline dark:border-neutral-800 bg-geist-canvas-soft dark:bg-neutral-900 opacity-50"
+          : 'border-geist-hairline dark:border-neutral-800 bg-geist-canvas-soft dark:bg-neutral-900 opacity-50'
       }`}
     >
-      <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${
-        earned ? badge.bgClass : "bg-geist-canvas-soft-2 dark:bg-neutral-800"
-      }`}>
+      <div
+        className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${
+          earned ? badge.bgClass : 'bg-geist-canvas-soft-2 dark:bg-neutral-800'
+        }`}
+      >
         {earned ? (
           <Icon className={`h-3.5 w-3.5 ${badge.colorClass}`} />
         ) : (
@@ -410,9 +425,11 @@ function SpecialBadgeCard({ badge, earned }: SpecialBadgeCardProps) {
         )}
       </div>
       <div className="min-w-0">
-        <p className={`text-xs font-semibold leading-tight ${
-          earned ? badge.colorClass : "text-geist-mute dark:text-neutral-500"
-        }`}>
+        <p
+          className={`text-xs font-semibold leading-tight ${
+            earned ? badge.colorClass : 'text-geist-mute dark:text-neutral-500'
+          }`}
+        >
           {badge.label}
         </p>
         <p className="text-[10px] text-geist-mute dark:text-neutral-500 leading-tight mt-0.5 truncate">
@@ -449,9 +466,9 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
   }
 
   const earnedSpecial = SPECIAL_BADGES.filter((b) => b.check(stats));
-  const totalEarnedCount = BADGE_CATEGORIES.filter(
-    (cat) => cat.getValue(stats) >= cat.tiers[0].threshold
-  ).length + earnedSpecial.length;
+  const totalEarnedCount =
+    BADGE_CATEGORIES.filter((cat) => cat.getValue(stats) >= cat.tiers[0].threshold).length +
+    earnedSpecial.length;
 
   return (
     <div className="space-y-4">
@@ -481,11 +498,7 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
         </p>
         <div className="flex flex-col gap-1.5">
           {SPECIAL_BADGES.map((badge) => (
-            <SpecialBadgeCard
-              key={badge.id}
-              badge={badge}
-              earned={badge.check(stats)}
-            />
+            <SpecialBadgeCard key={badge.id} badge={badge} earned={badge.check(stats)} />
           ))}
         </div>
       </div>
@@ -496,7 +509,7 @@ export function BadgeDisplay({ stats }: BadgeDisplayProps) {
           Tier progression
         </p>
         <div className="flex flex-wrap gap-1">
-          {(["iron", "bronze", "silver", "gold", "platinum", "diamond"] as Tier[]).map((tier) => (
+          {(['iron', 'bronze', 'silver', 'gold', 'platinum', 'diamond'] as Tier[]).map((tier) => (
             <TierBadgePill key={tier} tier={tier} />
           ))}
         </div>

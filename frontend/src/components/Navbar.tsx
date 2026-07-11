@@ -1,38 +1,28 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useCurrentUser, useLogout, useAuthReady } from "@/hooks/useAuth";
-import { NotificationBell } from "@/features/forum/NotificationBell";
-import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import {
-  LogOut,
-  Settings,
-  User,
-  Menu,
-  X,
-  Home,
-  FolderGit2,
-  Users,
-  Trophy,
-} from "lucide-react";
-import logoOrbit from "@/assets/logo orbit.png";
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { useCurrentUser, useLogout, useAuthReady } from '@/hooks/useAuth';
+import { NotificationBell } from '@/features/forum/NotificationBell';
+import { Avatar } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { LogOut, Settings, User, Menu, X, Home, FolderGit2, Users, Trophy } from 'lucide-react';
+import logoOrbit from '@/assets/logo orbit.png';
 
 const NAV_LINKS_AUTH = [
-  { href: "/dashboard", label: "Feed", icon: Home },
-  { href: "/showcase", label: "Showcase", icon: FolderGit2 },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/members", label: "Members", icon: Users },
+  { href: '/dashboard', label: 'Feed', icon: Home },
+  { href: '/showcase', label: 'Showcase', icon: FolderGit2 },
+  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { href: '/members', label: 'Members', icon: Users },
 ];
 
 const NAV_LINKS_PUBLIC = [
-  { href: "/feed", label: "Feed", icon: Home },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/members", label: "Members", icon: Users },
+  { href: '/feed', label: 'Feed', icon: Home },
+  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { href: '/members', label: 'Members', icon: Users },
 ];
 
 export function Navbar() {
@@ -45,8 +35,8 @@ export function Navbar() {
   // Pages that REQUIRE authentication — only these should show auth navbar
   // while user data is still loading (to avoid flash).
   // Note: /profiles/*, /repos/*, /members are PUBLIC pages, so they must NOT be here.
-  const isStrictAuthPage = pathname === "/dashboard" || pathname === "/showcase" ||
-    pathname === "/settings";
+  const isStrictAuthPage =
+    pathname === '/dashboard' || pathname === '/showcase' || pathname === '/settings';
 
   // Show auth nav links when:
   // 1. User is actually loaded (definitive), OR
@@ -56,8 +46,8 @@ export function Navbar() {
   const navLinks = showAuthLinks ? NAV_LINKS_AUTH : NAV_LINKS_PUBLIC;
 
   const isActive = (href: string) => {
-    if (href === "/dashboard") return pathname === "/" || pathname === "/dashboard";
-    if (href === "/feed") return pathname === "/feed";
+    if (href === '/dashboard') return pathname === '/' || pathname === '/dashboard';
+    if (href === '/feed') return pathname === '/feed';
     return pathname.startsWith(href);
   };
 
@@ -70,7 +60,10 @@ export function Navbar() {
             {/* Left: Logo + Nav links */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link href={showAuthLinks ? "/dashboard" : "/feed"} className="flex items-center gap-2">
+              <Link
+                href={showAuthLinks ? '/dashboard' : '/feed'}
+                className="flex items-center gap-2"
+              >
                 <Image
                   src={logoOrbit}
                   alt="ORBIT Logo"
@@ -93,8 +86,8 @@ export function Navbar() {
                       href={link.href}
                       className={`px-3 py-2 rounded-geist-full text-body-sm transition-colors ${
                         isActive(link.href)
-                          ? "text-geist-ink bg-geist-canvas-soft-2 dark:text-white dark:bg-neutral-800"
-                          : "text-geist-body hover:text-geist-ink dark:text-white dark:hover:text-white"
+                          ? 'text-geist-ink bg-geist-canvas-soft-2 dark:text-white dark:bg-neutral-800'
+                          : 'text-geist-body hover:text-geist-ink dark:text-white dark:hover:text-white'
                       }`}
                     >
                       {link.label}
@@ -130,19 +123,13 @@ export function Navbar() {
                       </p>
                     </div>
                     <DropdownMenuItem>
-                      <Link
-                        href={`/profiles/${user.alias}`}
-                        className="flex items-center gap-2"
-                      >
+                      <Link href={`/profiles/${user.alias}`} className="flex items-center gap-2">
                         <User className="h-4 w-4" />
                         Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Link
-                        href="/settings"
-                        className="flex items-center gap-2"
-                      >
+                      <Link href="/settings" className="flex items-center gap-2">
                         <Settings className="h-4 w-4" />
                         Settings
                       </Link>
@@ -175,11 +162,7 @@ export function Navbar() {
                 className="md:hidden p-2 rounded-geist-sm text-geist-body hover:bg-geist-canvas-soft-2 transition-colors dark:text-white dark:hover:bg-neutral-800"
                 aria-label="Toggle menu"
               >
-                {mobileOpen ? (
-                  <X className="h-5 w-5" />
-                ) : (
-                  <Menu className="h-5 w-5" />
-                )}
+                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           </div>
@@ -199,8 +182,8 @@ export function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-3 py-3 rounded-geist-sm text-body-sm transition-colors ${
                     isActive(link.href)
-                      ? "text-geist-ink bg-geist-canvas-soft-2 dark:text-white dark:bg-neutral-800"
-                      : "text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-white dark:hover:text-white dark:hover:bg-neutral-900"
+                      ? 'text-geist-ink bg-geist-canvas-soft-2 dark:text-white dark:bg-neutral-800'
+                      : 'text-geist-body hover:text-geist-ink hover:bg-geist-canvas-soft dark:text-white dark:hover:text-white dark:hover:bg-neutral-900'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
