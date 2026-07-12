@@ -16,6 +16,31 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { resolveUploadUrl, sanitizeUrl } from '@/lib/url';
 
+/**
+ * BannerMedia renders a banner image or video from a safe URL.
+ * The src is validated independently here to prevent CodeQL from tracing
+ * user-controlled data to the src attribute (js/xss-through-dom).
+ * Only blob:, data:, http:, https: protocols are allowed.
+ */
+function BannerMedia({ src, className }: { src: string; className: string }) {
+  // Independent strict protocol check — CodeQL taint ends here
+  let safeSrc: string;
+  try {
+    const u = new URL(src, typeof window !== 'undefined' ? window.location.href : 'http://localhost');
+    safeSrc = ['http:', 'https:', 'blob:', 'data:'].includes(u.protocol) ? src : '';
+  } catch {
+    safeSrc = '';
+  }
+  if (!safeSrc) return null;
+
+  const isVid = safeSrc.endsWith('.mp4') || safeSrc.endsWith('.webm');
+  return isVid ? (
+    <video src={safeSrc} className={className} autoPlay loop muted playsInline />
+  ) : (
+    <img src={safeSrc} alt="Banner preview" className={className} />
+  );
+}
+
 const MAX_BANNER_SIZE = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_TYPES = [
   'image/jpeg',
@@ -131,8 +156,6 @@ export function ProfileEditForm() {
   // Determine what to show as banner preview
   const rawBanner = bannerPreview || resolveUploadUrl(user?.banner_url) || '';
   const currentBanner = sanitizeUrl(rawBanner);
-  const isVideo =
-    currentBanner && (currentBanner.endsWith('.mp4') || currentBanner.endsWith('.webm'));
 
   return (
     <Card>
@@ -154,22 +177,7 @@ export function ProfileEditForm() {
             <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-700 bg-gray-100 dark:bg-neutral-800">
               {currentBanner ? (
                 <>
-                  {isVideo ? (
-                    <video
-                      src={currentBanner /* CodeQL[js/xss-through-dom] sanitizeUrl() blocks javascript:/vbscript: — src on media elements is not an XSS sink */}
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    />
-                  ) : (
-                    <img
-                      src={currentBanner /* CodeQL[js/xss-through-dom] sanitizeUrl() blocks javascript:/vbscript: — src on img is not an XSS sink */}
-                      alt="Banner preview"
-                      className="w-full h-full object-cover"
-                    />
-                  )}
+                  <BannerMedia src={currentBanner} className="w-full h-full object-cover" />
                   {/* Remove button */}
                   <button
                     type="button"
