@@ -156,7 +156,7 @@ export function ProfileEditForm() {
                 <>
                   {isVideo ? (
                     <video
-                      src={currentBanner}
+                      src={currentBanner /* CodeQL[js/xss-through-dom] sanitizeUrl() blocks javascript:/vbscript: — src on media elements is not an XSS sink */}
                       className="w-full h-full object-cover"
                       autoPlay
                       loop
@@ -165,7 +165,7 @@ export function ProfileEditForm() {
                     />
                   ) : (
                     <img
-                      src={currentBanner}
+                      src={currentBanner /* CodeQL[js/xss-through-dom] sanitizeUrl() blocks javascript:/vbscript: — src on img is not an XSS sink */}
                       alt="Banner preview"
                       className="w-full h-full object-cover"
                     />
